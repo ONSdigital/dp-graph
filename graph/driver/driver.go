@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/ONSdigital/dp-import-api/models"
+	"github.com/ONSdigital/dp-code-list-api/models"
 )
 
 type Driver interface {
@@ -18,6 +18,7 @@ type Driver interface {
 	// The returned connection is only used by one goroutine at a
 	// time.
 	Open(name string) (Conn, error)
+	GetCodeList(ctx context.Context, apiHost, id string) (*models.CodeList, error)
 }
 
 var ErrBadConn = errors.New("driver: bad connection")

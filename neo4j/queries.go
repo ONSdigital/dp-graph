@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-code-list-api/models"
-	"github.com/ONSdigital/dp-graph/neo4j/mapper"
 	"github.com/ONSdigital/go-ns/log"
 )
 
@@ -20,17 +20,20 @@ const (
 	getCodeDatasets         = "MATCH (d)<-[inDataset]-(c:_code)-[r:usedBy]->(cl:_code_list:`_code_list_%s`) WHERE (cl.edition=" + `"%s"` + ") AND (c.value=" + `"%s"` + ") AND (d.is_published=true) RETURN d,r"
 )
 
-func (n *Neo4j) GetCodeList(ctx context.Context, code string) (*models.CodeList, error) {
+func (n *Neo4j) GetCodeList(ctx context.Context, apiHost, code string) (*models.CodeList, error) {
 	log.InfoCtx(ctx, "about to query neo4j for code list", log.Data{"code_list_id": code})
 
 	query := fmt.Sprintf(codeListExistsQuery, "code_list", code)
 	//typically mapper would pass in the &models.Thing which the results get written to
 	//but this seems quite obscured/not sure i like this pattern
-	_, mapper := mapper.GetCount()
+	//	_, mapper := mapper.GetCount()
 
-	err := n.exec(query, mapper, true)
+	mapper := func(r *dpbolt.Result) error {
+		return nil
+	}
 
-	if errs != nil {
+	if err := n.exec(query, mapper, true); err != nil {
+		//includes not found/404 responses
 		return nil, err
 	}
 
@@ -39,10 +42,10 @@ func (n *Neo4j) GetCodeList(ctx context.Context, code string) (*models.CodeList,
 		Links: models.CodeListLink{
 			Self: &models.Link{
 				ID:   code,
-				Href: fmt.Sprintf("%s/code-lists/%s", "api.gov", code),
+				Href: fmt.Sprintf("%s/code-lists/%s", apiHost, code),
 			},
 			Editions: &models.Link{
-				Href: fmt.Sprintf("%s/code-lists/%s/editions", "api.gov", code),
+				Href: fmt.Sprintf("%s/code-lists/%s/editions", apiHost, code),
 			},
 		},
 	}, nil

@@ -2,7 +2,6 @@ package neo4j
 
 import (
 	"io"
-	"strconv"
 
 	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-graph/graph/driver"
@@ -21,12 +20,7 @@ type Neo4j struct {
 
 var ErrNotFound = errors.New("not found")
 
-func New(dbAddr, poolSize string) (d *Neo4j, err error) {
-	size, err := strconv.Atoi(poolSize)
-	if err != nil {
-		return nil, err
-	}
-
+func New(dbAddr string, size int) (d *Neo4j, err error) {
 	pool, err := bolt.NewClosableDriverPool(dbAddr, size)
 	if err != nil {
 		log.Error(err, nil)
