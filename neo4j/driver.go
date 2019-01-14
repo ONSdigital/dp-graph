@@ -3,22 +3,18 @@ package neo4j
 import (
 	"io"
 
-	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/dp-graph/graph/driver"
+	"github.com/ONSdigital/dp-graph/neo4j/mapper"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"github.com/ian-kent/go-log/log"
 	"github.com/pkg/errors"
 )
 
-//import("graph/driver")
-
 type Neo4j struct {
-	//	url    string
 	pool bolt.ClosableDriverPool
+	//	apiHost    string
 	//	mapper *mapper.Mapper
 }
-
-var ErrNotFound = errors.New("not found")
 
 func New(dbAddr string, size int) (d *Neo4j, err error) {
 	pool, err := bolt.NewClosableDriverPool(dbAddr, size)
@@ -28,36 +24,28 @@ func New(dbAddr string, size int) (d *Neo4j, err error) {
 	}
 
 	return &Neo4j{
-		//	codeListLabel: codelistLabel,
 		pool: pool,
-		// mapper: &mapper.Mapper{
-		// 	Host:           apiURL,
-		// 	DatasetAPIHost: datasetAPIurl,
-		// },
 	}, nil
 }
 
-func (d *Neo4j) Open(name string) (driver.Conn, error) {
-	return d.pool.OpenPool()
-	// if err != nil {
-	// 	return nil, err
-	// }
-	//
-	// return co, nil
+func (n *Neo4j) Open() (driver.Conn, error) {
+	return n.pool.OpenPool()
+}
+
+func (n *Neo4j) Close() error {
+	return n.pool.Close()
 }
 
 func (n *Neo4j) open() (*Conn, error) {
-	conn, err := n.Open("")
-	c, ok := conn.(Conn)
-	if err != nil || !ok {
-		defer conn.Close()
+	dconn, err := n.Open()
 
-		if !ok {
-			return nil, errors.New("not a valid connection type")
-		}
+	if err != nil {
 		return nil, err
 	}
-	return &c, nil
+
+	var newConnection Conn
+	newConnection.conn = dconn.(bolt.Conn)
+	return &newConnection, nil
 }
 
 type Conn struct {
@@ -68,12 +56,13 @@ func (c Conn) Close() error {
 	return c.conn.Close()
 }
 
-func (n *Neo4j) exec(query string, mapper dpbolt.ResultMapper, single bool) error {
-	//	var c Conn
+func (n *Neo4j) exec(query string, mapp mapper.ResultMapper, single bool) error {
 	c, err := n.open()
+	if err != nil {
+		return err
+	}
 	defer c.Close()
 
-	//	var rows *bolt.Result
 	rows, err := c.conn.QueryNeo(query, nil)
 	if err != nil {
 		return errors.WithMessage(err, "error executing neo4j query")
@@ -97,8 +86,8 @@ results:
 			return errors.WithMessage(err, "non unique results")
 		}
 
-		if mapper != nil {
-			if err := mapper(&dpbolt.Result{Data: data, Meta: meta, Index: index}); err != nil {
+		if mapp != nil {
+			if err := mapp(&mapper.Result{Data: data, Meta: meta, Index: index}); err != nil {
 				return errors.WithMessage(err, "mapResult returned an error")
 			}
 		}
@@ -106,7 +95,7 @@ results:
 	}
 
 	if numOfResults == 0 {
-		return ErrNotFound
+		return driver.ErrNotFound
 	}
 
 	return nil

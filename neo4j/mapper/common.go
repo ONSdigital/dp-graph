@@ -3,10 +3,17 @@ package mapper
 import (
 	"reflect"
 
-	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/graph"
 	"github.com/pkg/errors"
 )
+
+type ResultMapper func(r *Result) error
+
+type Result struct {
+	Data  []interface{}
+	Meta  map[string]interface{}
+	Index int
+}
 
 var ErrInputNil = errors.New("expected input value but was nil")
 
@@ -87,9 +94,9 @@ func castingError(expected interface{}, actual interface{}) error {
 }
 
 // GetCount returns dpbolt.ResultMapper for extracting an int64 value from a dpbolt.Result
-func GetCount() (*int64, dpbolt.ResultMapper) {
+func GetCount() (*int64, ResultMapper) {
 	var count int64
-	return &count, func(r *dpbolt.Result) error {
+	return &count, func(r *Result) error {
 		if len(r.Data) != 1 {
 			return errors.Errorf("get count error: expecting single result value but %d returned", len(r.Data))
 		}

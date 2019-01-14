@@ -7,6 +7,8 @@ import (
 	"github.com/ONSdigital/dp-code-list-api/models"
 )
 
+var ErrNotFound = errors.New("not found")
+
 type Driver interface {
 	// Open returns a new connection to the database.
 	// The name is a string in a driver-specific format.
@@ -17,8 +19,18 @@ type Driver interface {
 	//
 	// The returned connection is only used by one goroutine at a
 	// time.
-	Open(name string) (Conn, error)
-	GetCodeList(ctx context.Context, apiHost, id string) (*models.CodeList, error)
+	Open() (Conn, error)
+	codelist
+}
+
+type codelist interface {
+	GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error)
+	GetCodeList(ctx context.Context, codeListID string) (*models.CodeList, error)
+	GetEditions(ctx context.Context, codeListID string) (*models.Editions, error)
+	GetEdition(ctx context.Context, codeListID, edition string) (*models.Edition, error)
+	GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error)
+	GetCode(ctx context.Context, codeListID, edition string, code string) (*models.Code, error)
+	GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error)
 }
 
 var ErrBadConn = errors.New("driver: bad connection")
@@ -26,10 +38,6 @@ var ErrBadConn = errors.New("driver: bad connection")
 type Pinger interface {
 	Ping(ctx context.Context) error
 }
-
-// type ExecerContext interface {
-// 	ExecContext(ctx context.Context, query string, args ...interface{}) (Result, error)
-// }
 
 type Conn interface {
 	// // Prepare returns a prepared statement, bound to this connection.
@@ -44,13 +52,6 @@ type Conn interface {
 	// idle connections, it shouldn't be necessary for drivers to
 	// do their own connection caching.
 	Close() error
-
-	//	Exec(resultCapture interface{}, query string, args ...interface{}) error
-
-	// // Begin starts and returns a new transaction.
-	// //
-	// // Deprecated: Drivers should implement ConnBeginTx instead (or additionally).
-	// Begin() (Tx, error)
 }
 
 type Connector interface {
@@ -71,8 +72,4 @@ type Connector interface {
 	// mainly to maintain compatibility with the Driver method
 	// on sql.DB.
 	Driver() Driver
-}
-
-type CodeListMapper interface {
-	Map(i interface{}) (*models.CodeList, error)
 }

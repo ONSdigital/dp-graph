@@ -1,27 +1,24 @@
 package mapper
 
 import (
-	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/graph"
 )
 
 //Datasets map of datasetID to dataset
-type Datasets map[string]datasetData
+type Datasets map[string]DatasetData
 type DatasetEditions map[string]Versions
 type Versions []int
 
-type datasetData struct {
+//type ItemsList []models.Dataset
+
+type DatasetData struct {
 	DimensionLabel string
 	Editions       DatasetEditions
 }
 
-const (
-	datasetsURI = "/code-lists/%s/editions/%s/codes/%s/datasets"
-)
-
 //CodesDatasets returns a dpbolt.ResultMapper which converts dpbolt.Result to Datasets
-func (m *Mapper) CodesDatasets(datasets Datasets) dpbolt.ResultMapper {
-	return func(r *dpbolt.Result) error {
+func CodesDatasets(datasets Datasets) ResultMapper {
+	return func(r *Result) error {
 		var err error
 
 		var node graph.Node
@@ -56,7 +53,7 @@ func (m *Mapper) CodesDatasets(datasets Datasets) dpbolt.ResultMapper {
 
 		dataset, ok := datasets[datasetID]
 		if !ok {
-			dataset = datasetData{
+			dataset = DatasetData{
 				DimensionLabel: dimensionLabel,
 				Editions:       make(DatasetEditions, 0),
 			}

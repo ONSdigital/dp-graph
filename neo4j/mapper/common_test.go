@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	dpbolt "github.com/ONSdigital/dp-bolt/bolt"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/graph"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestGetCount(t *testing.T) {
 	Convey("given dpbolt.Result.Data contains an int64 value", t, func() {
-		r := &dpbolt.Result{Data: []interface{}{int64(666)}}
+		r := &Result{Data: []interface{}{int64(666)}}
 
 		Convey("when count is called", func() {
 			count, mapper := GetCount()
@@ -25,7 +24,7 @@ func TestGetCount(t *testing.T) {
 	})
 
 	Convey("given dpbolt.Result.Data is empty", t, func() {
-		r := &dpbolt.Result{Data: []interface{}{}}
+		r := &Result{Data: []interface{}{}}
 
 		Convey("when count is called", func() {
 			count, mapper := GetCount()
@@ -39,7 +38,7 @@ func TestGetCount(t *testing.T) {
 	})
 
 	Convey("given dpbolt.Result.Data[0] is not type int64", t, func() {
-		r := &dpbolt.Result{Data: []interface{}{"I AM NOT int64"}}
+		r := &Result{Data: []interface{}{"I AM NOT int64"}}
 
 		Convey("when count is called", func() {
 			count, mapper := GetCount()
