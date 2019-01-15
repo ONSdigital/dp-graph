@@ -5,8 +5,8 @@ import (
 
 	"github.com/ONSdigital/dp-graph/graph/driver"
 	"github.com/ONSdigital/dp-graph/neo4j/mapper"
+	"github.com/ONSdigital/go-ns/log"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
-	"github.com/ian-kent/go-log/log"
 	"github.com/pkg/errors"
 )
 
@@ -28,42 +28,18 @@ func New(dbAddr string, size int) (d *Neo4j, err error) {
 	}, nil
 }
 
-func (n *Neo4j) Open() (driver.Conn, error) {
-	return n.pool.OpenPool()
-}
-
 func (n *Neo4j) Close() error {
 	return n.pool.Close()
 }
 
-func (n *Neo4j) open() (*Conn, error) {
-	dconn, err := n.Open()
-
-	if err != nil {
-		return nil, err
-	}
-
-	var newConnection Conn
-	newConnection.conn = dconn.(bolt.Conn)
-	return &newConnection, nil
-}
-
-type Conn struct {
-	conn bolt.Conn
-}
-
-func (c Conn) Close() error {
-	return c.conn.Close()
-}
-
 func (n *Neo4j) exec(query string, mapp mapper.ResultMapper, single bool) error {
-	c, err := n.open()
+	c, err := n.pool.OpenPool()
 	if err != nil {
 		return err
 	}
 	defer c.Close()
 
-	rows, err := c.conn.QueryNeo(query, nil)
+	rows, err := c.QueryNeo(query, nil)
 	if err != nil {
 		return errors.WithMessage(err, "error executing neo4j query")
 	}
