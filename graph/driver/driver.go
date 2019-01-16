@@ -10,11 +10,8 @@ import (
 var ErrNotFound = errors.New("not found")
 
 type Driver interface {
-	Close() error
-	codelist
-}
+	Close(ctx context.Context) error
 
-type codelist interface {
 	GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error)
 	GetCodeList(ctx context.Context, codeListID string) (*models.CodeList, error)
 	GetEditions(ctx context.Context, codeListID string) (*models.Editions, error)

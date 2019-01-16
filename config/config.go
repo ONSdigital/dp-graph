@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/ONSdigital/dp-graph/graph/driver"
+	"github.com/ONSdigital/dp-graph/mock"
 	"github.com/ONSdigital/dp-graph/neo4j"
 	"github.com/kelseyhightower/envconfig"
 	// "dp-graph/gremgo"
@@ -16,7 +17,6 @@ type Configuration struct {
 	DatabaseAddress         string        `envconfig:"GRAPH_ADDR"`
 	PoolSize                int           `envconfig:"GRAPH_POOL_SIZE"`
 
-	//	CodeListLabel      string        `envconfig:"CODE_LIST_LABEL"`
 	Driver driver.Driver
 }
 
@@ -32,8 +32,7 @@ func Get() (*Configuration, error) {
 		GracefulShutdownTimeout: time.Second * 5,
 		DatabaseAddress:         "bolt://localhost:7687",
 		PoolSize:                30,
-
-		//	CodeListLabel:      "code_list",
+		DriverChoice:            "mock",
 	}
 
 	err := envconfig.Process("", cfg)
@@ -46,11 +45,11 @@ func Get() (*Configuration, error) {
 		if err != nil {
 			panic(err)
 		}
-		//
-		// case "gremgo":
-		// 	d = gremgo.Driver{}
-		// default:
-		// 	d = mock.Driver{}
+	//
+	// case "gremgo":
+	// 	d = gremgo.Driver{}
+	default:
+		d = &mock.Mock{}
 	}
 
 	cfg.Driver = d
