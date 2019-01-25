@@ -82,8 +82,8 @@ func New(ctx context.Context, choice Subsets) (*DB, error) {
 //Test sets flags for managing responses from the Mock driver
 func Test(backend, query, content bool) *mock.Mock {
 	return &mock.Mock{
-		IsBackendUnreachable: backend,
-		IsQueryInvalid:       query,
-		IsContentNotFound:    content,
+		IsBackendReachable: backend,
+		IsQueryValid:       query,
+		IsContentFound:     content,
 	}
 }
