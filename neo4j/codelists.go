@@ -24,8 +24,7 @@ func (n *Neo4j) GetCodeLists(ctx context.Context, filterBy string) (*models.Code
 	query := fmt.Sprintf(query.GetCodeLists, filterBy)
 	codeListResults := &models.CodeListResults{}
 
-	prefix := "_code_list_"
-	err := n.exec(query, mapper.CodeLists(codeListResults, prefix), false)
+	err := n.Read(query, mapper.CodeLists(codeListResults), false)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +38,7 @@ func (n *Neo4j) GetCodeList(ctx context.Context, code string) (*models.CodeList,
 	query := fmt.Sprintf(query.CodeListExists, code)
 	codeListResult := &models.CodeList{}
 
-	if err := n.exec(query, mapper.CodeList(codeListResult, code), true); err != nil {
+	if err := n.Read(query, mapper.CodeList(codeListResult, code), true); err != nil {
 		//includes not found/404 responses
 		return nil, err
 	}
@@ -54,7 +53,7 @@ func (n *Neo4j) GetEditions(ctx context.Context, codeListID string) (*models.Edi
 	query := fmt.Sprintf(query.GetCodeList, codeListID)
 	editions := &models.Editions{}
 
-	if err := n.exec(query, mapper.Editions(editions), false); err != nil {
+	if err := n.Read(query, mapper.Editions(editions), false); err != nil {
 		return nil, err
 	}
 
@@ -67,7 +66,7 @@ func (n *Neo4j) GetEdition(ctx context.Context, codeListID, editionID string) (*
 	query := fmt.Sprintf(query.GetCodeListEdition, codeListID, editionID)
 	edition := &models.Edition{}
 
-	if err := n.exec(query, mapper.Edition(edition), true); err != nil {
+	if err := n.Read(query, mapper.Edition(edition), true); err != nil {
 		return nil, err
 	}
 
@@ -84,7 +83,7 @@ func (n *Neo4j) GetCodes(ctx context.Context, codeListID, editionID string) (*mo
 
 	codes := &models.CodeResults{}
 	query := fmt.Sprintf(query.GetCodes, codeListID, editionID)
-	if err := n.exec(query, mapper.Codes(codes, codeListID, editionID), false); err != nil {
+	if err := n.Read(query, mapper.Codes(codes, codeListID, editionID), false); err != nil {
 		return nil, err
 	}
 
@@ -101,7 +100,7 @@ func (n *Neo4j) GetCode(ctx context.Context, codeListID, editionID string, codeI
 
 	code := &models.Code{}
 	query := fmt.Sprintf(query.GetCode, codeListID, editionID, codeID)
-	if err := n.exec(query, mapper.Code(code, codeListID, editionID), true); err != nil {
+	if err := n.Read(query, mapper.Code(code, codeListID, editionID), true); err != nil {
 		return nil, err
 	}
 
@@ -118,7 +117,7 @@ func (n *Neo4j) GetCodeDatasets(ctx context.Context, codeListID, edition string,
 
 	datasets := make(mapper.Datasets, 0)
 	query := fmt.Sprintf(query.GetCodeDatasets, codeListID, edition, code)
-	if err := n.exec(query, mapper.CodesDatasets(datasets), false); err != nil {
+	if err := n.Read(query, mapper.CodesDatasets(datasets), false); err != nil {
 		return nil, err
 	}
 
