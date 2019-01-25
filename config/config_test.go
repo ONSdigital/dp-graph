@@ -1,18 +1,43 @@
 package config
 
 import (
+	"os"
 	"testing"
-	"time"
 
+	"github.com/ONSdigital/dp-graph/mock"
+	"github.com/ONSdigital/dp-graph/neo4j"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestGetReturnsDefaultValues(t *testing.T) {
-	t.Parallel()
 	Convey("When a loading a configuration, default values are return", t, func() {
+		cfg = nil
 		cfg, err := Get()
 		So(err, ShouldBeNil)
-		So(cfg.GracefulShutdownTimeout, ShouldEqual, time.Second*5)
-		So(cfg.DriverChoice, ShouldEqual, "mock")
+		So(cfg, ShouldNotBeNil)
+
+		db, ok := (cfg.Driver).(*mock.Mock)
+		So(ok, ShouldBeTrue)
+		So(db, ShouldNotBeNil)
+
+	})
+}
+
+func TestGetReturnsChosenDriver(t *testing.T) {
+	Convey("When choosing the neo4j driver", t, func() {
+		cfg = nil
+
+		err := os.Setenv("GRAPH_DRIVER", "neo4j")
+		So(err, ShouldBeNil)
+
+		Convey("then the correct driver is returned", func() {
+			cfg, err = Get()
+			So(err, ShouldBeNil)
+			So(cfg, ShouldNotBeNil)
+
+			db, ok := (cfg.Driver).(*neo4j.Neo4j)
+			So(ok, ShouldBeTrue)
+			So(db, ShouldNotBeNil)
+		})
 	})
 }
