@@ -10,7 +10,7 @@ import (
 )
 
 func TestGetReturnsDefaultValues(t *testing.T) {
-	Convey("When a loading a configuration, default values are return", t, func() {
+	Convey("When a loading a configuration, default values are returned", t, func() {
 		cfg = nil
 		cfg, err := Get()
 		So(err, ShouldBeNil)
