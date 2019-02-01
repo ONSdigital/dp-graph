@@ -15,6 +15,10 @@ func (m *Mock) Close(ctx context.Context) error {
 	return nil
 }
 
+func (m *Mock) Healthcheck() (string, error) {
+	return "mock", nil
+}
+
 func (m *Mock) checkForErrors() error {
 	if m.IsBackendReachable != true {
 		return errors.New("database unavailble - 500")
