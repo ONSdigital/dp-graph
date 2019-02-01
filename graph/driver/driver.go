@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/ONSdigital/dp-graph/observation"
 )
 
 var ErrNotFound = errors.New("not found")
@@ -37,6 +38,11 @@ type Hierarchy interface {
 
 	//would this work for the majority of these? is there a retry wrapper we can implement? does it work better from the exec level?
 	//	Retry(ctx context.Context, attempt int, call func(ctx context.Context, instanceID, dimensionName string) error)
+}
+
+// Observation provides filtered observation data in CSV rows.
+type Observation interface {
+	GetCSVRows(ctx context.Context, filter *observation.Filter, limit *int) (observation.CSVRowReader, error)
 }
 
 type Instance interface {

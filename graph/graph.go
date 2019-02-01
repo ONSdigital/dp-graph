@@ -15,12 +15,14 @@ type DB struct {
 	driver.CodeList
 	driver.Hierarchy
 	driver.Instance
+	driver.Observation
 }
 
 type Subsets struct {
-	CodeList  bool
-	Hierarchy bool
-	Instance  bool
+	CodeList    bool
+	Hierarchy   bool
+	Instance    bool
+	Observation bool
 }
 
 func NewCodeListStore(ctx context.Context) (*DB, error) {
@@ -29,6 +31,10 @@ func NewCodeListStore(ctx context.Context) (*DB, error) {
 
 func NewHierarchyStore(ctx context.Context) (*DB, error) {
 	return New(ctx, Subsets{Hierarchy: true})
+}
+
+func NewObservationStore(ctx context.Context) (*DB, error) {
+	return New(ctx, Subsets{Observation: true})
 }
 
 func New(ctx context.Context, choice Subsets) (*DB, error) {
@@ -71,11 +77,23 @@ func New(ctx context.Context, choice Subsets) (*DB, error) {
 		i = nil
 	}
 
+	var o driver.Observation
+	if o, ok = cfg.Driver.(driver.Observation); !ok {
+		if choice.Observation {
+			return nil, errors.New("configured driver does not implement observation subset")
+		}
+	}
+
+	if !choice.Observation {
+		o = nil
+	}
+
 	return &DB{
 		cfg.Driver,
 		c,
 		h,
 		i,
+		o,
 	}, nil
 }
 

@@ -14,6 +14,7 @@ import (
 
 type Neo4jDriver interface {
 	Read(query string, mapp mapper.ResultMapper, single bool) error
+	ReadRows(query string) (*BoltRowReader, error)
 	Count(query string) (count int64, err error)
 	Exec(query string, params map[string]interface{}) error
 	Close(ctx context.Context) error
@@ -82,6 +83,24 @@ results:
 	}
 
 	return nil
+}
+
+func (n *NeoDriver) ReadRows(query string) (*BoltRowReader, error) {
+	conn, err := n.pool.OpenPool()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := conn.QueryNeo(query, nil)
+	if err != nil {
+		// Before returning the error "close" the open connection to release it back into the pool.
+		conn.Close()
+		return nil, err
+	}
+	defer conn.Close()
+	// The connection can only be closed once the results have been read, so the row reader is responsible for
+	// releasing the connection back into the pool
+	return NewBoltRowReader(rows), nil
 }
 
 func (n *NeoDriver) Count(query string) (count int64, err error) {
