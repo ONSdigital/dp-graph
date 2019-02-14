@@ -16,7 +16,7 @@ var (
 	lockNeo4jDriverMockExec        sync.RWMutex
 	lockNeo4jDriverMockHealthcheck sync.RWMutex
 	lockNeo4jDriverMockRead        sync.RWMutex
-	lockNeo4jDriverMockReadRows    sync.RWMutex
+	lockNeo4jDriverMockStreamRows  sync.RWMutex
 )
 
 // Neo4jDriverMock is a mock implementation of Neo4jDriver.
@@ -40,8 +40,8 @@ var (
 //             ReadFunc: func(query string, mapp mapper.ResultMapper, single bool) error {
 // 	               panic("TODO: mock out the Read method")
 //             },
-//             ReadRowsFunc: func(query string) (*driver.BoltRowReader, error) {
-// 	               panic("TODO: mock out the ReadRows method")
+//             StreamRowsFunc: func(query string) (*driver.BoltRowReader, error) {
+// 	               panic("TODO: mock out the StreamRows method")
 //             },
 //         }
 //
@@ -65,8 +65,8 @@ type Neo4jDriverMock struct {
 	// ReadFunc mocks the Read method.
 	ReadFunc func(query string, mapp mapper.ResultMapper, single bool) error
 
-	// ReadRowsFunc mocks the ReadRows method.
-	ReadRowsFunc func(query string) (*driver.BoltRowReader, error)
+	// StreamRowsFunc mocks the StreamRows method.
+	StreamRowsFunc func(query string) (*driver.BoltRowReader, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -99,8 +99,8 @@ type Neo4jDriverMock struct {
 			// Single is the single argument value.
 			Single bool
 		}
-		// ReadRows holds details about calls to the ReadRows method.
-		ReadRows []struct {
+		// StreamRows holds details about calls to the StreamRows method.
+		StreamRows []struct {
 			// Query is the query argument value.
 			Query string
 		}
@@ -269,33 +269,33 @@ func (mock *Neo4jDriverMock) ReadCalls() []struct {
 	return calls
 }
 
-// ReadRows calls ReadRowsFunc.
-func (mock *Neo4jDriverMock) ReadRows(query string) (*driver.BoltRowReader, error) {
-	if mock.ReadRowsFunc == nil {
-		panic("Neo4jDriverMock.ReadRowsFunc: method is nil but Neo4jDriver.ReadRows was just called")
+// StreamRows calls StreamRowsFunc.
+func (mock *Neo4jDriverMock) StreamRows(query string) (*driver.BoltRowReader, error) {
+	if mock.StreamRowsFunc == nil {
+		panic("Neo4jDriverMock.StreamRowsFunc: method is nil but Neo4jDriver.StreamRows was just called")
 	}
 	callInfo := struct {
 		Query string
 	}{
 		Query: query,
 	}
-	lockNeo4jDriverMockReadRows.Lock()
-	mock.calls.ReadRows = append(mock.calls.ReadRows, callInfo)
-	lockNeo4jDriverMockReadRows.Unlock()
-	return mock.ReadRowsFunc(query)
+	lockNeo4jDriverMockStreamRows.Lock()
+	mock.calls.StreamRows = append(mock.calls.StreamRows, callInfo)
+	lockNeo4jDriverMockStreamRows.Unlock()
+	return mock.StreamRowsFunc(query)
 }
 
-// ReadRowsCalls gets all the calls that were made to ReadRows.
+// StreamRowsCalls gets all the calls that were made to StreamRows.
 // Check the length with:
-//     len(mockedNeo4jDriver.ReadRowsCalls())
-func (mock *Neo4jDriverMock) ReadRowsCalls() []struct {
+//     len(mockedNeo4jDriver.StreamRowsCalls())
+func (mock *Neo4jDriverMock) StreamRowsCalls() []struct {
 	Query string
 } {
 	var calls []struct {
 		Query string
 	}
-	lockNeo4jDriverMockReadRows.RLock()
-	calls = mock.calls.ReadRows
-	lockNeo4jDriverMockReadRows.RUnlock()
+	lockNeo4jDriverMockStreamRows.RLock()
+	calls = mock.calls.StreamRows
+	lockNeo4jDriverMockStreamRows.RUnlock()
 	return calls
 }
