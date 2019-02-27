@@ -1,7 +1,8 @@
-package neo4j_test
+package neo4j
 
 //
 // import (
+// 	"context"
 // 	"fmt"
 // 	"testing"
 //
@@ -55,10 +56,9 @@ package neo4j_test
 // 		// }
 //
 // 		driver := &internal.Neo4jDriverMock{
-// 			ReadRows: func(query string) (*BoltRowReader, error) {
-//
-// 			}
-//
+// 			StreamRowsFunc: func(query string) (observation.StreamRowReader, error) {
+// 				return mockBoltRows, nil
+// 			},
 // 			ExecFunc: func(q string, params map[string]interface{}) error {
 // 				return nil
 // 			},
@@ -68,7 +68,7 @@ package neo4j_test
 //
 // 		Convey("When GetCSVRows is called without a limit", func() {
 //
-// 			rowReader, err := db.GetCSVRows(filter, nil)
+// 			rowReader, err := db.GetCSVRows(context.Background(), filter, nil)
 //
 // 			Convey("The expected query is sent to the database", func() {
 //
@@ -87,7 +87,7 @@ package neo4j_test
 // 		Convey("When GetCSVRows is called with a limit of 20", func() {
 //
 // 			limitRows := 20
-// 			rowReader, err := store.GetCSVRows(filter, &limitRows)
+// 			rowReader, err := store.GetCSVRows(context.Background(), filter, &limitRows)
 //
 // 			Convey("The expected query is sent to the database", func() {
 //
@@ -147,7 +147,7 @@ package neo4j_test
 // 				DimensionFilters: nil,
 // 			}
 //
-// 			result, err := store.GetCSVRows(filter, nil)
+// 			result, err := store.GetCSVRows(context.Background(), filter, nil)
 // 			assertEmptyFilterResults(result, expectedCSVRowHeader, err)
 // 			assertEmptyFilterQueryInvocations(mockedDBConnection, expectedQuery)
 // 		})
@@ -159,7 +159,7 @@ package neo4j_test
 // 				DimensionFilters: []*observation.DimensionFilter{},
 // 			}
 //
-// 			result, err := store.GetCSVRows(filter, nil)
+// 			result, err := store.GetCSVRows(context.Background(), filter, nil)
 // 			assertEmptyFilterResults(result, expectedCSVRowHeader, err)
 // 			assertEmptyFilterQueryInvocations(mockedDBConnection, expectedQuery)
 // 		})
@@ -176,7 +176,7 @@ package neo4j_test
 // 				},
 // 			}
 //
-// 			result, err := store.GetCSVRows(filter, nil)
+// 			result, err := store.GetCSVRows(context.Background(), filter, nil)
 // 			assertEmptyFilterResults(result, expectedCSVRowHeader, err)
 // 			assertEmptyFilterQueryInvocations(mockedDBConnection, expectedQuery)
 // 		})
@@ -228,7 +228,7 @@ package neo4j_test
 // 				"WHERE (age.value='29' OR age.value='30') " +
 // 				"RETURN o.value AS row"
 //
-// 			rowReader, err := store.GetCSVRows(filter, nil)
+// 			rowReader, err := store.GetCSVRows(context.Background(), filter, nil)
 //
 // 			Convey("Then the expected query is sent to the database", func() {
 //

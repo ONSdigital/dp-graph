@@ -5,10 +5,9 @@ package internal
 
 import (
 	"context"
-	"sync"
-
 	"github.com/ONSdigital/dp-graph/neo4j/driver"
 	"github.com/ONSdigital/dp-graph/neo4j/mapper"
+	"sync"
 )
 
 var (

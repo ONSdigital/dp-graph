@@ -15,7 +15,7 @@ func Test_New(t *testing.T) {
 
 	Convey("Given all subsets are requested", t, func() {
 		Convey("When New is called", func() {
-			db, err := New(context.Background(), Subsets{true, true, true})
+			db, err := New(context.Background(), Subsets{true, true, true, true})
 
 			Convey("Then the returned error should be nil and the returned db should satisfy all interfaces", func() {
 				So(err, ShouldBeNil)
@@ -24,13 +24,14 @@ func Test_New(t *testing.T) {
 				var _ driver.CodeList = (*DB)(db)
 				var _ driver.Hierarchy = (*DB)(db)
 				var _ driver.Instance = (*DB)(db)
+				var _ driver.Observation = (*DB)(db)
 			})
 		})
 	})
 
 	Convey("Given only 1 subset is requested", t, func() {
 		Convey("When New is called", func() {
-			db, err := New(context.Background(), Subsets{true, false, false})
+			db, err := New(context.Background(), Subsets{true, false, false, false})
 
 			Convey("Then the returned error should be nil and the returned db should satisfy only that interface", func() {
 				So(err, ShouldBeNil)
