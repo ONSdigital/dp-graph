@@ -5,15 +5,18 @@ package internal
 
 import (
 	"context"
+	"github.com/ONSdigital/dp-graph/neo4j/driver"
 	"github.com/ONSdigital/dp-graph/neo4j/mapper"
 	"sync"
 )
 
 var (
-	lockNeo4jDriverMockClose sync.RWMutex
-	lockNeo4jDriverMockCount sync.RWMutex
-	lockNeo4jDriverMockExec  sync.RWMutex
-	lockNeo4jDriverMockRead  sync.RWMutex
+	lockNeo4jDriverMockClose       sync.RWMutex
+	lockNeo4jDriverMockCount       sync.RWMutex
+	lockNeo4jDriverMockExec        sync.RWMutex
+	lockNeo4jDriverMockHealthcheck sync.RWMutex
+	lockNeo4jDriverMockRead        sync.RWMutex
+	lockNeo4jDriverMockStreamRows  sync.RWMutex
 )
 
 // Neo4jDriverMock is a mock implementation of Neo4jDriver.
@@ -31,8 +34,14 @@ var (
 //             ExecFunc: func(query string, params map[string]interface{}) error {
 // 	               panic("TODO: mock out the Exec method")
 //             },
+//             HealthcheckFunc: func() (string, error) {
+// 	               panic("TODO: mock out the Healthcheck method")
+//             },
 //             ReadFunc: func(query string, mapp mapper.ResultMapper, single bool) error {
 // 	               panic("TODO: mock out the Read method")
+//             },
+//             StreamRowsFunc: func(query string) (*driver.BoltRowReader, error) {
+// 	               panic("TODO: mock out the StreamRows method")
 //             },
 //         }
 //
@@ -50,8 +59,14 @@ type Neo4jDriverMock struct {
 	// ExecFunc mocks the Exec method.
 	ExecFunc func(query string, params map[string]interface{}) error
 
+	// HealthcheckFunc mocks the Healthcheck method.
+	HealthcheckFunc func() (string, error)
+
 	// ReadFunc mocks the Read method.
 	ReadFunc func(query string, mapp mapper.ResultMapper, single bool) error
+
+	// StreamRowsFunc mocks the StreamRows method.
+	StreamRowsFunc func(query string) (*driver.BoltRowReader, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -72,6 +87,9 @@ type Neo4jDriverMock struct {
 			// Params is the params argument value.
 			Params map[string]interface{}
 		}
+		// Healthcheck holds details about calls to the Healthcheck method.
+		Healthcheck []struct {
+		}
 		// Read holds details about calls to the Read method.
 		Read []struct {
 			// Query is the query argument value.
@@ -80,6 +98,11 @@ type Neo4jDriverMock struct {
 			Mapp mapper.ResultMapper
 			// Single is the single argument value.
 			Single bool
+		}
+		// StreamRows holds details about calls to the StreamRows method.
+		StreamRows []struct {
+			// Query is the query argument value.
+			Query string
 		}
 	}
 }
@@ -181,6 +204,32 @@ func (mock *Neo4jDriverMock) ExecCalls() []struct {
 	return calls
 }
 
+// Healthcheck calls HealthcheckFunc.
+func (mock *Neo4jDriverMock) Healthcheck() (string, error) {
+	if mock.HealthcheckFunc == nil {
+		panic("Neo4jDriverMock.HealthcheckFunc: method is nil but Neo4jDriver.Healthcheck was just called")
+	}
+	callInfo := struct {
+	}{}
+	lockNeo4jDriverMockHealthcheck.Lock()
+	mock.calls.Healthcheck = append(mock.calls.Healthcheck, callInfo)
+	lockNeo4jDriverMockHealthcheck.Unlock()
+	return mock.HealthcheckFunc()
+}
+
+// HealthcheckCalls gets all the calls that were made to Healthcheck.
+// Check the length with:
+//     len(mockedNeo4jDriver.HealthcheckCalls())
+func (mock *Neo4jDriverMock) HealthcheckCalls() []struct {
+} {
+	var calls []struct {
+	}
+	lockNeo4jDriverMockHealthcheck.RLock()
+	calls = mock.calls.Healthcheck
+	lockNeo4jDriverMockHealthcheck.RUnlock()
+	return calls
+}
+
 // Read calls ReadFunc.
 func (mock *Neo4jDriverMock) Read(query string, mapp mapper.ResultMapper, single bool) error {
 	if mock.ReadFunc == nil {
@@ -217,5 +266,36 @@ func (mock *Neo4jDriverMock) ReadCalls() []struct {
 	lockNeo4jDriverMockRead.RLock()
 	calls = mock.calls.Read
 	lockNeo4jDriverMockRead.RUnlock()
+	return calls
+}
+
+// StreamRows calls StreamRowsFunc.
+func (mock *Neo4jDriverMock) StreamRows(query string) (*driver.BoltRowReader, error) {
+	if mock.StreamRowsFunc == nil {
+		panic("Neo4jDriverMock.StreamRowsFunc: method is nil but Neo4jDriver.StreamRows was just called")
+	}
+	callInfo := struct {
+		Query string
+	}{
+		Query: query,
+	}
+	lockNeo4jDriverMockStreamRows.Lock()
+	mock.calls.StreamRows = append(mock.calls.StreamRows, callInfo)
+	lockNeo4jDriverMockStreamRows.Unlock()
+	return mock.StreamRowsFunc(query)
+}
+
+// StreamRowsCalls gets all the calls that were made to StreamRows.
+// Check the length with:
+//     len(mockedNeo4jDriver.StreamRowsCalls())
+func (mock *Neo4jDriverMock) StreamRowsCalls() []struct {
+	Query string
+} {
+	var calls []struct {
+		Query string
+	}
+	lockNeo4jDriverMockStreamRows.RLock()
+	calls = mock.calls.StreamRows
+	lockNeo4jDriverMockStreamRows.RUnlock()
 	return calls
 }

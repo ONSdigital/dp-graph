@@ -15,12 +15,14 @@ type DB struct {
 	driver.CodeList
 	driver.Hierarchy
 	driver.Instance
+	driver.Observation
 }
 
 type Subsets struct {
-	CodeList  bool
-	Hierarchy bool
-	Instance  bool
+	CodeList    bool
+	Hierarchy   bool
+	Instance    bool
+	Observation bool
 }
 
 func NewCodeListStore(ctx context.Context) (*DB, error) {
@@ -29,6 +31,10 @@ func NewCodeListStore(ctx context.Context) (*DB, error) {
 
 func NewHierarchyStore(ctx context.Context) (*DB, error) {
 	return New(ctx, Subsets{Hierarchy: true})
+}
+
+func NewObservationStore(ctx context.Context) (*DB, error) {
+	return New(ctx, Subsets{Observation: true})
 }
 
 func NewInstanceStore(ctx context.Context) (*DB, error) {
@@ -42,32 +48,40 @@ func New(ctx context.Context, choice Subsets) (*DB, error) {
 	}
 
 	var ok bool
-	var h driver.Hierarchy
-	if choice.Hierarchy {
-		if h, ok = cfg.Driver.(driver.Hierarchy); !ok {
-			return nil, errors.New("configured driver does not implement hierarchy subset")
-		}
-	}
-
-	var c driver.CodeList
+	var codelist driver.CodeList
 	if choice.CodeList {
-		if c, ok = cfg.Driver.(driver.CodeList); !ok {
+		if codelist, ok = cfg.Driver.(driver.CodeList); !ok {
 			return nil, errors.New("configured driver does not implement code list subset")
 		}
 	}
 
-	var i driver.Instance
+	var hierarchy driver.Hierarchy
+	if choice.Hierarchy {
+		if hierarchy, ok = cfg.Driver.(driver.Hierarchy); !ok {
+			return nil, errors.New("configured driver does not implement hierarchy subset")
+		}
+	}
+
+	var instance driver.Instance
 	if choice.Instance {
-		if i, ok = cfg.Driver.(driver.Instance); !ok {
+		if instance, ok = cfg.Driver.(driver.Instance); !ok {
 			return nil, errors.New("configured driver does not implement instance subset")
+		}
+	}
+
+	var observation driver.Observation
+	if choice.Observation {
+		if observation, ok = cfg.Driver.(driver.Observation); !ok {
+			return nil, errors.New("configured driver does not implement observation subset")
 		}
 	}
 
 	return &DB{
 		cfg.Driver,
-		c,
-		h,
-		i,
+		codelist,
+		hierarchy,
+		instance,
+		observation,
 	}, nil
 }
 

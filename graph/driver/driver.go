@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/ONSdigital/dp-graph/observation"
 )
 
 var ErrNotFound = errors.New("not found")
@@ -34,6 +35,11 @@ type Hierarchy interface {
 	MarkNodesToRemain(ctx context.Context, attempt int, instanceID, dimensionName string) error
 	RemoveNodesNotMarkedToRemain(ctx context.Context, attempt int, instanceID, dimensionName string) error
 	RemoveRemainMarker(ctx context.Context, attempt int, instanceID, dimensionName string) error
+}
+
+// Observation provides filtered observation data in CSV rows.
+type Observation interface {
+	StreamCSVRows(ctx context.Context, filter *observation.Filter, limit *int) (observation.StreamRowReader, error)
 }
 
 type Instance interface {
