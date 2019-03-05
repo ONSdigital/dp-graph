@@ -71,6 +71,28 @@ func getStringProperty(key string, props map[string]interface{}) (string, error)
 	return strVal, nil
 }
 
+//getBoolProperty return requested key value from map as a string. If key not found returns empty string and nil,
+// returns casting error if val cannot be cast to string.
+func getBoolProperty(key string, props map[string]interface{}) (bool, error) {
+	var boolVal bool
+	var ok bool
+
+	if props == nil {
+		return boolVal, ErrInputNil
+	}
+
+	val, ok := props[key]
+	if !ok {
+		return boolVal, nil
+	}
+
+	boolVal, ok = val.(bool)
+	if !ok {
+		return boolVal, castingError(boolVal, val)
+	}
+	return boolVal, nil
+}
+
 //getint64Property return requested key value from map as a int64. If key not found returns empty 0 and nil,
 // returns casting error if val cannot be cast to int64.
 func getint64Property(key string, props map[string]interface{}) (int64, error) {

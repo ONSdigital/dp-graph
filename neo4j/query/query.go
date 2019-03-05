@@ -19,4 +19,10 @@ const (
 	MarkNodesToRemain            = "MATCH (parent:`_hierarchy_node_%s_%s`)<-[:hasParent*]-(child:`_hierarchy_node_%s_%s`) WHERE child.hasData=true set parent.remain=true set child.remain=true"
 	RemoveNodesNotMarkedToRemain = "MATCH (node:`_hierarchy_node_%s_%s`) WHERE NOT EXISTS(node.remain) DETACH DELETE node"
 	RemoveRemainMarker           = "MATCH (node:`_hierarchy_node_%s_%s`) REMOVE node.remain"
+
+	HierarchyExists     = "MATCH (i:`_hierarchy_node_%s_%s`) RETURN i LIMIT 1"
+	GetHierarchyRoot    = "MATCH (i:`_hierarchy_node_%s_%s`) WHERE NOT (i)-[:hasParent]->() RETURN i LIMIT 1" // TODO check if this LIMIT is valid
+	GetHierarchyElement = "MATCH (i:`_hierarchy_node_%s_%s` {code:{code}}) RETURN i"
+	GetChildren         = "MATCH (i:`_hierarchy_node_%s_%s` {code:{code}})<-[r:hasParent]-(child) RETURN child ORDER BY child.label"
+	GetAncestry         = "MATCH (i:`_hierarchy_node_%s_%s` {code:{code}})-[r:hasParent *]->(parent) RETURN parent"
 )

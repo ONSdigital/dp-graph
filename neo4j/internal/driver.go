@@ -11,12 +11,13 @@ import (
 )
 
 var (
-	lockNeo4jDriverMockClose       sync.RWMutex
-	lockNeo4jDriverMockCount       sync.RWMutex
-	lockNeo4jDriverMockExec        sync.RWMutex
-	lockNeo4jDriverMockHealthcheck sync.RWMutex
-	lockNeo4jDriverMockRead        sync.RWMutex
-	lockNeo4jDriverMockStreamRows  sync.RWMutex
+	lockNeo4jDriverMockClose          sync.RWMutex
+	lockNeo4jDriverMockCount          sync.RWMutex
+	lockNeo4jDriverMockExec           sync.RWMutex
+	lockNeo4jDriverMockHealthcheck    sync.RWMutex
+	lockNeo4jDriverMockRead           sync.RWMutex
+	lockNeo4jDriverMockReadWithParams sync.RWMutex
+	lockNeo4jDriverMockStreamRows     sync.RWMutex
 )
 
 // Neo4jDriverMock is a mock implementation of Neo4jDriver.
@@ -39,6 +40,9 @@ var (
 //             },
 //             ReadFunc: func(query string, mapp mapper.ResultMapper, single bool) error {
 // 	               panic("TODO: mock out the Read method")
+//             },
+//             ReadWithParamsFunc: func(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error {
+// 	               panic("TODO: mock out the ReadWithParams method")
 //             },
 //             StreamRowsFunc: func(query string) (*driver.BoltRowReader, error) {
 // 	               panic("TODO: mock out the StreamRows method")
@@ -64,6 +68,9 @@ type Neo4jDriverMock struct {
 
 	// ReadFunc mocks the Read method.
 	ReadFunc func(query string, mapp mapper.ResultMapper, single bool) error
+
+	// ReadWithParamsFunc mocks the ReadWithParams method.
+	ReadWithParamsFunc func(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error
 
 	// StreamRowsFunc mocks the StreamRows method.
 	StreamRowsFunc func(query string) (*driver.BoltRowReader, error)
@@ -94,6 +101,17 @@ type Neo4jDriverMock struct {
 		Read []struct {
 			// Query is the query argument value.
 			Query string
+			// Mapp is the mapp argument value.
+			Mapp mapper.ResultMapper
+			// Single is the single argument value.
+			Single bool
+		}
+		// ReadWithParams holds details about calls to the ReadWithParams method.
+		ReadWithParams []struct {
+			// Query is the query argument value.
+			Query string
+			// Params is the params argument value.
+			Params map[string]interface{}
 			// Mapp is the mapp argument value.
 			Mapp mapper.ResultMapper
 			// Single is the single argument value.
@@ -266,6 +284,49 @@ func (mock *Neo4jDriverMock) ReadCalls() []struct {
 	lockNeo4jDriverMockRead.RLock()
 	calls = mock.calls.Read
 	lockNeo4jDriverMockRead.RUnlock()
+	return calls
+}
+
+// ReadWithParams calls ReadWithParamsFunc.
+func (mock *Neo4jDriverMock) ReadWithParams(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error {
+	if mock.ReadWithParamsFunc == nil {
+		panic("Neo4jDriverMock.ReadWithParamsFunc: method is nil but Neo4jDriver.ReadWithParams was just called")
+	}
+	callInfo := struct {
+		Query  string
+		Params map[string]interface{}
+		Mapp   mapper.ResultMapper
+		Single bool
+	}{
+		Query:  query,
+		Params: params,
+		Mapp:   mapp,
+		Single: single,
+	}
+	lockNeo4jDriverMockReadWithParams.Lock()
+	mock.calls.ReadWithParams = append(mock.calls.ReadWithParams, callInfo)
+	lockNeo4jDriverMockReadWithParams.Unlock()
+	return mock.ReadWithParamsFunc(query, params, mapp, single)
+}
+
+// ReadWithParamsCalls gets all the calls that were made to ReadWithParams.
+// Check the length with:
+//     len(mockedNeo4jDriver.ReadWithParamsCalls())
+func (mock *Neo4jDriverMock) ReadWithParamsCalls() []struct {
+	Query  string
+	Params map[string]interface{}
+	Mapp   mapper.ResultMapper
+	Single bool
+} {
+	var calls []struct {
+		Query  string
+		Params map[string]interface{}
+		Mapp   mapper.ResultMapper
+		Single bool
+	}
+	lockNeo4jDriverMockReadWithParams.RLock()
+	calls = mock.calls.ReadWithParams
+	lockNeo4jDriverMockReadWithParams.RUnlock()
 	return calls
 }
 
