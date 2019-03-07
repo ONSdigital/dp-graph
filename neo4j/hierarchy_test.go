@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/ONSdigital/dp-graph/neo4j/internal"
+	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	neoErrors "github.com/ONSdigital/golang-neo4j-bolt-driver/errors"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/messages"
 
@@ -24,8 +25,8 @@ func Test_CreateInstanceHierarchyConstraints(t *testing.T) {
 
 	Convey("Given a mock bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(q string, params map[string]interface{}) error {
-				return nil
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return &internal.ResultMock{}, nil
 			},
 		}
 
@@ -56,8 +57,8 @@ func Test_CreateInstanceHierarchyConstraints_NeoExecErr(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return execErr
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return nil, execErr
 			},
 		}
 
@@ -82,8 +83,8 @@ func TestStore_CreateInstanceHierarchyConstraints_NeoExecRetry(t *testing.T) {
 		transientNeoErr := neoErrors.Wrap(messages.FailureMessage{Metadata: map[string]interface{}{"code": "Neo.TransientError.Transaction.ConstraintsChanged"}}, "constraint error msg")
 
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return transientNeoErr
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return nil, transientNeoErr
 			},
 		}
 
@@ -115,8 +116,8 @@ func TestStore_CloneNodes(t *testing.T) {
 
 	Convey("Given a mock bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return nil
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return &internal.ResultMock{}, nil
 			},
 		}
 
@@ -141,8 +142,8 @@ func TestStore_CloneNodes_NeoExecErr(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return execErr
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return nil, execErr
 			},
 		}
 
@@ -180,8 +181,8 @@ func TestStore_CloneRelationships(t *testing.T) {
 
 	Convey("Given a mock bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return nil
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return &internal.ResultMock{}, nil
 			},
 		}
 
@@ -206,8 +207,8 @@ func TestStore_CloneRelationships_NeoExecErr(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return execErr
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return nil, execErr
 			},
 		}
 
@@ -241,8 +242,8 @@ func TestStore_SetNumberOfChildren(t *testing.T) {
 
 	Convey("Given a mock bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return nil
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return &internal.ResultMock{}, nil
 			},
 		}
 
@@ -267,8 +268,8 @@ func TestStore_SetNumberOfChildren_NeoExecErr(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return execErr
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return nil, execErr
 			},
 		}
 
@@ -300,8 +301,8 @@ func TestStore_SetHasData(t *testing.T) {
 
 	Convey("Given a mock bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return nil
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return &internal.ResultMock{}, nil
 			},
 		}
 
@@ -326,8 +327,8 @@ func TestStore_SetHasData_NeoExecErr(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return execErr
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return nil, execErr
 			},
 		}
 
@@ -359,8 +360,8 @@ func TestStore_MarkNodesToRemain(t *testing.T) {
 
 	Convey("Given a mock bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return nil
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return &internal.ResultMock{}, nil
 			},
 		}
 
@@ -385,8 +386,8 @@ func TestStore_MarkNodesToRemain_NeoExecErr(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return execErr
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return nil, execErr
 			},
 		}
 
@@ -415,8 +416,8 @@ func TestStore_RemoveNodesNotMarkedToRemain(t *testing.T) {
 
 	Convey("Given a mock bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return nil
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return &internal.ResultMock{}, nil
 			},
 		}
 
@@ -441,8 +442,8 @@ func TestStore_RemoveNodesNotMarkedToRemain_NeoExecErr(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return execErr
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return nil, execErr
 			},
 		}
 
@@ -471,8 +472,8 @@ func TestStore_RemoveRemainMarker(t *testing.T) {
 
 	Convey("Given a mock bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return nil
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return &internal.ResultMock{}, nil
 			},
 		}
 
@@ -497,8 +498,8 @@ func TestStore_RemoveRemainMarker_NeoExecErr(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
-			ExecFunc: func(query string, params map[string]interface{}) error {
-				return execErr
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return nil, execErr
 			},
 		}
 

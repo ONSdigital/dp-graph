@@ -25,4 +25,7 @@ const (
 	GetHierarchyElement = "MATCH (i:`_hierarchy_node_%s_%s` {code:{code}}) RETURN i"
 	GetChildren         = "MATCH (i:`_hierarchy_node_%s_%s` {code:{code}})<-[r:hasParent]-(child) RETURN child ORDER BY child.label"
 	GetAncestry         = "MATCH (i:`_hierarchy_node_%s_%s` {code:{code}})-[r:hasParent *]->(parent) RETURN parent"
+
+	AddVersionDetailsToInstance = "MATCH (i:`_%s_Instance`) SET i.dataset_id = {dataset_id}, i.edition = {edition}, i.version = {version} RETURN i"
+	SetInstanceIsPublished      = "MATCH (i:`_%s_Instance`) SET i.is_published = true"
 )

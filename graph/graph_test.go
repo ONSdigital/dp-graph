@@ -43,7 +43,9 @@ func Test_New(t *testing.T) {
 					db.CreateInstanceHierarchyConstraints(context.Background(), 1, "instance_id", "dimension_name")
 				}, ShouldPanic)
 
-				So(func() { db.CountInsertedObservations(context.Background(), "instance_id") }, ShouldPanic)
+				So(func() {
+					db.AddVersionDetailsToInstance(context.Background(), "instance_id", "dataset_id", "edition", 1)
+				}, ShouldPanic)
 			})
 		})
 	})
@@ -64,7 +66,9 @@ func Test_NewCodeListStore(t *testing.T) {
 					db.CreateInstanceHierarchyConstraints(context.Background(), 1, "instance_id", "dimension_name")
 				}, ShouldPanic)
 
-				So(func() { db.CountInsertedObservations(context.Background(), "instance_id") }, ShouldPanic)
+				So(func() {
+					db.AddVersionDetailsToInstance(context.Background(), "instance_id", "dataset_id", "edition", 1)
+				}, ShouldPanic)
 
 				So(func() {
 					db.GetCodeList(context.Background(), "list_id")
@@ -89,7 +93,9 @@ func Test_NewHierarchyStore(t *testing.T) {
 					db.GetCodeList(context.Background(), "list_id")
 				}, ShouldPanic)
 
-				So(func() { db.CountInsertedObservations(context.Background(), "instance_id") }, ShouldPanic)
+				So(func() {
+					db.AddVersionDetailsToInstance(context.Background(), "instance_id", "dataset_id", "edition", 1)
+				}, ShouldPanic)
 
 				So(func() {
 					db.CreateInstanceHierarchyConstraints(context.Background(), 1, "instance_id", "dimension_name")
@@ -118,7 +124,9 @@ func Test_NewInstanceStore(t *testing.T) {
 					db.CreateInstanceHierarchyConstraints(context.Background(), 1, "instance_id", "dimension_name")
 				}, ShouldPanic)
 
-				So(func() { db.CountInsertedObservations(context.Background(), "instance_id") }, ShouldNotPanic)
+				So(func() {
+					db.AddVersionDetailsToInstance(context.Background(), "instance_id", "dataset_id", "edition", 1)
+				}, ShouldNotPanic)
 			})
 		})
 	})

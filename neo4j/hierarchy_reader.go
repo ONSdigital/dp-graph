@@ -8,13 +8,11 @@ import (
 	"github.com/ONSdigital/dp-graph/neo4j/query"
 	"github.com/ONSdigital/dp-hierarchy-api/models"
 	"github.com/ONSdigital/go-ns/log"
+	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 )
 
-// // Store contains DB details
-// type Store struct {
-// 	DBPool bolt.ClosableDriverPool
-// 	APIURL string
-// }
+//go:generate moq -out internal/bolt.go -pkg internal . Result
+type Result bolt.Result
 
 type neoArgMap map[string]interface{}
 
