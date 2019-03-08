@@ -62,6 +62,10 @@ func (n *Neo4j) SetInstanceIsPublished(ctx context.Context, instanceID string) e
 	return nil
 }
 
+func (n Neo4j) CountInsertedObservations(instanceID string) (count int64, err error) {
+	return n.Count(fmt.Sprintf(query.CountObservations, instanceID))
+}
+
 func checkPropertiesSet(result bolt.Result, expected int64) error {
 	stats, ok := result.Metadata()["stats"].(map[string]interface{})
 	if !ok {
