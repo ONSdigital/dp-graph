@@ -10,12 +10,6 @@ import (
 	"github.com/ONSdigital/go-ns/log"
 )
 
-// // Store contains DB details
-// type Store struct {
-// 	DBPool bolt.ClosableDriverPool
-// 	APIURL string
-// }
-
 type neoArgMap map[string]interface{}
 
 // GetCodelist obtains the codelist id for this hierarchy (also, check that it exists)
