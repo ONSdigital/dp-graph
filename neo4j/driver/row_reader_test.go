@@ -14,6 +14,10 @@ var closeNoErr = func() error {
 	return nil
 }
 
+var connNoErr = &internal.BoltConnMock{
+	CloseFunc: closeNoErr,
+}
+
 func TestBoltRowReader_Read(t *testing.T) {
 
 	Convey("Given a row reader with a mock Bolt reader", t, func() {
@@ -27,13 +31,7 @@ func TestBoltRowReader_Read(t *testing.T) {
 			},
 		}
 
-		mockBoltConn := &internal.BoltConnMock{
-			CloseFunc: func() error {
-				return nil
-			},
-		}
-
-		rowReader := driver.NewBoltRowReader(mockBoltRows, mockBoltConn)
+		rowReader := driver.NewBoltRowReader(mockBoltRows, connNoErr)
 
 		Convey("When read is called", func() {
 
@@ -58,13 +56,7 @@ func TestBoltRowReader_ReadError(t *testing.T) {
 			},
 		}
 
-		mockBoltConn := &internal.BoltConnMock{
-			CloseFunc: func() error {
-				return nil
-			},
-		}
-
-		rowReader := driver.NewBoltRowReader(mockBoltRows, mockBoltConn)
+		rowReader := driver.NewBoltRowReader(mockBoltRows, connNoErr)
 
 		Convey("When read is called", func() {
 
@@ -90,13 +82,7 @@ func TestBoltRowReader_Read_NoDataError(t *testing.T) {
 			},
 		}
 
-		mockBoltConn := &internal.BoltConnMock{
-			CloseFunc: func() error {
-				return nil
-			},
-		}
-
-		rowReader := driver.NewBoltRowReader(mockBoltRows, mockBoltConn)
+		rowReader := driver.NewBoltRowReader(mockBoltRows, connNoErr)
 
 		Convey("When read is called", func() {
 
@@ -122,13 +108,7 @@ func TestBoltRowReader_Read_TypeError(t *testing.T) {
 			},
 		}
 
-		mockBoltConn := &internal.BoltConnMock{
-			CloseFunc: func() error {
-				return nil
-			},
-		}
-
-		rowReader := driver.NewBoltRowReader(mockBoltRows, mockBoltConn)
+		rowReader := driver.NewBoltRowReader(mockBoltRows, connNoErr)
 
 		Convey("When read is called", func() {
 
