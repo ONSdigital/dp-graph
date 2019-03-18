@@ -10,6 +10,10 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+var closeNoErr = func() error {
+	return nil
+}
+
 func TestBoltRowReader_Read(t *testing.T) {
 
 	Convey("Given a row reader with a mock Bolt reader", t, func() {
@@ -17,9 +21,7 @@ func TestBoltRowReader_Read(t *testing.T) {
 		expectedCSVRow := "the,csv,row"
 
 		mockBoltRows := &internal.BoltRowsMock{
-			CloseFunc: func() error {
-				return nil
-			},
+			CloseFunc: closeNoErr,
 			NextNeoFunc: func() ([]interface{}, map[string]interface{}, error) {
 				return []interface{}{expectedCSVRow, "1,2,3"}, nil, nil
 			},
@@ -44,9 +46,7 @@ func TestBoltRowReader_ReadError(t *testing.T) {
 	Convey("Given a row reader with a mock Bolt reader that returns io.EOF", t, func() {
 
 		mockBoltRows := &internal.BoltRowsMock{
-			CloseFunc: func() error {
-				return nil
-			},
+			CloseFunc: closeNoErr,
 			NextNeoFunc: func() ([]interface{}, map[string]interface{}, error) {
 				return nil, nil, io.EOF
 			},
@@ -72,9 +72,7 @@ func TestBoltRowReader_Read_NoDataError(t *testing.T) {
 	Convey("Given a row reader with a mock Bolt reader that returns a row with no data.", t, func() {
 
 		mockBoltRows := &internal.BoltRowsMock{
-			CloseFunc: func() error {
-				return nil
-			},
+			CloseFunc: closeNoErr,
 			NextNeoFunc: func() ([]interface{}, map[string]interface{}, error) {
 				return []interface{}{}, nil, nil
 			},
@@ -100,9 +98,7 @@ func TestBoltRowReader_Read_TypeError(t *testing.T) {
 	Convey("Given a row reader with a mock Bolt reader that returns a row with no data.", t, func() {
 
 		mockBoltRows := &internal.BoltRowsMock{
-			CloseFunc: func() error {
-				return nil
-			},
+			CloseFunc: closeNoErr,
 			NextNeoFunc: func() ([]interface{}, map[string]interface{}, error) {
 				return []interface{}{666, 666}, nil, nil
 			},
