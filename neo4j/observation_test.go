@@ -11,6 +11,14 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+var closeNoErr = func() error {
+	return nil
+}
+
+var mockConnNoErr = &internal.BoltConnMock{
+	CloseFunc: closeNoErr,
+}
+
 func TestStore_StreamCSVRows(t *testing.T) {
 
 	Convey("Given an store with a mock DB connection", t, func() {
@@ -33,9 +41,7 @@ func TestStore_StreamCSVRows(t *testing.T) {
 		expectedCSVRow := "the,csv,row"
 
 		mockBoltRows := &internal.BoltRowsMock{
-			CloseFunc: func() error {
-				return nil
-			},
+			CloseFunc: closeNoErr,
 			NextNeoFunc: func() ([]interface{}, map[string]interface{}, error) {
 				return []interface{}{expectedCSVRow}, nil, nil
 			},
@@ -43,7 +49,7 @@ func TestStore_StreamCSVRows(t *testing.T) {
 
 		driver := &internal.Neo4jDriverMock{
 			StreamRowsFunc: func(query string) (*driver.BoltRowReader, error) {
-				return driver.NewBoltRowReader(mockBoltRows), nil
+				return driver.NewBoltRowReader(mockBoltRows, mockConnNoErr), nil
 			},
 			ExecFunc: func(q string, params map[string]interface{}) error {
 				return nil
@@ -127,9 +133,7 @@ func TestStore_StreamCSVRowsEmptyFilter(t *testing.T) {
 		// store := observation.NewStore(mockedPool)
 
 		mockBoltRows := &internal.BoltRowsMock{
-			CloseFunc: func() error {
-				return nil
-			},
+			CloseFunc: closeNoErr,
 			NextNeoFunc: func() ([]interface{}, map[string]interface{}, error) {
 				return []interface{}{expectedCSVRowHeader, expectedCSVRowData}, nil, nil
 			},
@@ -137,7 +141,7 @@ func TestStore_StreamCSVRowsEmptyFilter(t *testing.T) {
 
 		driver := &internal.Neo4jDriverMock{
 			StreamRowsFunc: func(query string) (*driver.BoltRowReader, error) {
-				return driver.NewBoltRowReader(mockBoltRows), nil
+				return driver.NewBoltRowReader(mockBoltRows, mockConnNoErr), nil
 			},
 			ExecFunc: func(q string, params map[string]interface{}) error {
 				return nil
@@ -204,9 +208,7 @@ func TestStore_StreamCSVRowsDimensionEmpty(t *testing.T) {
 		expectedCSVRow := "the,csv,row"
 
 		mockBoltRows := &internal.BoltRowsMock{
-			CloseFunc: func() error {
-				return nil
-			},
+			CloseFunc: closeNoErr,
 			NextNeoFunc: func() ([]interface{}, map[string]interface{}, error) {
 				return []interface{}{expectedCSVRow}, nil, nil
 			},
@@ -214,7 +216,7 @@ func TestStore_StreamCSVRowsDimensionEmpty(t *testing.T) {
 
 		driver := &internal.Neo4jDriverMock{
 			StreamRowsFunc: func(query string) (*driver.BoltRowReader, error) {
-				return driver.NewBoltRowReader(mockBoltRows), nil
+				return driver.NewBoltRowReader(mockBoltRows, mockConnNoErr), nil
 			},
 			ExecFunc: func(q string, params map[string]interface{}) error {
 				return nil
