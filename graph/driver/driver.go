@@ -48,7 +48,6 @@ type Observation interface {
 }
 
 type Instance interface {
-	//CountInsertedObservations(ctx context.Context, instanceID string) (count int64, err error)
 	AddVersionDetailsToInstance(ctx context.Context, instanceID string, datasetID string, edition string, version int) error
 	SetInstanceIsPublished(ctx context.Context, instanceID string) error
 }

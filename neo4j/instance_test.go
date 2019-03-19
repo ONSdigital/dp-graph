@@ -18,9 +18,6 @@ const (
 )
 
 var errTest = errors.New("test")
-var closeNoErr = func(ctx context.Context) error {
-	return nil
-}
 
 func Test_AddVersionDetailsToInstanceSuccess(t *testing.T) {
 	Convey("AddVersionDetailsToInstance completes successfully", t, func() {
