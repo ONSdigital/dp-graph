@@ -8,6 +8,7 @@ import (
 	"github.com/ONSdigital/dp-graph/neo4j/driver"
 	"github.com/ONSdigital/dp-graph/neo4j/internal"
 	"github.com/ONSdigital/dp-graph/observation"
+	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -51,8 +52,8 @@ func TestStore_StreamCSVRows(t *testing.T) {
 			StreamRowsFunc: func(query string) (*driver.BoltRowReader, error) {
 				return driver.NewBoltRowReader(mockBoltRows, mockConnNoErr), nil
 			},
-			ExecFunc: func(q string, params map[string]interface{}) error {
-				return nil
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return &internal.ResultMock{}, nil
 			},
 		}
 
@@ -109,29 +110,6 @@ func TestStore_StreamCSVRowsEmptyFilter(t *testing.T) {
 		expectedCSVRowHeader := "the,csv,row"
 		expectedCSVRowData := "1,2,3"
 
-		// mockBoltRows := &internal.BoltRowsMock{
-		// 	CloseFunc: func() error {
-		// 		return nil
-		// 	},
-		// 	NextNeoFunc: func() ([]interface{}, map[string]interface{}, error) {
-		// 		return []interface{}{expectedCSVRowHeader, expectedCSVRowData}, nil, nil
-		// 	},
-		// }
-
-		// mockedDBConnection := &observationtest.ConnMock{
-		// 	QueryNeoFunc: func(query string, params map[string]interface{}) (bolt.Rows, error) {
-		// 		return mockBoltRows, nil
-		// 	},
-		// }
-		//
-		// mockedPool := &observationtest.DBPoolMock{
-		// 	OpenPoolFunc: func() (bolt.Conn, error) {
-		// 		return mockedDBConnection, nil
-		// 	},
-		// }
-		//
-		// store := observation.NewStore(mockedPool)
-
 		mockBoltRows := &internal.BoltRowsMock{
 			CloseFunc: closeNoErr,
 			NextNeoFunc: func() ([]interface{}, map[string]interface{}, error) {
@@ -143,8 +121,8 @@ func TestStore_StreamCSVRowsEmptyFilter(t *testing.T) {
 			StreamRowsFunc: func(query string) (*driver.BoltRowReader, error) {
 				return driver.NewBoltRowReader(mockBoltRows, mockConnNoErr), nil
 			},
-			ExecFunc: func(q string, params map[string]interface{}) error {
-				return nil
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return &internal.ResultMock{}, nil
 			},
 		}
 
@@ -218,8 +196,8 @@ func TestStore_StreamCSVRowsDimensionEmpty(t *testing.T) {
 			StreamRowsFunc: func(query string) (*driver.BoltRowReader, error) {
 				return driver.NewBoltRowReader(mockBoltRows, mockConnNoErr), nil
 			},
-			ExecFunc: func(q string, params map[string]interface{}) error {
-				return nil
+			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
+				return &internal.ResultMock{}, nil
 			},
 		}
 

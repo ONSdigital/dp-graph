@@ -7,6 +7,7 @@ import (
 	"context"
 	"github.com/ONSdigital/dp-graph/neo4j/driver"
 	"github.com/ONSdigital/dp-graph/neo4j/mapper"
+	"github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"sync"
 )
 
@@ -32,7 +33,7 @@ var (
 //             CountFunc: func(query string) (int64, error) {
 // 	               panic("TODO: mock out the Count method")
 //             },
-//             ExecFunc: func(query string, params map[string]interface{}) error {
+//             ExecFunc: func(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Result, error) {
 // 	               panic("TODO: mock out the Exec method")
 //             },
 //             HealthcheckFunc: func() (string, error) {
@@ -61,7 +62,7 @@ type Neo4jDriverMock struct {
 	CountFunc func(query string) (int64, error)
 
 	// ExecFunc mocks the Exec method.
-	ExecFunc func(query string, params map[string]interface{}) error
+	ExecFunc func(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Result, error)
 
 	// HealthcheckFunc mocks the Healthcheck method.
 	HealthcheckFunc func() (string, error)
@@ -188,7 +189,7 @@ func (mock *Neo4jDriverMock) CountCalls() []struct {
 }
 
 // Exec calls ExecFunc.
-func (mock *Neo4jDriverMock) Exec(query string, params map[string]interface{}) error {
+func (mock *Neo4jDriverMock) Exec(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Result, error) {
 	if mock.ExecFunc == nil {
 		panic("Neo4jDriverMock.ExecFunc: method is nil but Neo4jDriver.Exec was just called")
 	}
