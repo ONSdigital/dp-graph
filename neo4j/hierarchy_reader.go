@@ -83,7 +83,7 @@ func (n *Neo4j) getAncestry(instanceID, dimension, code string) ([]*models.Eleme
 
 // queryElements returns a list of models.Elements from the database
 func (n *Neo4j) queryElements(instanceID, dimension, neoStmt string, neoArgs neoArgMap) ([]*models.Element, error) {
-	logData := log.Data{"db_statement": neoStmt, "row_count": 0, "db_args": neoArgs}
+	logData := log.Data{"db_statement": neoStmt, "db_args": neoArgs}
 	log.Trace("QueryElements: executing get query", logData)
 
 	res := &mapper.HierarchyElements{}
