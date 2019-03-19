@@ -22,9 +22,6 @@ const (
 )
 
 var errTest = errors.New("test")
-var closeNoErr = func(ctx context.Context) error {
-	return nil
-}
 
 var errorMock = errors.New("I am Expected")
 
