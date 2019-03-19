@@ -28,4 +28,5 @@ const (
 
 	AddVersionDetailsToInstance = "MATCH (i:`_%s_Instance`) SET i.dataset_id = {dataset_id}, i.edition = {edition}, i.version = {version} RETURN i"
 	SetInstanceIsPublished      = "MATCH (i:`_%s_Instance`) SET i.is_published = true"
+	CountObservations           = "MATCH (o:`_%s_observation`) RETURN COUNT(o)"
 )
