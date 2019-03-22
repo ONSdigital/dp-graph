@@ -15,7 +15,7 @@ func Test_New(t *testing.T) {
 
 	Convey("Given all subsets are requested", t, func() {
 		Convey("When New is called", func() {
-			db, err := New(context.Background(), Subsets{true, true, true, true})
+			db, err := New(context.Background(), Subsets{true, true, true, true, true})
 
 			Convey("Then the returned error should be nil and the returned db should satisfy all interfaces", func() {
 				So(err, ShouldBeNil)
@@ -25,13 +25,14 @@ func Test_New(t *testing.T) {
 				var _ driver.Hierarchy = (*DB)(db)
 				var _ driver.Instance = (*DB)(db)
 				var _ driver.Observation = (*DB)(db)
+				var _ driver.Dimension = (*DB)(db)
 			})
 		})
 	})
 
 	Convey("Given only 1 subset is requested", t, func() {
 		Convey("When New is called", func() {
-			db, err := New(context.Background(), Subsets{true, false, false, false})
+			db, err := New(context.Background(), Subsets{true, false, false, false, false})
 
 			Convey("Then the returned error should be nil and the returned db should satisfy only that interface", func() {
 				So(err, ShouldBeNil)
@@ -71,6 +72,14 @@ func Test_NewCodeListStore(t *testing.T) {
 				}, ShouldPanic)
 
 				So(func() {
+					db.StreamCSVRows(context.Background(), nil, nil)
+				}, ShouldPanic)
+
+				So(func() {
+					db.InsertDimension(context.Background(), nil, nil, nil)
+				}, ShouldPanic)
+
+				So(func() {
 					db.GetCodeList(context.Background(), "list_id")
 				}, ShouldNotPanic)
 			})
@@ -95,6 +104,14 @@ func Test_NewHierarchyStore(t *testing.T) {
 
 				So(func() {
 					db.AddVersionDetailsToInstance(context.Background(), "instance_id", "dataset_id", "edition", 1)
+				}, ShouldPanic)
+
+				So(func() {
+					db.StreamCSVRows(context.Background(), nil, nil)
+				}, ShouldPanic)
+
+				So(func() {
+					db.InsertDimension(context.Background(), nil, nil, nil)
 				}, ShouldPanic)
 
 				So(func() {
@@ -125,7 +142,85 @@ func Test_NewInstanceStore(t *testing.T) {
 				}, ShouldPanic)
 
 				So(func() {
+					db.StreamCSVRows(context.Background(), nil, nil)
+				}, ShouldPanic)
+
+				So(func() {
+					db.InsertDimension(context.Background(), nil, nil, nil)
+				}, ShouldPanic)
+
+				So(func() {
 					db.AddVersionDetailsToInstance(context.Background(), "instance_id", "dataset_id", "edition", 1)
+				}, ShouldNotPanic)
+			})
+		})
+	})
+}
+
+func Test_NewObservationStore(t *testing.T) {
+	Convey("Given only observation subset is requested", t, func() {
+		Convey("When NewObservationStore is called", func() {
+			db, err := NewObservationStore(context.Background())
+
+			Convey("Then the returned error should be nil and the returned db should satisfy only that interface", func() {
+				So(err, ShouldBeNil)
+
+				var _ driver.Driver = (*DB)(db)
+				var _ driver.Observation = (*DB)(db)
+
+				So(func() {
+					db.GetCodeList(context.Background(), "list_id")
+				}, ShouldPanic)
+
+				So(func() {
+					db.CreateInstanceHierarchyConstraints(context.Background(), 1, "instance_id", "dimension_name")
+				}, ShouldPanic)
+
+				So(func() {
+					db.AddVersionDetailsToInstance(context.Background(), "instance_id", "dataset_id", "edition", 1)
+				}, ShouldPanic)
+
+				So(func() {
+					db.InsertDimension(context.Background(), nil, nil, nil)
+				}, ShouldPanic)
+
+				So(func() {
+					db.StreamCSVRows(context.Background(), nil, nil)
+				}, ShouldNotPanic)
+			})
+		})
+	})
+}
+
+func Test_NewDimensionStore(t *testing.T) {
+	Convey("Given only dimension subset is requested", t, func() {
+		Convey("When NewDimensionStore is called", func() {
+			db, err := NewDimensionStore(context.Background())
+
+			Convey("Then the returned error should be nil and the returned db should satisfy only that interface", func() {
+				So(err, ShouldBeNil)
+
+				var _ driver.Driver = (*DB)(db)
+				var _ driver.Dimension = (*DB)(db)
+
+				So(func() {
+					db.GetCodeList(context.Background(), "list_id")
+				}, ShouldPanic)
+
+				So(func() {
+					db.CreateInstanceHierarchyConstraints(context.Background(), 1, "instance_id", "dimension_name")
+				}, ShouldPanic)
+
+				So(func() {
+					db.AddVersionDetailsToInstance(context.Background(), "instance_id", "dataset_id", "edition", 1)
+				}, ShouldPanic)
+
+				So(func() {
+					db.StreamCSVRows(context.Background(), nil, nil)
+				}, ShouldPanic)
+
+				So(func() {
+					db.InsertDimension(context.Background(), nil, nil, nil)
 				}, ShouldNotPanic)
 			})
 		})
