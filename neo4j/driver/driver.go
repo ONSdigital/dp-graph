@@ -11,6 +11,9 @@ import (
 )
 
 //go:generate moq -out ../internal/driver.go -pkg internal . Neo4jDriver
+//go:generate moq -out ../internal/bolt.go -pkg internal . Result
+
+type Result bolt.Result
 
 type Neo4jDriver interface {
 	Read(query string, mapp mapper.ResultMapper, single bool) error
