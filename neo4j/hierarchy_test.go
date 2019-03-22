@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"testing"
 
+	graph "github.com/ONSdigital/dp-graph/graph/driver"
 	"github.com/ONSdigital/dp-graph/neo4j/internal"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	neoErrors "github.com/ONSdigital/golang-neo4j-bolt-driver/errors"
@@ -72,7 +73,7 @@ func Test_CreateInstanceHierarchyConstraints_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldEqual, execErr)
+				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
 			})
 		})
 	})
@@ -98,7 +99,7 @@ func TestStore_CreateInstanceHierarchyConstraints_NeoExecRetry(t *testing.T) {
 			})
 
 			Convey("Then the returned error should wrap that returned from the exec call", func() {
-				So(err, ShouldResemble, ErrAttemptsExceededLimit{transientNeoErr})
+				So(err, ShouldResemble, graph.ErrAttemptsExceededLimit{transientNeoErr})
 			})
 		})
 	})
@@ -157,7 +158,7 @@ func TestStore_CloneNodes_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldEqual, execErr)
+				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
 			})
 		})
 	})
@@ -223,7 +224,7 @@ func TestStore_CloneRelationships_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldEqual, execErr)
+				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
 			})
 		})
 	})
@@ -283,7 +284,7 @@ func TestStore_SetNumberOfChildren_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldEqual, execErr)
+				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
 			})
 		})
 	})
@@ -342,7 +343,7 @@ func TestStore_SetHasData_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldEqual, execErr)
+				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
 			})
 		})
 	})
@@ -401,7 +402,7 @@ func TestStore_MarkNodesToRemain_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldEqual, execErr)
+				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
 			})
 		})
 	})
@@ -457,7 +458,7 @@ func TestStore_RemoveNodesNotMarkedToRemain_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldEqual, execErr)
+				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
 			})
 		})
 	})
@@ -513,7 +514,7 @@ func TestStore_RemoveRemainMarker_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldEqual, execErr)
+				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
 			})
 		})
 	})
