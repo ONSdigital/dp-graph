@@ -116,10 +116,8 @@ func Test_InsertDimension(t *testing.T) {
 	})
 
 	Convey("Given a create unique constraint returns an error", t, func() {
-		var nodeID int64
 		neo4jMock := &internal.Neo4jDriverMock{
 			ReadWithParamsFunc: func(query string, params map[string]interface{}, mapp mapper.ResultMapper, b bool) error {
-				nodeID = 1234
 				return nil
 			},
 			ExecFunc: func(q string, p map[string]interface{}) (bolt.Result, error) {
@@ -155,10 +153,8 @@ func Test_InsertDimension(t *testing.T) {
 	})
 
 	Convey("Given neo4j.ReadWithParams returns an error", t, func() {
-		var nodeID int64
 		neo4jMock := &internal.Neo4jDriverMock{
 			ReadWithParamsFunc: func(query string, params map[string]interface{}, mapp mapper.ResultMapper, b bool) error {
-				nodeID = 1234
 				return errorMock
 			},
 			ExecFunc: func(q string, p map[string]interface{}) (bolt.Result, error) {
