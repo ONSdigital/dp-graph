@@ -5,7 +5,8 @@ diverse graph databases - for a particular set of business application
 use-cases. This document explains something of the code organisation, its 
 approach to the separation of concerns, and composition.
 
-> Nb. I reverse engineered this document from the code (Pete) - so don't assume it is completely correct.
+> Nb. I reverse engineered this document from the code (Pete) - so 
+don't assume it is completely correct.
 
 One such business application use-case is formed from the requirements that 
 the **CodeList** API service has for a graph database. We'll use this as
