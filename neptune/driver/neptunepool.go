@@ -4,7 +4,7 @@ import (
 	gremgo "github.com/gedge/gremgo-neptune"
 )
 
-//go:generate moq -out ./internal/pool.go -pkg internal . NeptunePool
+//go:generate moq -out ../internal/pool.go -pkg internal . NeptunePool
 
 /*
 NeptunePool defines the contract required of the gremgo
