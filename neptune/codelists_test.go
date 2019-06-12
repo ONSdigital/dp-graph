@@ -6,25 +6,14 @@ import (
 
 	. "github.com/smartystreets/goconvey/convey"
 
-	"github.com/ONSdigital/dp-graph/neptune/driver"
+	"github.com/ONSdigital/dp-graph/graph/	driver"
 	"github.com/ONSdigital/dp-graph/neptune/internal"
 )
 
-// returnOne is a mock implementation for a NeptunePool method.
-var returnOne = func(q string, bindings, rebindings map[string]string) (
-	i int64, err error) {
-	return 1, nil
-}
-
 func TestGetCodeListInNonErrorScenario(t *testing.T) {
 	Convey("When the database says the CodeList ID exists", t, func() {
-		poolMock := &internal.NeptunePoolMock{GetCountFunc: returnOne}
-		driver := driver.NeptuneDriver{Pool: poolMock}
-		db := &NeptuneDB{
-			NeptuneDriver: driver,
-			maxAttempts:   5,
-			timeout:       30,
-		}
+		poolMock := &internal.NeptunePoolMock{GetCountFunc: internal.ReturnOne}
+		db := mockDB(poolMock)
 		Convey("And GetCodeList() is called", func() {
 			codeListID := "arbitrary"
 			codeList, err := db.GetCodeList(context.Background(), codeListID)
@@ -41,6 +30,40 @@ func TestGetCodeListInNonErrorScenario(t *testing.T) {
 			})
 			Convey("And a non nil structure returned", func() {
 				So(codeList, ShouldNotBeNil)
+			})
+		})
+	},
+	)
+}
+
+func TestGetCodeListErrorHandlingForNonTransientError(t *testing.T) {
+	Convey("When the database raises a non-transient error", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetCountFunc: internal.ReturnMalformedRequestErr,
+		}
+		db := mockDB(poolMock)
+		Convey("And GetCodeList() is called", func() {
+			codeListID := "arbitrary"
+			_, err := db.GetCodeList(context.Background(), codeListID)
+			expectedErr := `Gremlin query failed: "g.V().hasLabel(` +
+				`'_code_list_arbitrary').count()":  MALFORMED REQUEST `
+			Convey("The returned error should wrap the underlying one", func() {
+				So(err.Error(), ShouldEqual, expectedErr)
+			})
+		})
+	},
+	)
+}
+
+func TestGetCodeListErrorHandlingForNotFound(t *testing.T) {
+	Convey("When the database says the CodeList ID does not exist", t, func() {
+		poolMock := &internal.NeptunePoolMock{GetCountFunc: internal.ReturnZero}
+		db := mockDB(poolMock)
+		Convey("And GetCodeList() is called", func() {
+			codeListID := "arbitrary"
+			_, err := db.GetCodeList(context.Background(), codeListID)
+			Convey("The returned error should be ErrNotFound", func() {
+				So(err, ShouldEqual, driver.ErrNotFound)
 			})
 		})
 	},
