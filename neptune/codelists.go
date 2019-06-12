@@ -47,7 +47,7 @@ func (n *NeptuneDB) GetCodeLists(ctx context.Context, filterBy string) (*models.
 // in the database. Nb. The caller is expected to fully qualify the embedded
 // Links field afterwards. It returns an error if:
 // - The Gremlin query failed to execute.
-// - The requested CodeList does not exist.
+// - The requested CodeList does not exist. (error is `ErrNotFound`)
 func (n *NeptuneDB) GetCodeList(ctx context.Context, codeListID string) (
 	*models.CodeList, error) {
 	existsQry := fmt.Sprintf(query.CodeListExists, codeListID)
