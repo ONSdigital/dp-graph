@@ -6,11 +6,11 @@ import (
 
 	. "github.com/smartystreets/goconvey/convey"
 
-	"github.com/ONSdigital/dp-graph/graph/	driver"
+	"github.com/ONSdigital/dp-graph/graph/driver"
 	"github.com/ONSdigital/dp-graph/neptune/internal"
 )
 
-func TestGetCodeListInNonErrorScenario(t *testing.T) {
+func TestGetCodeList(t *testing.T) {
 	Convey("When the database says the CodeList ID exists", t, func() {
 		poolMock := &internal.NeptunePoolMock{GetCountFunc: internal.ReturnOne}
 		db := mockDB(poolMock)
@@ -32,11 +32,8 @@ func TestGetCodeListInNonErrorScenario(t *testing.T) {
 				So(codeList, ShouldNotBeNil)
 			})
 		})
-	},
-	)
-}
+	})
 
-func TestGetCodeListErrorHandlingForNonTransientError(t *testing.T) {
 	Convey("When the database raises a non-transient error", t, func() {
 		poolMock := &internal.NeptunePoolMock{
 			GetCountFunc: internal.ReturnMalformedRequestErr,
@@ -51,11 +48,7 @@ func TestGetCodeListErrorHandlingForNonTransientError(t *testing.T) {
 				So(err.Error(), ShouldEqual, expectedErr)
 			})
 		})
-	},
-	)
-}
-
-func TestGetCodeListErrorHandlingForNotFound(t *testing.T) {
+	})
 	Convey("When the database says the CodeList ID does not exist", t, func() {
 		poolMock := &internal.NeptunePoolMock{GetCountFunc: internal.ReturnZero}
 		db := mockDB(poolMock)
@@ -66,6 +59,5 @@ func TestGetCodeListErrorHandlingForNotFound(t *testing.T) {
 				So(err, ShouldEqual, driver.ErrNotFound)
 			})
 		})
-	},
-	)
+	})
 }
