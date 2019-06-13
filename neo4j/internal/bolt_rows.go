@@ -4,6 +4,7 @@
 package internal
 
 import (
+	"github.com/ONSdigital/dp-graph/neo4j/neo4jdriver"
 	"sync"
 )
 
@@ -15,6 +16,10 @@ var (
 	lockBoltRowsMockNextNeo  sync.RWMutex
 )
 
+// Ensure, that BoltRowsMock does implement BoltRows.
+// If this is not the case, regenerate this file with moq.
+var _ neo4jdriver.BoltRows = &BoltRowsMock{}
+
 // BoltRowsMock is a mock implementation of BoltRows.
 //
 //     func TestSomethingThatUsesBoltRows(t *testing.T) {
@@ -22,24 +27,24 @@ var (
 //         // make and configure a mocked BoltRows
 //         mockedBoltRows := &BoltRowsMock{
 //             AllFunc: func() ([][]interface{}, map[string]interface{}, error) {
-// 	               panic("TODO: mock out the All method")
+// 	               panic("mock out the All method")
 //             },
 //             CloseFunc: func() error {
-// 	               panic("TODO: mock out the Close method")
+// 	               panic("mock out the Close method")
 //             },
 //             ColumnsFunc: func() []string {
-// 	               panic("TODO: mock out the Columns method")
+// 	               panic("mock out the Columns method")
 //             },
 //             MetadataFunc: func() map[string]interface{} {
-// 	               panic("TODO: mock out the Metadata method")
+// 	               panic("mock out the Metadata method")
 //             },
 //             NextNeoFunc: func() ([]interface{}, map[string]interface{}, error) {
-// 	               panic("TODO: mock out the NextNeo method")
+// 	               panic("mock out the NextNeo method")
 //             },
 //         }
 //
-//         // TODO: use mockedBoltRows in code that requires BoltRows
-//         //       and then make assertions.
+//         // use mockedBoltRows in code that requires BoltRows
+//         // and then make assertions.
 //
 //     }
 type BoltRowsMock struct {

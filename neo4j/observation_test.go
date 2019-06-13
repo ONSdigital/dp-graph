@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	graph "github.com/ONSdigital/dp-graph/graph/driver"
-	"github.com/ONSdigital/dp-graph/neo4j/driver"
 	"github.com/ONSdigital/dp-graph/neo4j/internal"
+	driver "github.com/ONSdigital/dp-graph/neo4j/neo4jdriver"
 	"github.com/ONSdigital/dp-graph/observation"
 	"github.com/ONSdigital/dp-observation-importer/models"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
