@@ -1,11 +1,11 @@
-package driver_test
+package neo4jdriver_test
 
 import (
 	"io"
 	"testing"
 
-	"github.com/ONSdigital/dp-graph/neo4j/driver"
 	"github.com/ONSdigital/dp-graph/neo4j/internal"
+	driver "github.com/ONSdigital/dp-graph/neo4j/neo4jdriver"
 	"github.com/ONSdigital/dp-graph/observation"
 	. "github.com/smartystreets/goconvey/convey"
 )

@@ -5,6 +5,7 @@ package internal
 
 import (
 	"database/sql/driver"
+	"github.com/ONSdigital/dp-graph/neo4j/neo4jdriver"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"sync"
 	"time"
@@ -25,6 +26,10 @@ var (
 	lockBoltConnMockSetTimeout      sync.RWMutex
 )
 
+// Ensure, that BoltConnMock does implement BoltConn.
+// If this is not the case, regenerate this file with moq.
+var _ neo4jdriver.BoltConn = &BoltConnMock{}
+
 // BoltConnMock is a mock implementation of BoltConn.
 //
 //     func TestSomethingThatUsesBoltConn(t *testing.T) {
@@ -32,45 +37,45 @@ var (
 //         // make and configure a mocked BoltConn
 //         mockedBoltConn := &BoltConnMock{
 //             BeginFunc: func() (driver.Tx, error) {
-// 	               panic("TODO: mock out the Begin method")
+// 	               panic("mock out the Begin method")
 //             },
 //             CloseFunc: func() error {
-// 	               panic("TODO: mock out the Close method")
+// 	               panic("mock out the Close method")
 //             },
 //             ExecNeoFunc: func(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Result, error) {
-// 	               panic("TODO: mock out the ExecNeo method")
+// 	               panic("mock out the ExecNeo method")
 //             },
 //             ExecPipelineFunc: func(query []string, params ...map[string]interface{}) ([]golangNeo4jBoltDriver.Result, error) {
-// 	               panic("TODO: mock out the ExecPipeline method")
+// 	               panic("mock out the ExecPipeline method")
 //             },
 //             GetTimeoutFunc: func() time.Duration {
-// 	               panic("TODO: mock out the GetTimeout method")
+// 	               panic("mock out the GetTimeout method")
 //             },
 //             PrepareNeoFunc: func(query string) (golangNeo4jBoltDriver.Stmt, error) {
-// 	               panic("TODO: mock out the PrepareNeo method")
+// 	               panic("mock out the PrepareNeo method")
 //             },
 //             PreparePipelineFunc: func(query ...string) (golangNeo4jBoltDriver.PipelineStmt, error) {
-// 	               panic("TODO: mock out the PreparePipeline method")
+// 	               panic("mock out the PreparePipeline method")
 //             },
 //             QueryNeoFunc: func(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Rows, error) {
-// 	               panic("TODO: mock out the QueryNeo method")
+// 	               panic("mock out the QueryNeo method")
 //             },
 //             QueryNeoAllFunc: func(query string, params map[string]interface{}) ([][]interface{}, map[string]interface{}, map[string]interface{}, error) {
-// 	               panic("TODO: mock out the QueryNeoAll method")
+// 	               panic("mock out the QueryNeoAll method")
 //             },
 //             QueryPipelineFunc: func(query []string, params ...map[string]interface{}) (golangNeo4jBoltDriver.PipelineRows, error) {
-// 	               panic("TODO: mock out the QueryPipeline method")
+// 	               panic("mock out the QueryPipeline method")
 //             },
 //             SetChunkSizeFunc: func(in1 uint16)  {
-// 	               panic("TODO: mock out the SetChunkSize method")
+// 	               panic("mock out the SetChunkSize method")
 //             },
 //             SetTimeoutFunc: func(in1 time.Duration)  {
-// 	               panic("TODO: mock out the SetTimeout method")
+// 	               panic("mock out the SetTimeout method")
 //             },
 //         }
 //
-//         // TODO: use mockedBoltConn in code that requires BoltConn
-//         //       and then make assertions.
+//         // use mockedBoltConn in code that requires BoltConn
+//         // and then make assertions.
 //
 //     }
 type BoltConnMock struct {
