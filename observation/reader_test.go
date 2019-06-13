@@ -16,7 +16,7 @@ func TestReader_Read(t *testing.T) {
 
 		dummyRowContent := "csv,row,content"
 
-		mockRowReader := &observationtest.CSVRowReaderMock{
+		mockRowReader := &observationtest.StreamRowReaderMock{
 			ReadFunc: func() (string, error) {
 				return dummyRowContent, nil
 			},
@@ -50,7 +50,7 @@ func TestReader_Read_MultipleReadsForALine(t *testing.T) {
 		dummyRowContent := "csv,row,content" // 15 bytes total
 		bufferLen := 6
 
-		mockRowReader := &observationtest.CSVRowReaderMock{
+		mockRowReader := &observationtest.StreamRowReaderMock{
 			ReadFunc: func() (string, error) {
 				return dummyRowContent, io.EOF
 			},
@@ -99,7 +99,7 @@ func TestReader_Read_MultipleLines(t *testing.T) {
 		dummyRowContent := "csv,row,content" // 15 bytes total
 		bufferLen := 20
 
-		mockRowReader := &observationtest.CSVRowReaderMock{
+		mockRowReader := &observationtest.StreamRowReaderMock{
 			ReadFunc: func() (string, error) {
 				return dummyRowContent, nil
 			},
@@ -147,7 +147,7 @@ func TestReader_Read_Error(t *testing.T) {
 
 		expectedError := io.EOF
 
-		mockRowReader := &observationtest.CSVRowReaderMock{
+		mockRowReader := &observationtest.StreamRowReaderMock{
 			ReadFunc: func() (string, error) {
 				return "", expectedError
 			},
