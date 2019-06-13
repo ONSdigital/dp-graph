@@ -14,7 +14,7 @@ import (
 	"github.com/ONSdigital/dp-graph/neptune/driver"
 )
 
-// MockDB provides a NeptuneDB, into which you can pass a mocked
+// mockDB provides a NeptuneDB, into which you can pass a mocked
 // NeptunePoolMock implementation, and thus write tests that bypass real
 // database communication.
 func mockDB(poolMock *internal.NeptunePoolMock) *NeptuneDB {
