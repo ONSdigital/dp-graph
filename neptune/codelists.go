@@ -11,36 +11,42 @@ import (
 	"github.com/ONSdigital/dp-graph/neptune/query"
 )
 
+/*
+GetCodeLists provides a list of either all Code Lists, or a list of only those
+having the *listID* property specified by *filterBy*.  The caller is expected to
+fully qualify the embedded Links field afterwards. It returns an error if:
+- The Gremlin query failed to execute.
+- A CodeList is encountered that does not have *listID* property.
+*/
 func (n *NeptuneDB) GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error) {
-	return &models.CodeListResults{
-		Count:      3,
-		Offset:     0,
-		Limit:      3,
-		TotalCount: 3,
-		Items: []models.CodeList{
-			{
-				Links: &models.CodeListLink{
-					Self: &models.Link{
-						ID: "code-list-1",
-					},
-				},
-			},
-			{
-				Links: &models.CodeListLink{
-					Self: &models.Link{
-						ID: "code-list-2",
-					},
-				},
-			},
-			{
-				Links: &models.CodeListLink{
-					Self: &models.Link{
-						ID: "code-list-3",
-					},
-				},
-			},
-		},
-	}, nil
+	// Use differing Gremlin queries - depending on if a filterBy string is specified.
+	var qry string
+	if filterBy == "" {
+		qry = fmt.Sprintf(query.GetCodeLists)
+	} else {
+		qry = fmt.Sprintf(query.GetCodeListsFiltered, filterBy)
+	}
+	codeListVertices, err := n.getVertices(qry)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
+	}
+	results := &models.CodeListResults{}
+	for _, codeListVertex := range codeListVertices {
+		codeListID, err := codeListVertex.GetProperty("listID")
+		if err != nil {
+			return nil, errors.Wrapf(err,
+				`Error reading "listID" property on Code List vertex`)
+		}
+		link := &models.CodeListLink{Self: &models.Link{ID: codeListID}}
+		codeListMdl := models.CodeList{codeListID, link}
+		results.Items = append(results.Items, codeListMdl)
+	}
+	howMany := len(codeListVertices)
+	results.Count = howMany
+	results.Limit = -1
+	results.Offset = 0
+	results.TotalCount = howMany
+	return results, nil
 }
 
 // GetCodeList provides a CodeList for a given ID, having checked it exists

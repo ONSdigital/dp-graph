@@ -2,14 +2,15 @@ package query
 
 const (
 	// codelists
-	GetCodeLists       = "g.V().hasLabel('_code_list')%s.dedup().by(label).labels()"
-	GetCodeList        = "g.V().hasLabel('_code_list').has('listID', '%s')"
-	CodeListExists     = "g.V().hasLabel('_code_list').has('listID', '%s').count()"
-	GetCodeListEdition = "g.V().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s')"
-	CountEditions      = "g.V().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').count()"
-	GetCodes           = "g.V().hasLabel('_code').as('c').out('usedBy').as('r').inV().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').select('c','r')"
-	GetCode            = "g.V().hasLabel('_code').has('value','%s').as('c').out('usedBy').as('r').inV().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').select('c','r')"
-	GetCodeDatasets    = "g.V().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').inE('usedBy').as('r').match(" +
+	GetCodeLists         = "g.V().hasLabel('_code_list')"
+	GetCodeListsFiltered = "g.V().hasLabel('_code_list').has('listID', '%s')"
+	GetCodeList          = "g.V().hasLabel('_code_list').has('listID', '%s')"
+	CodeListExists       = "g.V().hasLabel('_code_list').has('listID', '%s').count()"
+	GetCodeListEdition   = "g.V().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s')"
+	CountEditions        = "g.V().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').count()"
+	GetCodes             = "g.V().hasLabel('_code').as('c').out('usedBy').as('r').inV().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').select('c','r')"
+	GetCode              = "g.V().hasLabel('_code').has('value','%s').as('c').out('usedBy').as('r').inV().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').select('c','r')"
+	GetCodeDatasets      = "g.V().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').inE('usedBy').as('r').match(" +
 		"__.as('r').outV().has('value','%s').as('c')," +
 		"__.as('c').out('inDataset').as('d')," +
 		"__.as('d').has('is_published',true)" +

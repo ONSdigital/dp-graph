@@ -10,6 +10,48 @@ import (
 	"github.com/ONSdigital/dp-graph/neptune/internal"
 )
 
+func TestGetCodeLists(t *testing.T) {
+	Convey("Given a database that will return a hard-coded CodeListResults that contains 3 Code Lists", t, func() {
+		poolMock := &internal.NeptunePoolMock{GetFunc: internal.ReturnThreeCodeLists}
+		db := mockDB(poolMock)
+		Convey("When GetCodeLists() is called without a filterBy param", func() {
+			filterBy := ""
+			codeLists, err := db.GetCodeLists(context.Background(), filterBy)
+			Convey("Then no error should be returned", func() {
+				So(err, ShouldBeNil)
+			})
+			Convey("Then the driver GetVertices function should be called once", func() {
+				calls := poolMock.GetCalls()
+				So(len(calls), ShouldEqual, 1)
+				Convey("With a well formed query string", func() {
+					expectedQry := "wont be this"
+					actualQry := calls[0].Query
+					So(actualQry, ShouldEqual, expectedQry)
+				})
+			})
+			Convey("Then the returned results should reflect the hard coded CodeListIDs", func() {
+				So(codeLists, ShouldNotBeNil)
+				// Todo content tests
+			})
+		})
+	})
+
+	Convey("Given a database that raises a non-transient error", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetFunc: internal.ReturnMalformedRequestErr,
+		}
+		db := mockDB(poolMock)
+		Convey("When GetCodeLists() is called with a filterBy param", func() {
+			filterBy := "arbitraryFilter"
+			_, err := db.GetCodeLists(context.Background(), filterBy)
+			expectedErr := "wontbethis"
+			Convey("Then the returned error should wrap the underlying one", func() {
+				So(err.Error(), ShouldEqual, expectedErr)
+			})
+		})
+	})
+}
+
 func TestGetCodeList(t *testing.T) {
 	Convey("Given a database that will return that the CodeList ID exists", t, func() {
 		poolMock := &internal.NeptunePoolMock{GetCountFunc: internal.ReturnOne}
