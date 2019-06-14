@@ -58,6 +58,10 @@ func (n *NeptuneDB) GetCodeList(ctx context.Context, codeListID string) (
 	if count == 0 {
 		return nil, driver.ErrNotFound
 	}
+	if count > 1 {
+		return nil, errors.Errorf(
+			"Cannot provide a single CodeList because multiple exist with ID %q", codeListID)
+	}
 
 	return &models.CodeList{
 		Links: &models.CodeListLink{

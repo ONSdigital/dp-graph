@@ -24,8 +24,9 @@ func TestGetCodeList(t *testing.T) {
 				calls := poolMock.GetCountCalls()
 				So(len(calls), ShouldEqual, 1)
 				Convey("With a well formed query string", func() {
-					expectedQry := "g.V().hasLabel('_code_list_arbitrary').count()"
-					So(calls[0].Q, ShouldEqual, expectedQry)
+					expectedQry := "g.V().hasLabel('_code_list').has('listID', 'arbitrary').count()"
+					actualQry := calls[0].Q
+					So(actualQry, ShouldEqual, expectedQry)
 				})
 			})
 			Convey("Then a non nil structure returned", func() {
@@ -42,15 +43,14 @@ func TestGetCodeList(t *testing.T) {
 		Convey("When GetCodeList() is called", func() {
 			codeListID := "arbitrary"
 			_, err := db.GetCodeList(context.Background(), codeListID)
-			expectedErr := `Gremlin query failed: "g.V().hasLabel(` +
-				`'_code_list_arbitrary').count()":  MALFORMED REQUEST `
+			expectedErr := `Gremlin query failed: "g.V().hasLabel('_code_list').has('listID', 'arbitrary').count()":  MALFORMED REQUEST `
 			Convey("Then the returned error should wrap the underlying one", func() {
 				So(err.Error(), ShouldEqual, expectedErr)
 			})
 		})
 	})
 
-	Convey("Given a database that returns that  the CodeList ID does not exist", t, func() {
+	Convey("Given a database that returns that the CodeList ID does not exist", t, func() {
 		poolMock := &internal.NeptunePoolMock{GetCountFunc: internal.ReturnZero}
 		db := mockDB(poolMock)
 		Convey("When GetCodeList() is called", func() {
@@ -58,6 +58,19 @@ func TestGetCodeList(t *testing.T) {
 			_, err := db.GetCodeList(context.Background(), codeListID)
 			Convey("Then the returned error should be ErrNotFound", func() {
 				So(err, ShouldEqual, driver.ErrNotFound)
+			})
+		})
+	})
+
+	Convey("Given a database that returns that multiple CodeLists with this ID exist", t, func() {
+		poolMock := &internal.NeptunePoolMock{GetCountFunc: internal.ReturnTwo}
+		db := mockDB(poolMock)
+		Convey("When GetCodeList() is called", func() {
+			codeListID := "arbitrary"
+			_, err := db.GetCodeList(context.Background(), codeListID)
+			Convey("Then the returned error should should object to there being multiple", func() {
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldEqual, `Cannot provide a single CodeList because multiple exist with ID "arbitrary"`)
 			})
 		})
 	})

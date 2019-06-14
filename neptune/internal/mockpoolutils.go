@@ -15,6 +15,12 @@ var ReturnOne = func(q string, bindings, rebindings map[string]string) (i int64,
 	return 1, nil
 }
 
+// ReturnTwo is a mock implementation for NeptunePool.GetCount()
+// that always returns a count of 2.
+var ReturnTwo = func(q string, bindings, rebindings map[string]string) (i int64, err error) {
+	return 2, nil
+}
+
 // ReturnZero is a mock implementation for NeptunePool.GetCount()
 // that always returns a count of 0.
 var ReturnZero = func(q string, bindings, rebindings map[string]string) (i int64, err error) {
