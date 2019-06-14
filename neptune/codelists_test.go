@@ -24,27 +24,50 @@ func TestGetCodeLists(t *testing.T) {
 				calls := poolMock.GetCalls()
 				So(len(calls), ShouldEqual, 1)
 				Convey("With a well formed query string", func() {
-					expectedQry := "wont be this"
+					expectedQry := "g.V().hasLabel('_code_list')"
 					actualQry := calls[0].Query
 					So(actualQry, ShouldEqual, expectedQry)
 				})
 			})
 			Convey("Then the returned results should reflect the hard coded CodeListIDs", func() {
 				So(codeLists, ShouldNotBeNil)
-				// Todo content tests
+				So(len(codeLists.Items), ShouldEqual, 3)
+				codeList := codeLists.Items[2]
+				So(codeList.ID, ShouldEqual, "listID_2")
+				links := codeList.Links
+				So(links.Self.ID, ShouldEqual, "listID_2")
+			})
+		})
+
+		Convey("When GetCodeLists() is called *with* a filterBy param", func() {
+			filterBy := "listID_2"
+			_, err := db.GetCodeLists(context.Background(), filterBy)
+			Convey("Then no error should be returned", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the driver GetVertices function should be called once", func() {
+				calls := poolMock.GetCalls()
+				So(len(calls), ShouldEqual, 1)
+				Convey("With a different (more-qualified) query string", func() {
+					expectedQry := `g.V().hasLabel('_code_list').has('listID', 'listID_2')`
+					actualQry := calls[0].Query
+					So(actualQry, ShouldEqual, expectedQry)
+				})
 			})
 		})
 	})
 
 	Convey("Given a database that raises a non-transient error", t, func() {
 		poolMock := &internal.NeptunePoolMock{
-			GetFunc: internal.ReturnMalformedRequestErr,
+			GetFunc: internal.ReturnMalformedNilInterfaceRequestErr,
 		}
 		db := mockDB(poolMock)
-		Convey("When GetCodeLists() is called with a filterBy param", func() {
-			filterBy := "arbitraryFilter"
+		Convey("When GetCodeLists() is called", func() {
+			filterBy := "unusedFilter"
 			_, err := db.GetCodeLists(context.Background(), filterBy)
-			expectedErr := "wontbethis"
+			expectedErr := `Gremlin query failed: "g.V().hasLabel` +
+				`('_code_list').has('listID', 'unusedFilter')":  MALFORMED REQUEST `
 			Convey("Then the returned error should wrap the underlying one", func() {
 				So(err.Error(), ShouldEqual, expectedErr)
 			})
@@ -79,7 +102,7 @@ func TestGetCodeList(t *testing.T) {
 
 	Convey("Given a database that raises a non-transient error", t, func() {
 		poolMock := &internal.NeptunePoolMock{
-			GetCountFunc: internal.ReturnMalformedRequestErr,
+			GetCountFunc: internal.ReturnMalformedIntRequestErr,
 		}
 		db := mockDB(poolMock)
 		Convey("When GetCodeList() is called", func() {
