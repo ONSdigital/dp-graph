@@ -50,7 +50,7 @@ func TestGetCodeLists(t *testing.T) {
 				calls := poolMock.GetCalls()
 				So(len(calls), ShouldEqual, 1)
 				Convey("With a different (more-qualified) query string", func() {
-					expectedQry := `g.V().hasLabel('_code_list').has('listID', 'listID_2')`
+					expectedQry := `g.V().hasLabel('_code_list').has('listID_2', 'true')`
 					actualQry := calls[0].Query
 					So(actualQry, ShouldEqual, expectedQry)
 				})
@@ -66,9 +66,24 @@ func TestGetCodeLists(t *testing.T) {
 		Convey("When GetCodeLists() is called", func() {
 			filterBy := "unusedFilter"
 			_, err := db.GetCodeLists(context.Background(), filterBy)
-			expectedErr := `Gremlin query failed: "g.V().hasLabel` +
-				`('_code_list').has('listID', 'unusedFilter')":  MALFORMED REQUEST `
+			expectedErr := `Gremlin query failed: "g.V().hasLabel('_code_list'` +
+				`).has('unusedFilter', 'true')":  MALFORMED REQUEST `
 			Convey("Then the returned error should wrap the underlying one", func() {
+				So(err.Error(), ShouldEqual, expectedErr)
+			})
+		})
+	})
+
+	Convey("Given a database that provides malformed code list vertices", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetFunc: internal.ReturnThreeUselessVertices,
+		}
+		db := mockDB(poolMock)
+		Convey("When GetCodeLists() is called", func() {
+			filterBy := "unusedFilter"
+			_, err := db.GetCodeLists(context.Background(), filterBy)
+			Convey("Then an error should be raised about the missing ListID property", func() {
+				expectedErr := `Error reading "listID" property on Code List vertex: property not found`
 				So(err.Error(), ShouldEqual, expectedErr)
 			})
 		})
@@ -135,7 +150,7 @@ func TestGetCodeList(t *testing.T) {
 			_, err := db.GetCodeList(context.Background(), codeListID)
 			Convey("Then the returned error should should object to there being multiple", func() {
 				So(err, ShouldNotBeNil)
-				So(err.Error(), ShouldEqual, `Cannot provide a single CodeList because multiple exist with ID "arbitrary"`)
+				So(err, ShouldEqual, driver.ErrMultipleFound)
 			})
 		})
 	})

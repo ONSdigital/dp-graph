@@ -13,7 +13,8 @@ import (
 
 /*
 GetCodeLists provides a list of either all Code Lists, or a list of only those
-having the *listID* property specified by *filterBy*.  The caller is expected to
+having a boolean property with the name <filterBy> which is set to true. E.g.
+"geography": "true". The caller is expected to
 fully qualify the embedded Links field afterwards. It returns an error if:
 - The Gremlin query failed to execute.
 - A CodeList is encountered that does not have *listID* property.
@@ -34,8 +35,7 @@ func (n *NeptuneDB) GetCodeLists(ctx context.Context, filterBy string) (*models.
 	for _, codeListVertex := range codeListVertices {
 		codeListID, err := codeListVertex.GetProperty("listID")
 		if err != nil {
-			return nil, errors.Wrapf(err,
-				`Error reading "listID" property on Code List vertex`)
+			return nil, errors.Wrapf(err, `Error reading "listID" property on Code List vertex`)
 		}
 		link := &models.CodeListLink{Self: &models.Link{ID: codeListID}}
 		codeListMdl := models.CodeList{codeListID, link}
@@ -49,11 +49,13 @@ func (n *NeptuneDB) GetCodeLists(ctx context.Context, filterBy string) (*models.
 	return results, nil
 }
 
-// GetCodeList provides a CodeList for a given ID, having checked it exists
+// GetCodeList provides a CodeList for a given ID (e.g. "ashe-earnings"),
+// having checked it exists
 // in the database. Nb. The caller is expected to fully qualify the embedded
 // Links field afterwards. It returns an error if:
 // - The Gremlin query failed to execute.
 // - The requested CodeList does not exist. (error is `ErrNotFound`)
+// - Duplicate CodeLists exist with the given ID (error is `ErrMultipleFound`)
 func (n *NeptuneDB) GetCodeList(ctx context.Context, codeListID string) (
 	*models.CodeList, error) {
 	existsQry := fmt.Sprintf(query.CodeListExists, codeListID)
@@ -65,8 +67,7 @@ func (n *NeptuneDB) GetCodeList(ctx context.Context, codeListID string) (
 		return nil, driver.ErrNotFound
 	}
 	if count > 1 {
-		return nil, errors.Errorf(
-			"Cannot provide a single CodeList because multiple exist with ID %q", codeListID)
+		return nil, driver.ErrMultipleFound
 	}
 
 	return &models.CodeList{
