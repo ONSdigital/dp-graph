@@ -31,7 +31,11 @@ func (n *NeptuneDB) GetCodeLists(ctx context.Context, filterBy string) (*models.
 	if err != nil {
 		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
 	}
-	results := &models.CodeListResults{}
+	results := &models.CodeListResults{
+		Count:      len(codeListVertices),
+		Limit:      -1,
+		TotalCount: len(codeListVertices),
+	}
 	for _, codeListVertex := range codeListVertices {
 		codeListID, err := codeListVertex.GetProperty("listID")
 		if err != nil {
@@ -41,11 +45,6 @@ func (n *NeptuneDB) GetCodeLists(ctx context.Context, filterBy string) (*models.
 		codeListMdl := models.CodeList{codeListID, link}
 		results.Items = append(results.Items, codeListMdl)
 	}
-	howMany := len(codeListVertices)
-	results.Count = howMany
-	results.Limit = -1
-	results.Offset = 0
-	results.TotalCount = howMany
 	return results, nil
 }
 
@@ -111,6 +110,16 @@ func (n *NeptuneDB) GetEditions(ctx context.Context, codeListID string) (*models
 	}, nil
 }
 
+/*
+GetEdition provides an Edition structure for the code list in the database that
+has the given codeListID (e.g. "ashed-earnings"), and the given edition string
+(e.g. "one-off"). It first checks that there is one-such qualifying code list.
+Nb. The caller is expected to fully qualify the embedded Links field
+afterwards. It returns an error if:
+- The Gremlin query failed to execute.
+- The requested CodeList does not exist. (error is `ErrNotFound`)
+- Duplicate qualifying CodeLists exist (error is `ErrMultipleFound`)
+*/
 func (n *NeptuneDB) GetEdition(ctx context.Context, codeListID, edition string) (*models.Edition, error) {
 	return &models.Edition{
 		Links: &models.EditionLinks{
