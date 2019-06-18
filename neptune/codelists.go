@@ -6,6 +6,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/gedge/graphson"
+
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/dp-graph/graph/driver"
 	"github.com/ONSdigital/dp-graph/neptune/query"
@@ -112,15 +114,48 @@ func (n *NeptuneDB) GetEditions(ctx context.Context, codeListID string) (*models
 
 /*
 GetEdition provides an Edition structure for the code list in the database that
-has the given codeListID (e.g. "ashed-earnings"), and the given edition string
-(e.g. "one-off"). It first checks that there is one-such qualifying code list.
+has both the given codeListID (e.g. "ashed-earnings"), and the given edition string
+(e.g. "one-off").
 Nb. The caller is expected to fully qualify the embedded Links field
-afterwards. It returns an error if:
-- The Gremlin query failed to execute.
-- The requested CodeList does not exist. (error is `ErrNotFound`)
-- Duplicate qualifying CodeLists exist (error is `ErrMultipleFound`)
+afterwards.
+It returns an error if:
+- The Gremlin query failed to execute. (wrapped error)
+- No CodeLists exist with the requested codeListID (error is `ErrNotFound`)
+- A CodeList is found that does not have the "edition" property (error is 'ErrNoSuchProperty')
+- An attempt to read the vertex "edition" property fails non-specifically (wrapped error)
+- None of the CodeLists with the requested ID, have the requested edition. (error is 'ErrNotFound')
+- More than one CodeList exists with the requested ID AND edition (error is `ErrMultipleFound`)
 */
 func (n *NeptuneDB) GetEdition(ctx context.Context, codeListID, edition string) (*models.Edition, error) {
+	qry := fmt.Sprintf(query.GetCodeList, codeListID)
+	codeListVertices, err := n.getVertices(qry)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
+	}
+	if len(codeListVertices) == 0 {
+		return nil, driver.ErrNotFound
+	}
+	qualifying := []*graphson.Vertex{}
+	for _, vertex := range codeListVertices {
+		editionString, err := vertex.GetProperty("edition")
+		if err == graphson.ErrorPropertyNotFound {
+			return nil, driver.ErrNoSuchProperty
+		}
+		if err != nil {
+			return nil, errors.Wrapf(err, `GetProperty("edition") failed`)
+		}
+		if editionString == edition {
+			qualifying = append(qualifying, &vertex)
+		}
+	}
+	if len(qualifying) == 0 {
+		return nil, driver.ErrNotFound
+	}
+	if len(qualifying) > 1 {
+		return nil, driver.ErrMultipleFound
+	}
+	// What we return (having performed the checks above, is actually
+	// hard-coded, as a function of the method parameters.
 	return &models.Edition{
 		Links: &models.EditionLinks{
 			Self: &models.Link{

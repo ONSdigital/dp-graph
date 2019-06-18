@@ -12,6 +12,10 @@ var ErrNotFound = errors.New("not found")
 // more than one error, inside a call that requires exactly one.
 var ErrMultipleFound = errors.New("multiple found where should be one")
 
+// ErrNoSuchProperty is returned when code needs to examine property "foo",
+// on an element, and said element does not have a "foo" property.
+var ErrNoSuchProperty = errors.New("entity does not have a required property")
+
 // ErrAttemptsExceededLimit is returned when the number of attempts has reaced
 // the maximum permitted
 type ErrAttemptsExceededLimit struct {

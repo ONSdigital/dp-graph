@@ -48,15 +48,16 @@ var ReturnMalformedNilInterfaceRequestErr = func(q string, bindings, rebindings 
 }
 
 // ReturnThreeCodeLists is mock implementation for NeptunePool.Get() that always
-// returns a slice of three graphson.Vertex(s) of type "_code_list" and with
-// a "listID" property set to "listID_0", "listID_1", and "ListID_2" respectively.
+// returns a slice of three graphson.Vertex(s):
+// - of type "_code_list"
+// - with a "listID" property set to "listID_0", "listID_1", and "ListID_2" respectively.
+// - with an "edition" property set to "my-test-edition"
 var ReturnThreeCodeLists = func(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
 	codeLists := []graphson.Vertex{}
 	for i := 0; i < 3; i++ {
 		vertex := makeVertex("_code_list")
-		key := "listID"
-		value := fmt.Sprintf("listID_%d", i)
-		setVertexProperty(&vertex, key, value)
+		setVertexProperty(&vertex, "listID", fmt.Sprintf("listID_%d", i))
+		setVertexProperty(&vertex, "edition", "my-test-edition")
 		codeLists = append(codeLists, vertex)
 	}
 	return codeLists, nil
