@@ -47,6 +47,17 @@ var ReturnMalformedNilInterfaceRequestErr = func(q string, bindings, rebindings 
 	return nil, errors.New(" MALFORMED REQUEST ")
 }
 
+// ReturnOneWellFormedCodeList is mock implementation for NeptunePool.Get() that always
+// returns a slice of one graphson.Vertex(s):
+// - of type "_code_list"
+// - with a "listID" property set to "listID_1"
+// - with an "edition" property set to "my-test-edition"
+var ReturnOneWellFormedCodeList = func(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+	suffix := 1
+	vertex := makeCodeListVertex(suffix, "my-test-edition")
+	return []graphson.Vertex{vertex}, nil
+}
+
 // ReturnThreeCodeLists is mock implementation for NeptunePool.Get() that always
 // returns a slice of three graphson.Vertex(s):
 // - of type "_code_list"
@@ -56,6 +67,21 @@ var ReturnThreeCodeLists = func(query string, bindings map[string]string, rebind
 	codeLists := []graphson.Vertex{}
 	for i := 0; i < 3; i++ {
 		vertex := makeCodeListVertex(i, "my-test-edition")
+		codeLists = append(codeLists, vertex)
+	}
+	return codeLists, nil
+}
+
+// ReturnThreeIdenticalCodeLists is mock implementation for NeptunePool.Get() that always
+// returns a slice of three graphson.Vertex(s):
+// - of type "_code_list"
+// - with the "listID" property set (always) to "listID_1"
+// - with an "edition" property set to "my-test-edition"
+var ReturnThreeIdenticalCodeLists = func(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+	codeLists := []graphson.Vertex{}
+	for i := 0; i < 3; i++ {
+		unchangingSuffix := 1
+		vertex := makeCodeListVertex(unchangingSuffix, "my-test-edition")
 		codeLists = append(codeLists, vertex)
 	}
 	return codeLists, nil
@@ -93,6 +119,11 @@ var ReturnThreeUselessVertices = func(query string, bindings map[string]string, 
 		codeLists = append(codeLists, vertex)
 	}
 	return codeLists, nil
+}
+
+// ReturnZeroVertices provides an empty list of graphson.Vertex(s)
+var ReturnZeroVertices = func(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+	return []graphson.Vertex{}, nil
 }
 
 /*
