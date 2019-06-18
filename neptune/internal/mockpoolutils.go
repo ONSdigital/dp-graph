@@ -55,9 +55,29 @@ var ReturnMalformedNilInterfaceRequestErr = func(q string, bindings, rebindings 
 var ReturnThreeCodeLists = func(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
 	codeLists := []graphson.Vertex{}
 	for i := 0; i < 3; i++ {
-		vertex := makeVertex("_code_list")
-		setVertexProperty(&vertex, "listID", fmt.Sprintf("listID_%d", i))
-		setVertexProperty(&vertex, "edition", "my-test-edition")
+		vertex := makeCodeListVertex(i, "my-test-edition")
+		codeLists = append(codeLists, vertex)
+	}
+	return codeLists, nil
+}
+
+// ReturnThreeCodeListsWithWronglyTypedEdition is a variant of ReturnThreeCodeLists
+// that (wrongly) makes their edition property an int instead of a string.
+var ReturnThreeCodeListsWithWronglyTypedEdition = func(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+	codeLists := []graphson.Vertex{}
+	for i := 0; i < 3; i++ {
+		numericEdition := 42
+		vertex := makeCodeListVertexWithWronglyTypedEdition(i, numericEdition)
+		codeLists = append(codeLists, vertex)
+	}
+	return codeLists, nil
+}
+
+var ReturnThreeCodeListsWithMultipleEditions = func(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+	codeLists := []graphson.Vertex{}
+	for i := 0; i < 3; i++ {
+		multipleEditions := []string{"edition_1", "edition_2"}
+		vertex := makeCodeListVertexWithMultipleEditions(i, multipleEditions)
 		codeLists = append(codeLists, vertex)
 	}
 	return codeLists, nil
@@ -89,16 +109,53 @@ func makeVertex(vertexType string) graphson.Vertex {
 }
 
 /*
-setVertexProperty adds the given key/value to a vertex.
+setVertexTypedProperty sets the given key/polymorphic-value to a vertex.
+The "theType" parameter must be "string" or "int".
 */
-func setVertexProperty(vertex *graphson.Vertex, key string, value string) {
+func setVertexTypedProperty(theType string, vertex *graphson.Vertex, key string, value interface{}) {
 	gv := graphson.GenericValue{Type: "string", Value: key}
 	pv := graphson.VertexPropertyValue{
 		ID:    gv,
 		Label: key,
 		Value: value,
 	}
-	vertexProperty := graphson.VertexProperty{Type: "string", Value: pv}
+	vertexProperty := graphson.VertexProperty{Type: theType, Value: pv}
 	vertexProperties := []graphson.VertexProperty{vertexProperty}
 	vertex.Value.Properties[key] = vertexProperties
+}
+
+// setVertexStringProperty sets the given key/value in a vertex.
+func setVertexStringProperty(vertex *graphson.Vertex, key string, value interface{}) {
+	setVertexTypedProperty("string", vertex, key, value)
+}
+
+// setVertexIntProperty sets the given key/value in a vertex.
+func setVertexIntProperty(vertex *graphson.Vertex, key string, value int) {
+	setVertexTypedProperty("int", vertex, key, value)
+}
+
+// makeCodeListVertex provides a graphson.Vertex with a vertex type of the
+// form "_code_list", and a "listID" property of the form "listID_3".
+// It is also given an "edition" property with the supplied value.
+func makeCodeListVertex(listIDSuffix int, edition string) graphson.Vertex {
+	v := makeVertex("_code_list")
+	setVertexStringProperty(&v, "listID", fmt.Sprintf("listID_%d", listIDSuffix))
+	setVertexStringProperty(&v, "edition", edition)
+	return v
+}
+
+func makeCodeListVertexWithMultipleEditions(listIDSuffix int, editions []string) graphson.Vertex {
+	v := makeVertex("_code_list")
+	setVertexStringProperty(&v, "listID", fmt.Sprintf("listID_%d", listIDSuffix))
+	setVertexStringProperty(&v, "edition", editions)
+	return v
+}
+
+// makeCodeListVertexWithWronglyTypedEdition is similar to makeCodeListVertex, except
+// that it (wrongly) sets the vertex "edition" property as an int type.
+func makeCodeListVertexWithWronglyTypedEdition(listIDSuffix int, edition int) graphson.Vertex {
+	v := makeVertex("_code_list")
+	setVertexStringProperty(&v, "listID", fmt.Sprintf("listID_%d", listIDSuffix))
+	setVertexIntProperty(&v, "edition", edition)
+	return v
 }
