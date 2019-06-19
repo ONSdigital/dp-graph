@@ -3,7 +3,7 @@ package query
 const (
 	// codelists
 	GetCodeLists          = "g.V().hasLabel('_code_list')"
-	GetCodeListsFiltered  = "g.V().hasLabel('_code_list').has('%s', 'true')"
+	GetCodeListsFiltered  = "g.V().hasLabel('_code_list').has('%s', true)"
 	GetCodeList           = "g.V().hasLabel('_code_list').has('listID', '%s')"
 	CodeListExists        = "g.V().hasLabel('_code_list').has('listID', '%s').count()"
 	CodeListEditionExists = "g.V().hasLabel('_code_list').has('listID', '%s').has('edition', '%s').count()"

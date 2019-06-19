@@ -14,7 +14,7 @@ import (
 /*
 GetCodeLists provides a list of either all Code Lists, or a list of only those
 having a boolean property with the name <filterBy> which is set to true. E.g.
-"geography": "true". The caller is expected to
+"geography": true. The caller is expected to
 fully qualify the embedded Links field afterwards. It returns an error if:
 - The Gremlin query failed to execute.
 - A CodeList is encountered that does not have *listID* property.
