@@ -78,36 +78,42 @@ func (n *NeptuneDB) GetCodeList(ctx context.Context, codeListID string) (
 	}, nil
 }
 
+/*
+GetEditions provides a models.Editions structure populated based on the
+the values in the Code List vertices in the database, that have the provided 
+codeListId.
+It returns an error if:
+- The Gremlin query failed to execute. (wrapped error)
+- A CodeList is found that does not have the "edition" property (error is 'ErrNoSuchProperty')
+*/
 func (n *NeptuneDB) GetEditions(ctx context.Context, codeListID string) (*models.Editions, error) {
-	return &models.Editions{
-		Count:      3,
+	qry := fmt.Sprintf(query.GetCodeList, codeListID)
+	codeLists, err := n.getVertices(qry)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
+	}
+	editions := &models.Editions{
+		Count:      len(codeLists),
 		Offset:     0,
-		Limit:      3,
-		TotalCount: 3,
-		Items: []models.Edition{
-			{
-				Links: &models.EditionLinks{
-					Self: &models.Link{
-						ID: "edition-1",
-					},
+		Limit:      -1,
+		TotalCount: len(codeLists),
+		Items:      []models.Edition{},
+	}
+	for _, codeList := range codeLists {
+		editionString, err := codeList.GetProperty("edition")
+		if err != nil {
+			return nil, errors.Wrapf(err, `Error reading "edition" property on Code List vertex`)
+		}
+		edition := models.Edition{
+			Links: &models.EditionLinks{
+				Self: &models.Link{
+					ID: editionString,
 				},
 			},
-			{
-				Links: &models.EditionLinks{
-					Self: &models.Link{
-						ID: "edition-2",
-					},
-				},
-			},
-			{
-				Links: &models.EditionLinks{
-					Self: &models.Link{
-						ID: "edition-3",
-					},
-				},
-			},
-		},
-	}, nil
+		}
+		editions.Items = append(editions.Items, edition)
+	}
+	return editions, nil
 }
 
 /*

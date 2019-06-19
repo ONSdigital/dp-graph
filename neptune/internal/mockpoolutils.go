@@ -61,6 +61,20 @@ var ReturnThreeCodeLists = func(query string, bindings map[string]string, rebind
 	return codeLists, nil
 }
 
+// ReturnThreeEditionVertices is mock implementation for NeptunePool.Get() that always
+// returns a slice of three graphson.Vertex(s):
+// - of type "unused-vertex-type"
+// - with a an "edition" property set to "edition_0", "edition_1", and "edition_2" respectively.
+var ReturnThreeEditionVertices = func(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+	editions := []graphson.Vertex{}
+	for i := 0; i < 3; i++ {
+		vertex := makeVertex("unused-vertex-type")
+		setVertexStringProperty(&vertex, "edition", fmt.Sprintf("edition_%d", i))
+		editions = append(editions, vertex)
+	}
+	return editions, nil
+}
+
 // ReturnThreeUselessVertices is mock implementation for NeptunePool.Get() that always
 // returns a slice of three graphson.Vertex(s) of type "_useless_vertex_type", and with
 // no properties set.

@@ -226,3 +226,49 @@ func TestGetEdition(t *testing.T) {
 		})
 	})
 }
+
+func TestGetEditions(t *testing.T) {
+	Convey("Given a database that raises a non-transient error", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetFunc: internal.ReturnMalformedNilInterfaceRequestErr,
+		}
+		db := mockDB(poolMock)
+		Convey("When GetEditions() is called", func() {
+			unusedCodeListID := "unused-id"
+			_, err := db.GetEditions(context.Background(), unusedCodeListID)
+			expectedErr := `Gremlin query failed: "g.V().hasLabel('_code_list').has('listID', ` +
+				`'unused-id')":  MALFORMED REQUEST `
+			Convey("Then the returned error should wrap the underlying one", func() {
+				So(err.Error(), ShouldEqual, expectedErr)
+			})
+		})
+	})
+	Convey("Given a database that returns three edition vertices", t, func() {
+		poolMock := &internal.NeptunePoolMock{GetFunc: internal.ReturnThreeEditionVertices}
+		db := mockDB(poolMock)
+		Convey("When GetEditions() is called", func() {
+			unusedCodeListID := "unused-id"
+			editionsResponse, err := db.GetEditions(context.Background(), unusedCodeListID)
+			Convey("Then no error should be returned", func() {
+				So(err, ShouldBeNil)
+			})
+			Convey("Then the driver Get function should be called once", func() {
+				calls := poolMock.GetCalls()
+				So(len(calls), ShouldEqual, 1)
+				Convey("With a well formed query string", func() {
+					expectedQry := `g.V().hasLabel('_code_list').has('listID', 'unused-id')`
+					actualQry := calls[0].Query
+					So(actualQry, ShouldEqual, expectedQry)
+					Convey("Then a non nil structure returned", func() {
+						So(editionsResponse, ShouldNotBeNil)
+						So(len(editionsResponse.Items), ShouldEqual, 3)
+						Convey("Then set right", func() {
+							sampleEdition := editionsResponse.Items[1]
+							So(sampleEdition.Links.Self.ID, ShouldEqual, "edition_1")
+						})
+					})
+				})
+			})
+		})
+	})
+}
