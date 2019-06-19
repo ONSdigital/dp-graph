@@ -134,7 +134,7 @@ func (n *NeptuneDB) GetEdition(ctx context.Context, codeListID, edition string) 
 	if nFound > 1 {
 		return nil, driver.ErrMultipleFound
 	}
-	// What we return (having performed the checks above, is actually
+	// What we return (having performed the checks above), is actually
 	// hard-coded, as a function of the method parameters.
 	return &models.Edition{
 		Links: &models.EditionLinks{
