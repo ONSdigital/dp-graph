@@ -243,6 +243,17 @@ func TestGetEditions(t *testing.T) {
 			})
 		})
 	})
+	Convey("Given a database that returns zero edition vertices", t, func() {
+		poolMock := &internal.NeptunePoolMock{GetFunc: internal.ReturnZeroVertices}
+		db := mockDB(poolMock)
+		Convey("When GetEditions() is called", func() {
+			unusedCodeListID := "unused-id"
+			_, err := db.GetEditions(context.Background(), unusedCodeListID)
+			Convey("Then the returned error should be ErrNotFound", func() {
+				So(err, ShouldEqual, driver.ErrNotFound)
+			})
+		})
+	})
 	Convey("Given a database that returns three edition vertices", t, func() {
 		poolMock := &internal.NeptunePoolMock{GetFunc: internal.ReturnThreeEditionVertices}
 		db := mockDB(poolMock)

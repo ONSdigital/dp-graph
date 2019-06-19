@@ -33,7 +33,7 @@ func (n *NeptuneDB) GetCodeLists(ctx context.Context, filterBy string) (*models.
 	}
 	results := &models.CodeListResults{
 		Count:      len(codeListVertices),
-		Limit:      -1,
+		Limit:      len(codeListVertices),
 		TotalCount: len(codeListVertices),
 	}
 	for _, codeListVertex := range codeListVertices {
@@ -80,10 +80,11 @@ func (n *NeptuneDB) GetCodeList(ctx context.Context, codeListID string) (
 
 /*
 GetEditions provides a models.Editions structure populated based on the
-the values in the Code List vertices in the database, that have the provided 
+the values in the Code List vertices in the database, that have the provided
 codeListId.
 It returns an error if:
 - The Gremlin query failed to execute. (wrapped error)
+- No CodeLists are found of the requested codeListID (error is ErrNotFound')
 - A CodeList is found that does not have the "edition" property (error is 'ErrNoSuchProperty')
 */
 func (n *NeptuneDB) GetEditions(ctx context.Context, codeListID string) (*models.Editions, error) {
@@ -92,10 +93,13 @@ func (n *NeptuneDB) GetEditions(ctx context.Context, codeListID string) (*models
 	if err != nil {
 		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
 	}
+	if len(codeLists) == 0 {
+		return nil, driver.ErrNotFound
+	}
 	editions := &models.Editions{
 		Count:      len(codeLists),
 		Offset:     0,
-		Limit:      -1,
+		Limit:      len(codeLists),
 		TotalCount: len(codeLists),
 		Items:      []models.Edition{},
 	}
