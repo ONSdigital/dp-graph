@@ -6,7 +6,7 @@ const (
 	GetCodeListsFiltered = "g.V().hasLabel('_code_list').has('%s', 'true')"
 	GetCodeList          = "g.V().hasLabel('_code_list').has('listID', '%s')"
 	CodeListExists       = "g.V().hasLabel('_code_list').has('listID', '%s').count()"
-	GetCodeListEdition   = "g.V().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s')"
+	CodeListEditionExists   = "g.V().hasLabel('_code_list').has('listID', '%s').has('edition', '%s').count()"
 	CountEditions        = "g.V().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').count()"
 	GetCodes             = "g.V().hasLabel('_code').as('c').out('usedBy').as('r').inV().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').select('c','r')"
 	GetCode              = "g.V().hasLabel('_code').has('value','%s').as('c').out('usedBy').as('r').inV().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').select('c','r')"

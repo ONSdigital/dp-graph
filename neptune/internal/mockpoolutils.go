@@ -47,17 +47,6 @@ var ReturnMalformedNilInterfaceRequestErr = func(q string, bindings, rebindings 
 	return nil, errors.New(" MALFORMED REQUEST ")
 }
 
-// ReturnOneWellFormedCodeList is mock implementation for NeptunePool.Get() that always
-// returns a slice of one graphson.Vertex(s):
-// - of type "_code_list"
-// - with a "listID" property set to "listID_1"
-// - with an "edition" property set to "my-test-edition"
-var ReturnOneWellFormedCodeList = func(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-	suffix := 1
-	vertex := makeCodeListVertex(suffix, "my-test-edition")
-	return []graphson.Vertex{vertex}, nil
-}
-
 // ReturnThreeCodeLists is mock implementation for NeptunePool.Get() that always
 // returns a slice of three graphson.Vertex(s):
 // - of type "_code_list"
@@ -67,43 +56,6 @@ var ReturnThreeCodeLists = func(query string, bindings map[string]string, rebind
 	codeLists := []graphson.Vertex{}
 	for i := 0; i < 3; i++ {
 		vertex := makeCodeListVertex(i, "my-test-edition")
-		codeLists = append(codeLists, vertex)
-	}
-	return codeLists, nil
-}
-
-// ReturnThreeIdenticalCodeLists is mock implementation for NeptunePool.Get() that always
-// returns a slice of three graphson.Vertex(s):
-// - of type "_code_list"
-// - with the "listID" property set (always) to "listID_1"
-// - with an "edition" property set to "my-test-edition"
-var ReturnThreeIdenticalCodeLists = func(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-	codeLists := []graphson.Vertex{}
-	for i := 0; i < 3; i++ {
-		unchangingSuffix := 1
-		vertex := makeCodeListVertex(unchangingSuffix, "my-test-edition")
-		codeLists = append(codeLists, vertex)
-	}
-	return codeLists, nil
-}
-
-// ReturnThreeCodeListsWithWronglyTypedEdition is a variant of ReturnThreeCodeLists
-// that (wrongly) makes their edition property an int instead of a string.
-var ReturnThreeCodeListsWithWronglyTypedEdition = func(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-	codeLists := []graphson.Vertex{}
-	for i := 0; i < 3; i++ {
-		numericEdition := 42
-		vertex := makeCodeListVertexWithWronglyTypedEdition(i, numericEdition)
-		codeLists = append(codeLists, vertex)
-	}
-	return codeLists, nil
-}
-
-var ReturnThreeCodeListsWithMultipleEditions = func(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-	codeLists := []graphson.Vertex{}
-	for i := 0; i < 3; i++ {
-		multipleEditions := []string{"edition_1", "edition_2"}
-		vertex := makeCodeListVertexWithMultipleEditions(i, multipleEditions)
 		codeLists = append(codeLists, vertex)
 	}
 	return codeLists, nil
@@ -172,21 +124,5 @@ func makeCodeListVertex(listIDSuffix int, edition string) graphson.Vertex {
 	v := makeVertex("_code_list")
 	setVertexStringProperty(&v, "listID", fmt.Sprintf("listID_%d", listIDSuffix))
 	setVertexStringProperty(&v, "edition", edition)
-	return v
-}
-
-func makeCodeListVertexWithMultipleEditions(listIDSuffix int, editions []string) graphson.Vertex {
-	v := makeVertex("_code_list")
-	setVertexStringProperty(&v, "listID", fmt.Sprintf("listID_%d", listIDSuffix))
-	setVertexStringProperty(&v, "edition", editions)
-	return v
-}
-
-// makeCodeListVertexWithWronglyTypedEdition is similar to makeCodeListVertex, except
-// that it (wrongly) sets the vertex "edition" property as an int type.
-func makeCodeListVertexWithWronglyTypedEdition(listIDSuffix int, edition int) graphson.Vertex {
-	v := makeVertex("_code_list")
-	setVertexStringProperty(&v, "listID", fmt.Sprintf("listID_%d", listIDSuffix))
-	setVertexIntProperty(&v, "edition", edition)
 	return v
 }

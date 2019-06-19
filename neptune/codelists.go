@@ -6,8 +6,6 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/gedge/graphson"
-
 	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/dp-graph/graph/driver"
 	"github.com/ONSdigital/dp-graph/neptune/query"
@@ -122,36 +120,18 @@ It returns an error if:
 - The Gremlin query failed to execute. (wrapped error)
 - No CodeLists exist with the requested codeListID (error is `ErrNotFound`)
 - A CodeList is found that does not have the "edition" property (error is 'ErrNoSuchProperty')
-- An attempt to read the vertex "edition" property fails non-specifically (wrapped error)
-- None of the CodeLists with the requested ID, have the requested edition. (error is 'ErrNotFound')
 - More than one CodeList exists with the requested ID AND edition (error is `ErrMultipleFound`)
 */
 func (n *NeptuneDB) GetEdition(ctx context.Context, codeListID, edition string) (*models.Edition, error) {
-	qry := fmt.Sprintf(query.GetCodeList, codeListID)
-	codeListVertices, err := n.getVertices(qry)
+	qry := fmt.Sprintf(query.CodeListEditionExists, codeListID, edition)
+	nFound, err := n.getNumber(qry)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
 	}
-	if len(codeListVertices) == 0 {
+	if nFound == 0 {
 		return nil, driver.ErrNotFound
 	}
-	qualifying := []*graphson.Vertex{}
-	for _, vertex := range codeListVertices {
-		editionString, err := vertex.GetProperty("edition")
-		if err == graphson.ErrorPropertyNotFound {
-			return nil, driver.ErrNoSuchProperty
-		}
-		if err != nil {
-			return nil, errors.Wrapf(err, `GetProperty("edition") failed`)
-		}
-		if editionString == edition {
-			qualifying = append(qualifying, &vertex)
-		}
-	}
-	if len(qualifying) == 0 {
-		return nil, driver.ErrNotFound
-	}
-	if len(qualifying) > 1 {
+	if nFound > 1 {
 		return nil, driver.ErrMultipleFound
 	}
 	// What we return (having performed the checks above, is actually

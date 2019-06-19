@@ -159,24 +159,22 @@ func TestGetCodeList(t *testing.T) {
 func TestGetEdition(t *testing.T) {
 	Convey("Given a database that raises a non-transient error", t, func() {
 		poolMock := &internal.NeptunePoolMock{
-			GetFunc: internal.ReturnMalformedNilInterfaceRequestErr,
+			GetCountFunc: internal.ReturnMalformedIntRequestErr,
 		}
 		db := mockDB(poolMock)
 		Convey("When GetEdition() is called", func() {
 			unusedCodeListID := "unused-id"
 			unusedEdition := "unused-edition"
 			_, err := db.GetEdition(context.Background(), unusedCodeListID, unusedEdition)
-			expectedErr := `Gremlin query failed: "g.V().hasLabel('_code_list').has('listID', 'unused-id')":  ` +
-				`MALFORMED REQUEST `
+			expectedErr := `Gremlin query failed: "g.V().hasLabel('_code_list').has('listID', ` +
+				`'unused-id').has('edition', 'unused-edition').count()":  MALFORMED REQUEST `
 			Convey("Then the returned error should wrap the underlying one", func() {
 				So(err.Error(), ShouldEqual, expectedErr)
 			})
 		})
 	})
-	Convey("Given a database that returns zero vertices", t, func() {
-		poolMock := &internal.NeptunePoolMock{
-			GetFunc: internal.ReturnZeroVertices,
-		}
+	Convey("Given a database that returns zero editions", t, func() {
+		poolMock := &internal.NeptunePoolMock{GetCountFunc: internal.ReturnZero}
 		db := mockDB(poolMock)
 		Convey("When GetEdition() is called", func() {
 			unusedCodeListID := "unused-id"
@@ -187,90 +185,43 @@ func TestGetEdition(t *testing.T) {
 			})
 		})
 	})
-	Convey("Given a database that returns vertices that don't have an edition property", t, func() {
-		poolMock := &internal.NeptunePoolMock{
-			GetFunc: internal.ReturnThreeUselessVertices,
-		}
+	Convey("Given a database that returns two editions", t, func() {
+		poolMock := &internal.NeptunePoolMock{GetCountFunc: internal.ReturnTwo}
 		db := mockDB(poolMock)
 		Convey("When GetEdition() is called", func() {
 			unusedCodeListID := "unused-id"
 			unusedEdition := "unused-edition"
 			_, err := db.GetEdition(context.Background(), unusedCodeListID, unusedEdition)
-			Convey("Then the returned error should be ErrNotFound", func() {
-				So(err, ShouldEqual, driver.ErrNoSuchProperty)
-			})
-		})
-	})
-	Convey("Given a database that returns vertices with an edition property of the wrong type", t, func() {
-		poolMock := &internal.NeptunePoolMock{
-			GetFunc: internal.ReturnThreeCodeListsWithWronglyTypedEdition,
-		}
-		db := mockDB(poolMock)
-		Convey("When GetEdition() is called", func() {
-			unusedCodeListID := "unused-id"
-			unusedEdition := "unused-edition"
-			_, err := db.GetEdition(context.Background(), unusedCodeListID, unusedEdition)
-			expectedErr := `GetProperty("edition") failed: property value could not be cast into expected type`
-			Convey("Then the returned error should wrap the underlying one", func() {
-				So(err.Error(), ShouldEqual, expectedErr)
-			})
-		})
-	})
-	Convey("Given a database that returns only CodeList(s) with unwanted editions", t, func() {
-		poolMock := &internal.NeptunePoolMock{
-			// This sets edition to "my-test-edition"
-			GetFunc: internal.ReturnThreeCodeLists,
-		}
-		db := mockDB(poolMock)
-		Convey("When GetEdition() is called", func() {
-			unusedCodeListID := "unused-id"
-			requiredEdition := "different-from-my-test-edition"
-			_, err := db.GetEdition(context.Background(), unusedCodeListID, requiredEdition)
-			Convey("Then the returned error should be ErrNotFound", func() {
-				So(err, ShouldEqual, driver.ErrNotFound)
-			})
-		})
-	})
-	Convey("Given a database that returns three matching CodeList(s)", t, func() {
-		poolMock := &internal.NeptunePoolMock{
-			GetFunc: internal.ReturnThreeIdenticalCodeLists,
-		}
-		db := mockDB(poolMock)
-		Convey("When GetEdition() is called", func() {
-			matchingCodeListID := "listId_1"
-			matchingEdition := "my-test-edition"
-			_, err := db.GetEdition(context.Background(), matchingCodeListID, matchingEdition)
 			Convey("Then the returned error should be ErrMultipleFound", func() {
 				So(err, ShouldEqual, driver.ErrMultipleFound)
 			})
 		})
 	})
-	Convey("Given a database that returns one matching CodeList(s)", t, func() {
-		poolMock := &internal.NeptunePoolMock{
-			GetFunc: internal.ReturnOneWellFormedCodeList,
-		}
+	Convey("Given a database that returns one edition", t, func() {
+		poolMock := &internal.NeptunePoolMock{GetCountFunc: internal.ReturnOne}
 		db := mockDB(poolMock)
 		Convey("When GetEdition() is called", func() {
-			matchingCodeListID := "listId_1"
-			matchingEdition := "my-test-edition"
-			codeList, err := db.GetEdition(context.Background(), matchingCodeListID, matchingEdition)
+			listID := "listId_1"
+			requestedEdition := "my-test-edition"
+			editionResponse, err := db.GetEdition(context.Background(), listID, requestedEdition)
 			Convey("Then no error should be returned", func() {
 				So(err, ShouldBeNil)
 			})
-			Convey("Then the driver Getfunction should be called once", func() {
-				calls := poolMock.GetCalls()
+			Convey("Then the driver GetCount function should be called once", func() {
+				calls := poolMock.GetCountCalls()
 				So(len(calls), ShouldEqual, 1)
 				Convey("With a well formed query string", func() {
-					expectedQry := `g.V().hasLabel('_code_list').has('listID', 'listId_1')`
-					actualQry := calls[0].Query
+					expectedQry := `g.V().hasLabel('_code_list').has('listID', 'listId_1').has(` +
+						`'edition', 'my-test-edition').count()`
+					actualQry := calls[0].Q
 					So(actualQry, ShouldEqual, expectedQry)
 				})
 			})
 			Convey("Then a non nil structure returned", func() {
-				So(codeList, ShouldNotBeNil)
+				So(editionResponse, ShouldNotBeNil)
 			})
-			Convey("Then the fibble field should be set right", func() {
-				So(codeList.Links.Self.ID, ShouldEqual, "my-test-edition")
+			Convey("Then the ID field should be set right", func() {
+				So(editionResponse.Links.Self.ID, ShouldEqual, "my-test-edition")
 			})
 		})
 	})
