@@ -7,9 +7,13 @@ const (
 	GetCodeList           = "g.V().hasLabel('_code_list').has('listID', '%s')"
 	CodeListExists        = "g.V().hasLabel('_code_list').has('listID', '%s').count()"
 	CodeListEditionExists = "g.V().hasLabel('_code_list').has('listID', '%s').has('edition', '%s').count()"
-	GetCodes              = "g.V().hasLabel('_code_list').has('listID', '%s').has('edition', '%s').in('usedBy').hasLabel('_code')"
-	GetCode               = "g.V().hasLabel('_code').has('value','%s').as('c').out('usedBy').as('r').inV().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').select('c','r')"
-	GetCodeDatasets       = "g.V().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').inE('usedBy').as('r').match(" +
+	GetCodes              = "g.V().hasLabel('_code_list')" +
+		".has('listID', '%s').has('edition', '%s')" +
+		".in('usedBy').hasLabel('_code')"
+	CodeExists = "g.V().hasLabel('_code_list')" +
+		".has('listID', '%s').has('edition', '%s')" +
+		".in('usedBy').has('value', '%s').count()"
+	GetCodeDatasets = "g.V().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').inE('usedBy').as('r').match(" +
 		"__.as('r').outV().has('value','%s').as('c')," +
 		"__.as('c').out('inDataset').as('d')," +
 		"__.as('d').has('is_published',true)" +

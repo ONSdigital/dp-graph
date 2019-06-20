@@ -359,3 +359,80 @@ func TestGetCodes(t *testing.T) {
 		})
 	})
 }
+
+func TestGetCode(t *testing.T) {
+	Convey("Given a database that will return that the Code exists", t, func() {
+		poolMock := &internal.NeptunePoolMock{GetCountFunc: internal.ReturnOne}
+		db := mockDB(poolMock)
+		Convey("When GetCode() is called", func() {
+			unusedCodeList := "unused-code-list"
+			unusedEdition := "unused-edition"
+			unusedCode := "unused-code"
+			code, err := db.GetCode(context.Background(), unusedCodeList, unusedEdition, unusedCode)
+			Convey("Then no error should be returned", func() {
+				So(err, ShouldBeNil)
+			})
+			Convey("Then the driver GetCount function should be called once", func() {
+				calls := poolMock.GetCountCalls()
+				So(len(calls), ShouldEqual, 1)
+				Convey("With a well formed query string", func() {
+					expectedQry := `g.V().hasLabel('_code_list').has('listID', 'unused-code-list').has('edition', ` +
+						`'unused-edition').in('usedBy').has('value', 'unused-code').count()`
+					actualQry := calls[0].Q
+					So(actualQry, ShouldEqual, expectedQry)
+				})
+			})
+			Convey("Then a non nil structure returned", func() {
+				So(code, ShouldNotBeNil)
+			})
+		})
+	})
+
+	Convey("Given a database that raises a non-transient error", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetCountFunc: internal.ReturnMalformedIntRequestErr,
+		}
+		db := mockDB(poolMock)
+		Convey("When GetCode() is called", func() {
+			unusedCodeList := "unused-code-list"
+			unusedEdition := "unused-edition"
+			unusedCode := "unused-code"
+			_, err := db.GetCode(context.Background(), unusedCodeList, unusedEdition, unusedCode)
+			expectedErr := `Gremlin query failed: "g.V().hasLabel('_code_list').has('listID', ` +
+				`'unused-code-list').has('edition', 'unused-edition').in('usedBy').has('value', ` +
+				`'unused-code').count()":  MALFORMED REQUEST `
+			Convey("Then the returned error should wrap the underlying one", func() {
+				So(err.Error(), ShouldEqual, expectedErr)
+			})
+		})
+	})
+
+	Convey("Given a database that returns that the Code does not exist", t, func() {
+		poolMock := &internal.NeptunePoolMock{GetCountFunc: internal.ReturnZero}
+		db := mockDB(poolMock)
+		Convey("When GetCode() is called", func() {
+			unusedCodeList := "unused-code-list"
+			unusedEdition := "unused-edition"
+			unusedCode := "unused-code"
+			_, err := db.GetCode(context.Background(), unusedCodeList, unusedEdition, unusedCode)
+			Convey("Then the returned error should be ErrNotFound", func() {
+				So(err, ShouldEqual, driver.ErrNotFound)
+			})
+		})
+	})
+
+	Convey("Given a database that returns that multiple Codes exist", t, func() {
+		poolMock := &internal.NeptunePoolMock{GetCountFunc: internal.ReturnTwo}
+		db := mockDB(poolMock)
+		Convey("When GetCode() is called", func() {
+			unusedCodeList := "unused-code-list"
+			unusedEdition := "unused-edition"
+			unusedCode := "unused-code"
+			_, err := db.GetCode(context.Background(), unusedCodeList, unusedEdition, unusedCode)
+			Convey("Then the returned error should should object to there being multiple", func() {
+				So(err, ShouldNotBeNil)
+				So(err, ShouldEqual, driver.ErrMultipleFound)
+			})
+		})
+	})
+}

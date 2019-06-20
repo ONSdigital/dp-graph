@@ -193,6 +193,17 @@ func (n *NeptuneDB) GetCodes(ctx context.Context, codeListID, edition string) (*
 }
 
 func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, code string) (*models.Code, error) {
+	qry := fmt.Sprintf(query.CodeExists, codeListID, edition, code)
+	nFound, err := n.getNumber(qry)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
+	}
+	if nFound == 0 {
+		return nil, driver.ErrNotFound
+	}
+	if nFound > 1 {
+		return nil, driver.ErrMultipleFound
+	}
 	return &models.Code{
 		Links: &models.CodeLinks{
 			Self: &models.Link{
