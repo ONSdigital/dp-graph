@@ -144,47 +144,48 @@ func (n *NeptuneDB) GetEdition(ctx context.Context, codeListID, edition string) 
 	if nFound > 1 {
 		return nil, driver.ErrMultipleFound
 	}
-	// What we return (having performed the checks above), is actually
-	// hard-coded, as a function of the method parameters.
-	return &models.Edition{
-		Links: &models.EditionLinks{
-			Self: &models.Link{
-				ID: edition,
-			},
-		},
-	}, nil
+	// What we return (having performed the checks above), is actually hard-coded, as a function of the
+	// method parameters.
+	return &models.Edition{Links: &models.EditionLinks{Self: &models.Link{ID: edition}}}, nil
 }
 
+/*
+GetCodes provides a list of Code(s) packaged into a models.CodeResults structure that has been populated by
+a database query that finds the Code List nodes of the required codeListID (e.g. "ashe-earnings"), and the
+required edition (e.g.  "one-off"), and then harvests the Code nodes that are known to be "usedBy" that
+Code List.  It raises a wrapped error if the database raises a non-transient error, (e.g.  malformed
+query).  It raises driver.ErrNotFound if the graph traversal above produces an empty list of codes -
+including the case of a short-circuit early termination of the query, because no such qualifying code
+list exists.
+*/
 func (n *NeptuneDB) GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error) {
-	return &models.CodeResults{
-		Count:      3,
+	qry := fmt.Sprintf(query.GetCodes, codeListID, edition)
+	codeResponses, err := n.getVertices(qry)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
+	}
+	if len(codeResponses) == 0 {
+		return nil, driver.ErrNotFound
+	}
+	codeResults := &models.CodeResults{
+		Count:      len(codeResponses),
 		Offset:     0,
-		Limit:      3,
-		TotalCount: 3,
-		Items: []models.Code{
-			{
-				Links: &models.CodeLinks{
-					Self: &models.Link{
-						ID: "code-1",
-					},
+		Limit:      len(codeResponses),
+		TotalCount: len(codeResponses),
+		Items:      []models.Code{},
+	}
+
+	for _, codeResponse := range codeResponses {
+		codeItem := models.Code{
+			Links: &models.CodeLinks{
+				Self: &models.Link{
+					ID: codeResponse.Value.ID,
 				},
 			},
-			{
-				Links: &models.CodeLinks{
-					Self: &models.Link{
-						ID: "code-2",
-					},
-				},
-			},
-			{
-				Links: &models.CodeLinks{
-					Self: &models.Link{
-						ID: "code-3",
-					},
-				},
-			},
-		},
-	}, nil
+		}
+		codeResults.Items = append(codeResults.Items, codeItem)
+	}
+	return codeResults, nil
 }
 
 func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, code string) (*models.Code, error) {

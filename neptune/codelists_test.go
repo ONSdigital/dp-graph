@@ -283,3 +283,64 @@ func TestGetEditions(t *testing.T) {
 		})
 	})
 }
+
+func TestGetCodes(t *testing.T) {
+	Convey("Given a database that raises a non-transient error", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetFunc: internal.ReturnMalformedNilInterfaceRequestErr,
+		}
+		db := mockDB(poolMock)
+		Convey("When GetCodes() is called", func() {
+			unusedCodeListID := "unused-id"
+			unusedEdition := "unused-edition"
+			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
+			expectedErr := `Gremlin query failed: "g.V().hasLabel('_code_list').has('listID', 'unused-id').` +
+				`has('edition', 'unused-edition').in('usedBy').hasLabel('_code')":  MALFORMED REQUEST `
+			Convey("Then the returned error should wrap the underlying one", func() {
+				So(err.Error(), ShouldEqual, expectedErr)
+			})
+		})
+	})
+	Convey("Given a database that returns zero code vertices", t, func() {
+		poolMock := &internal.NeptunePoolMock{GetFunc: internal.ReturnZeroVertices}
+		db := mockDB(poolMock)
+		Convey("When GetCodes() is called", func() {
+			unusedCodeListID := "unused-id"
+			unusedEdition := "unused-edition"
+			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
+			Convey("Then the returned error should be ErrNotFound", func() {
+				So(err, ShouldEqual, driver.ErrNotFound)
+			})
+		})
+	})
+	Convey("Given a database that returns three code vertices", t, func() {
+		poolMock := &internal.NeptunePoolMock{GetFunc: internal.ReturnThreeCodeVertices}
+		db := mockDB(poolMock)
+		Convey("When GetCodes() is called", func() {
+			unusedCodeListID := "unused-id"
+			unusedEdition := "unused-edition"
+			codesResponse, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
+			Convey("Then no error should be returned", func() {
+				So(err, ShouldBeNil)
+			})
+			Convey("Then the driver Get function should be called once", func() {
+				calls := poolMock.GetCalls()
+				So(len(calls), ShouldEqual, 1)
+				Convey("With a well formed query string", func() {
+					expectedQry := `g.V().hasLabel('_code_list').has('listID', 'unused-id').has('edition', ` +
+						`'unused-edition').in('usedBy').hasLabel('_code')`
+					actualQry := calls[0].Query
+					So(actualQry, ShouldEqual, expectedQry)
+					Convey("Then a non nil structure returned", func() {
+						So(codesResponse, ShouldNotBeNil)
+						So(len(codesResponse.Items), ShouldEqual, 3)
+						Convey("Then set right", func() {
+							sampleCode := codesResponse.Items[1]
+							So(sampleCode.Links.Self.ID, ShouldEqual, "ID_1")
+						})
+					})
+				})
+			})
+		})
+	})
+}
