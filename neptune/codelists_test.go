@@ -50,7 +50,7 @@ func TestGetCodeLists(t *testing.T) {
 				calls := poolMock.GetCalls()
 				So(len(calls), ShouldEqual, 1)
 				Convey("With a different (more-qualified) query string", func() {
-					expectedQry := `g.V().hasLabel('_code_list').has('listID_2', 'true')`
+					expectedQry := `g.V().hasLabel('_code_list').has('listID_2', true)`
 					actualQry := calls[0].Query
 					So(actualQry, ShouldEqual, expectedQry)
 				})
@@ -67,7 +67,7 @@ func TestGetCodeLists(t *testing.T) {
 			filterBy := "unusedFilter"
 			_, err := db.GetCodeLists(context.Background(), filterBy)
 			expectedErr := `Gremlin query failed: "g.V().hasLabel('_code_list'` +
-				`).has('unusedFilter', 'true')":  MALFORMED REQUEST `
+				`).has('unusedFilter', true)":  MALFORMED REQUEST `
 			Convey("Then the returned error should wrap the underlying one", func() {
 				So(err.Error(), ShouldEqual, expectedErr)
 			})
