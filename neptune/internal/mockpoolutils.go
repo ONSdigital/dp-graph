@@ -78,13 +78,12 @@ var ReturnThreeEditionVertices = func(query string, bindings map[string]string, 
 // ReturnThreeCodeVertices is mock implementation for NeptunePool.Get() that always
 // returns a slice of three graphson.Vertex(s):
 // - of type "unused-vertex-type"
-// - with vertex.Value.ID set to "ID_0", "ID_1", and "ID_2" respectively.
-// NOTE THIS SETS AN ATTRIBUTE in vertex.Value - NOT A PROPERTY!
+// - with a "value" property set to "code_0", "code_1", and "code_2" respectively.
 var ReturnThreeCodeVertices = func(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
 	codes := []graphson.Vertex{}
 	for i := 0; i < 3; i++ {
 		vertex := makeVertex("unused-vertex-type")
-		vertex.Value.ID = fmt.Sprintf("ID_%d", i)
+		setVertexStringProperty(&vertex, "value", fmt.Sprintf("code_%d", i))
 		codes = append(codes, vertex)
 	}
 	return codes, nil

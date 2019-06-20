@@ -313,6 +313,21 @@ func TestGetCodes(t *testing.T) {
 			})
 		})
 	})
+	Convey("Given a database that provides malformed code vertices", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetFunc: internal.ReturnThreeUselessVertices,
+		}
+		db := mockDB(poolMock)
+		Convey("When GetCodes() is called", func() {
+			unusedCodeListID := "unused-id"
+			unusedEdition := "unused-edition"
+			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
+			expectedErr := `Error reading "value" property on Code vertex: property not found`
+			Convey("Then the returned error should wrap the underlying one", func() {
+				So(err.Error(), ShouldEqual, expectedErr)
+			})
+		})
+	})
 	Convey("Given a database that returns three code vertices", t, func() {
 		poolMock := &internal.NeptunePoolMock{GetFunc: internal.ReturnThreeCodeVertices}
 		db := mockDB(poolMock)
@@ -336,7 +351,7 @@ func TestGetCodes(t *testing.T) {
 						So(len(codesResponse.Items), ShouldEqual, 3)
 						Convey("Then set right", func() {
 							sampleCode := codesResponse.Items[1]
-							So(sampleCode.Links.Self.ID, ShouldEqual, "ID_1")
+							So(sampleCode.Links.Self.ID, ShouldEqual, "code_1")
 						})
 					})
 				})

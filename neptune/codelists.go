@@ -156,7 +156,7 @@ required edition (e.g.  "one-off"), and then harvests the Code nodes that are kn
 Code List.  It raises a wrapped error if the database raises a non-transient error, (e.g.  malformed
 query).  It raises driver.ErrNotFound if the graph traversal above produces an empty list of codes -
 including the case of a short-circuit early termination of the query, because no such qualifying code
-list exists.
+list exists. It returns a wrapped error if a Code is found that does not have a "value" property.
 */
 func (n *NeptuneDB) GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error) {
 	qry := fmt.Sprintf(query.GetCodes, codeListID, edition)
@@ -176,10 +176,14 @@ func (n *NeptuneDB) GetCodes(ctx context.Context, codeListID, edition string) (*
 	}
 
 	for _, codeResponse := range codeResponses {
+		codeValue, err := codeResponse.GetProperty("value")
+		if err != nil {
+			return nil, errors.Wrapf(err, `Error reading "value" property on Code vertex`)
+		}
 		codeItem := models.Code{
 			Links: &models.CodeLinks{
 				Self: &models.Link{
-					ID: codeResponse.Value.ID,
+					ID: codeValue,
 				},
 			},
 		}
