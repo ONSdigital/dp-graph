@@ -3,6 +3,8 @@ package neptune
 import (
 	"context"
 	"fmt"
+	"strings"
+	"text/template"
 
 	"github.com/pkg/errors"
 
@@ -192,6 +194,15 @@ func (n *NeptuneDB) GetCodes(ctx context.Context, codeListID, edition string) (*
 	return codeResults, nil
 }
 
+/*
+GetCode provides a Code struct to represent the requested code list, edition and code string.
+E.g. ashe-earnings|one-off|hourly-pay-gross.
+It doesn't need to access the database to form the response, but does so to validate the
+query. Specifically it can return errors as follows:
+- The Gremlin query failed to execute.
+- The query parameter values do not successfully navigate to a Code node. (error is `ErrNotFound`)
+- Duplicate Code(s) exist that satisfy the search criteria (error is `ErrMultipleFound`)
+*/
 func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, code string) (*models.Code, error) {
 	qry := fmt.Sprintf(query.CodeExists, codeListID, edition, code)
 	nFound, err := n.getNumber(qry)
@@ -214,6 +225,28 @@ func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, cod
 }
 
 func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error) {
+
+	// Format the query using text.Template to enable the (non-trivial)
+	// query.GetCodeDatasets to be more self-documenting.
+	t := template.Must(template.New("").Parse(query.GetCodeDatasetsTemplate))
+	sb := &strings.Builder{}
+	params := map[string]string{
+		"codeListID": codeListID,
+		"edition":    edition,
+		"codeValue":  code,
+	}
+	if err := t.Execute(sb, params); err != nil {
+		return nil, errors.Wrapf(err, "template execution failed")
+	}
+	qry := sb.String()
+	instanceResponses, err := n.getVertices(qry)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
+	}
+	if len(instanceResponses) == 0 {
+		return nil, driver.ErrNotFound
+	}
+
 	return &models.Datasets{
 		Items: []models.Dataset{
 			{

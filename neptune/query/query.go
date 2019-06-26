@@ -13,6 +13,18 @@ const (
 	CodeExists = "g.V().hasLabel('_code_list')" +
 		".has('listID', '%s').has('edition', '%s')" +
 		".in('usedBy').has('value', '%s').count()"
+
+	// GetCodeDatasetsTemplate uses text.Template form to make it easier to follow.
+	GetCodeDatasetsTemplate = `g.V().hasLabel('_code_list').
+		has('listID', '{{.codeListID}}').
+		has('edition', '{{.edition}}').
+		in('usedBy').
+		hasLabel('_code').
+		has('value', '{{.codeValue}}').
+		out('inDataset').
+		has('is_published', true)
+	`
+
 	GetCodeDatasets = "g.V().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').inE('usedBy').as('r').match(" +
 		"__.as('r').outV().has('value','%s').as('c')," +
 		"__.as('c').out('inDataset').as('d')," +
