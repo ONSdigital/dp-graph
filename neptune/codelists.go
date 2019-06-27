@@ -3,8 +3,6 @@ package neptune
 import (
 	"context"
 	"fmt"
-	"strings"
-	"text/template"
 
 	"github.com/pkg/errors"
 
@@ -226,26 +224,13 @@ func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, cod
 
 func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error) {
 
-	// Format the query using text.Template to enable the (non-trivial)
-	// query.GetCodeDatasets to be more self-documenting.
-	t := template.Must(template.New("").Parse(query.GetCodeDatasetsTemplate))
-	sb := &strings.Builder{}
-	params := map[string]string{
-		"codeListID": codeListID,
-		"edition":    edition,
-		"codeValue":  code,
-	}
-	if err := t.Execute(sb, params); err != nil {
-		return nil, errors.Wrapf(err, "template execution failed")
-	}
-	qry := sb.String()
+	qry := fmt.Sprintf(query.GetCodeDatasets, codeListID, edition, code)
+	fmt.Printf("XXXXX: %v", qry)
 	instanceResponses, err := n.getVertices(qry)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
+		return nil, errors.Wrapf(err, "Gremlin GetVertices failed: %q", qry)
 	}
-	if len(instanceResponses) == 0 {
-		return nil, driver.ErrNotFound
-	}
+	_ = instanceResponses
 
 	return &models.Datasets{
 		Items: []models.Dataset{

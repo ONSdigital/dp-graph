@@ -14,22 +14,11 @@ const (
 		".has('listID', '%s').has('edition', '%s')" +
 		".in('usedBy').has('value', '%s').count()"
 
-	// GetCodeDatasetsTemplate uses text.Template form to make it easier to follow.
-	GetCodeDatasetsTemplate = `g.V().hasLabel('_code_list').
-		has('listID', '{{.codeListID}}').
-		has('edition', '{{.edition}}').
-		in('usedBy').
-		hasLabel('_code').
-		has('value', '{{.codeValue}}').
-		out('inDataset').
-		has('is_published', true)
-	`
-
-	GetCodeDatasets = "g.V().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').inE('usedBy').as('r').match(" +
-		"__.as('r').outV().has('value','%s').as('c')," +
-		"__.as('c').out('inDataset').as('d')," +
-		"__.as('d').has('is_published',true)" +
-		").select('d','r')"
+	GetCodeDatasets = "g.V().hasLabel('_code_list').has('listID', '%s').has('edition','%s').inE('usedBy').as('usedBy').match(" +
+		"__.as('usedBy').outV().has('value','%s').as('code')," +
+		"__.as('code').out('inDataset').as('instance')," +
+		"__.as('instance').has('is_published',true)" +
+		").select('instance')"
 
 	// hierarchy write
 	CloneHierarchyNodes = "g.V().hasLabel('_generic_hierarchy_node_%s').as('old')" +
