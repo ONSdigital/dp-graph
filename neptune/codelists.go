@@ -224,9 +224,11 @@ func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, cod
 
 func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error) {
 
-	qry := fmt.Sprintf(query.GetCodeDatasets, codeListID, edition, code)
+	//qry := fmt.Sprintf(query.GetCodeDatasets, codeListID, edition, code)
+	qry := fmt.Sprintf(query.GetCodeDatasets)
 	fmt.Printf("XXXXX: %v", qry)
-	instanceResponses, err := n.getVertices(qry)
+	//instanceResponses, err := n.getVertices(qry)
+	instanceResponses, err := n.getStringList(qry)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Gremlin GetVertices failed: %q", qry)
 	}

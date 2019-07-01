@@ -437,6 +437,8 @@ func TestGetCode(t *testing.T) {
 	})
 }
 
+
+/*
 func TestGetCodeDatasets(t *testing.T) {
 	Convey("Given a database that returns todo", t, func() {
 		poolMock := &internal.NeptunePoolMock{}
@@ -452,3 +454,4 @@ func TestGetCodeDatasets(t *testing.T) {
 		})
 	})
 }
+*/

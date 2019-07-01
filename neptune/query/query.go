@@ -14,11 +14,31 @@ const (
 		".has('listID', '%s').has('edition', '%s')" +
 		".in('usedBy').has('value', '%s').count()"
 
-	GetCodeDatasets = "g.V().hasLabel('_code_list').has('listID', '%s').has('edition','%s').inE('usedBy').as('usedBy').match(" +
-		"__.as('usedBy').outV().has('value','%s').as('code')," +
-		"__.as('code').out('inDataset').as('instance')," +
-		"__.as('instance').has('is_published',true)" +
-		").select('instance')"
+	// Naming:
+	//   r: usedBy relation
+	//  rl: usedBy.label
+	//   c: code node
+	//   d: dataset
+	//  de: dataset.edition
+	//  dv: dataset.version
+	GetCodeDatasets = `g.V().hasLabel('_code_list').has('listID', 'code-list-id-for-dataset-test').
+		has('edition','code-list-edition-for-dataset-test').
+		inE('usedBy').as('r').values('label').as('rl').select('r').
+		match(
+			__.as('r').outV().has('value','code-value-for-dataset-test').as('c'),
+			__.as('c').out('inDataset').as('d').
+				select('d').values('edition').as('de').
+				select('d').values('version').as('dv'),
+		__.as('d').has('is_published',true)).
+		union(select('rl', 'de', 'dv')).select(values)`
+
+	/*
+		GetCodeDatasets = "g.V().hasLabel('_code_list').has('listID', '%s').has('edition','%s').inE('usedBy').as('usedBy').match(" +
+			"__.as('usedBy').outV().has('value','%s').as('code')," +
+			"__.as('code').out('inDataset').as('instance')," +
+			"__.as('instance').has('is_published',true)" +
+			").select('instance')"
+	*/
 
 	// hierarchy write
 	CloneHierarchyNodes = "g.V().hasLabel('_generic_hierarchy_node_%s').as('old')" +
