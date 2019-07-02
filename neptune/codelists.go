@@ -224,15 +224,28 @@ func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, cod
 
 func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error) {
 
-	//qry := fmt.Sprintf(query.GetCodeDatasets, codeListID, edition, code)
 	qry := fmt.Sprintf(query.GetCodeDatasets)
-	fmt.Printf("XXXXX: %v", qry)
-	//instanceResponses, err := n.getVertices(qry)
-	instanceResponses, err := n.getStringList(qry)
+	responses, err := n.getStringList(qry)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Gremlin GetVertices failed: %q", qry)
+		return nil, errors.Wrapf(err, "Gremlin GetCodeDatasets failed: %q", qry)
 	}
-	_ = instanceResponses
+	// This will include *version* but ignoring for now.
+
+	// Responses is a list of strings comprises dimensionName, edition,
+	// repeated for each dataset Instance object found.
+	const stride = 2 // I.e. dimesionName, edition
+	nInstances := len(responses) / stride
+	for i := 0; i < nInstances; i++ {
+		offset := i * stride
+		dimensionName := responses[offset+0]
+		edition := responses[offset+1]
+		_ = []string{dimensionName, edition}
+	}
+
+	// todo
+	// 1) reconcile the permuations of dimensionName and edition.
+	// 2) for each permutation, find (among duplicates) the most recent version.
+	// 3) populate a data structure the same shape as that below accordingly.
 
 	return &models.Datasets{
 		Items: []models.Dataset{
