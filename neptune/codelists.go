@@ -229,17 +229,16 @@ func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition str
 	if err != nil {
 		return nil, errors.Wrapf(err, "Gremlin GetCodeDatasets failed: %q", qry)
 	}
-	// This will include *version* but ignoring for now.
-
-	// Responses is a list of strings comprises dimensionName, edition,
+	// Responses is a list of strings comprises dimensionName, edition, version
 	// repeated for each dataset Instance object found.
-	const stride = 2 // I.e. dimesionName, edition
+	const stride = 3 // I.e. dimesionName, edition, version
 	nInstances := len(responses) / stride
 	for i := 0; i < nInstances; i++ {
 		offset := i * stride
 		dimensionName := responses[offset+0]
 		dataSetEdition := responses[offset+1]
-		_ = []string{dimensionName, dataSetEdition}
+		version := responses[offset+2]
+		_ = []string{dimensionName, dataSetEdition, version}
 	}
 
 	// todo

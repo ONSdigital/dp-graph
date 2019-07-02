@@ -28,7 +28,7 @@ const (
 			c: code node
 			d: dataset
 			de: dataset.edition
-			dv: dataset.version // temporarily excluded from response until it is a string not int
+			dv: dataset.version
 	*/
 	GetCodeDatasets = `g.V().hasLabel('_code_list').has('listID', '%s').
 		has('edition','%s').
@@ -39,7 +39,7 @@ const (
 				select('d').values('edition').as('de').
 				select('d').values('version').as('dv'),
 			__.as('d').has('is_published',true)).
-		union(select('rl', 'de')).unfold().select(values)
+		union(select('rl', 'de', 'dv')).unfold().select(values)
 	`
 
 	// hierarchy write
