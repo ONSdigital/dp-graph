@@ -224,7 +224,7 @@ func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, cod
 
 func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error) {
 
-	qry := fmt.Sprintf(query.GetCodeDatasets)
+	qry := fmt.Sprintf(query.GetCodeDatasets, codeListID, edition, code)
 	responses, err := n.getStringList(qry)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Gremlin GetCodeDatasets failed: %q", qry)
@@ -238,8 +238,8 @@ func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition str
 	for i := 0; i < nInstances; i++ {
 		offset := i * stride
 		dimensionName := responses[offset+0]
-		edition := responses[offset+1]
-		_ = []string{dimensionName, edition}
+		dataSetEdition := responses[offset+1]
+		_ = []string{dimensionName, dataSetEdition}
 	}
 
 	// todo

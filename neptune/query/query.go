@@ -14,25 +14,27 @@ const (
 		".has('listID', '%s').has('edition', '%s')" +
 		".in('usedBy').has('value', '%s').count()"
 
-    /*
-    This query harvests data from both edges and nodes, so we collapse
-    the response to contain only strings - to make it parse-able with
-    the graphson string-list method.
+	/*
+		This query harvests data from both edges and nodes, so we collapse
+		the response to contain only strings - to make it parse-able with
+		the graphson string-list method.
 
-	Naming:
+		%s Parameters: codeListID, codeListEdition, codeValue
 
-        r: usedBy relation
-        rl: usedBy.label
-        c: code node
-        d: dataset
-        de: dataset.edition
-        dv: dataset.version // temporarily excluded from response until it is a string not int
-    */
-	GetCodeDatasets = `g.V().hasLabel('_code_list').has('listID', 'code-list-id-for-dataset-test').
-		has('edition','code-list-edition-for-dataset-test').
+		Naming:
+
+			r: usedBy relation
+			rl: usedBy.label
+			c: code node
+			d: dataset
+			de: dataset.edition
+			dv: dataset.version // temporarily excluded from response until it is a string not int
+	*/
+	GetCodeDatasets = `g.V().hasLabel('_code_list').has('listID', '%s').
+		has('edition','%s').
 		inE('usedBy').as('r').values('label').as('rl').select('r').
 		match(
-			__.as('r').outV().has('value','code-value-for-dataset-test').as('c'),
+			__.as('r').outV().has('value','%s').as('c'),
 			__.as('c').out('inDataset').as('d').
 				select('d').values('edition').as('de').
 				select('d').values('version').as('dv'),
