@@ -2,15 +2,15 @@ package query
 
 const (
 	// codelists
-	GetCodeLists         = "g.V().hasLabel('_code_list')"
-	GetCodeListsFiltered = "g.V().hasLabel('_code_list').has('%s', 'true')"
-	GetCodeList          = "g.V().hasLabel('_code_list').has('listID', '%s')"
-	CodeListExists       = "g.V().hasLabel('_code_list').has('listID', '%s').count()"
-	CodeListEditionExists   = "g.V().hasLabel('_code_list').has('listID', '%s').has('edition', '%s').count()"
-	CountEditions        = "g.V().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').count()"
-	GetCodes             = "g.V().hasLabel('_code').as('c').out('usedBy').as('r').inV().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').select('c','r')"
-	GetCode              = "g.V().hasLabel('_code').has('value','%s').as('c').out('usedBy').as('r').inV().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').select('c','r')"
-	GetCodeDatasets      = "g.V().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').inE('usedBy').as('r').match(" +
+	GetCodeLists          = "g.V().hasLabel('_code_list')"
+	GetCodeListsFiltered  = "g.V().hasLabel('_code_list').has('%s', 'true')"
+	GetCodeList           = "g.V().hasLabel('_code_list').has('listID', '%s')"
+	CodeListExists        = "g.V().hasLabel('_code_list').has('listID', '%s').count()"
+	CodeListEditionExists = "g.V().hasLabel('_code_list').has('listID', '%s').has('edition', '%s').count()"
+	CountEditions         = "g.V().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').count()"
+	GetCodes              = "g.V().hasLabel('_code').as('c').out('usedBy').as('r').inV().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').select('c','r')"
+	GetCode               = "g.V().hasLabel('_code').has('value','%s').as('c').out('usedBy').as('r').inV().hasLabel('_code_list').hasLabel('_code_list_%s').has('edition','%s').select('c','r')"
+	GetCodeDatasets       = "g.V().hasLabel('_code_list').has('listID', '%s').has('edition','%s').inE('usedBy').as('r').match(" +
 		"__.as('r').outV().has('value','%s').as('c')," +
 		"__.as('c').out('inDataset').as('d')," +
 		"__.as('d').has('is_published',true)" +
@@ -57,4 +57,14 @@ const (
 
 	// dimension
 	CreateDimensionToInstanceRelationship = "g.addV('_%s_%s').property('value','%s').as('d').addE('HAS_DIMENSION').from(V().hasLabel('_%s_Instance')).select('d').by(id)"
+
+	// observation
+	//GetInstanceHeader  = "g.V().hasLabel('_%s_Instance').as('instance')."
+	GetInstanceHeader  = "g.V().hasLabel('_%s_Instance').as('instance')."
+	GetAllObservations = "g.V().hasLabel('_%s_observation').values('row')" //should this be called row or value?
+
+	GetObservationsPart         = "V().hasLabel('_%s_observation').match("
+	GetObservationDimensionPart = "__.as('row').out('isValueOf').hasLabel('_%s_%s').where(values('value').is(within(%s)))"
+	GetObservationSelectRowPart = ").select('instance', 'row').by('header').by('row').unfold().dedup().select(values)"
+	LimitPart                   = ".limit(%v)"
 )

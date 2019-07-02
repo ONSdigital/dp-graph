@@ -1,6 +1,8 @@
 package driver
 
 import (
+	"context"
+
 	gremgo "github.com/gedge/gremgo-neptune"
 )
 
@@ -16,4 +18,5 @@ type NeptunePool interface {
 	Get(query string, bindings, rebindings map[string]string) (resp interface{}, err error)
 	GetCount(q string, bindings, rebindings map[string]string) (i int64, err error)
 	GetE(q string, bindings, rebindings map[string]string) (resp interface{}, err error)
+	OpenCursorCtx(ctx context.Context, query string, bindings, rebindings map[string]string) (cursor *gremgo.Cursor, err error)
 }

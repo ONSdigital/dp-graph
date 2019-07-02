@@ -2,13 +2,57 @@ package neptune
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
+	"github.com/ONSdigital/dp-graph/neptune/query"
 	"github.com/ONSdigital/dp-graph/observation"
 	"github.com/ONSdigital/dp-observation-importer/models"
+	"github.com/davecgh/go-spew/spew"
 )
 
 func (n *NeptuneDB) StreamCSVRows(ctx context.Context, filter *observation.Filter, limit *int) (observation.StreamRowReader, error) {
-	return nil, nil
+	//build query
+	//get header - instance node, return i.header as row
+	q := fmt.Sprintf(query.GetInstanceHeader, filter.InstanceID)
+
+	var obsQuery string
+	//also retrieve observations
+	if filter.IsEmpty() {
+		obsQuery = fmt.Sprintf(query.GetAllObservations, filter.InstanceID)
+	} else {
+		obsQuery = buildObservationsQuery(filter)
+	}
+
+	q += obsQuery
+	//apply limit if provided
+	if limit != nil {
+		q += fmt.Sprintf(query.LimitPart, *limit)
+	}
+
+	spew.Dump(q)
+	//return stream to this query
+	return n.Pool.OpenCursorCtx(ctx, q, nil, nil)
+}
+
+func buildObservationsQuery(f *observation.Filter) string {
+	q := fmt.Sprintf(query.GetObservationsPart, f.InstanceID)
+
+	for _, dim := range f.DimensionFilters {
+		if len(dim.Options) == 0 {
+			continue
+		}
+
+		for i, opt := range dim.Options {
+			dim.Options[i] = fmt.Sprintf("'%s'", opt)
+		}
+
+		q += fmt.Sprintf(query.GetObservationDimensionPart, f.InstanceID, dim.Name, strings.Join(dim.Options, ",")) + ","
+	}
+
+	q = strings.Trim(q, ",")
+	q += query.GetObservationSelectRowPart
+	return q
 }
 
 func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, instanceID string, observations []*models.Observation, dimensionIDs map[string]string) error {
