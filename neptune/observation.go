@@ -2,6 +2,7 @@ package neptune
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -10,17 +11,19 @@ import (
 	"github.com/ONSdigital/dp-observation-importer/models"
 )
 
-func (n *NeptuneDB) StreamCSVRows(ctx context.Context, filter *observation.Filter, limit *int) (observation.StreamRowReader, error) {
-	q := fmt.Sprintf(query.GetInstanceHeader, filter.InstanceID)
+// ErrEmptyFilter is returned if the provided filter is empty.
+var ErrEmptyFilter = errors.New("filter is empty")
 
-	var obsQuery string
-	if filter.IsEmpty() {
-		obsQuery = fmt.Sprintf(query.GetAllObservations, filter.InstanceID)
-	} else {
-		obsQuery = buildObservationsQuery(filter)
+func (n *NeptuneDB) StreamCSVRows(ctx context.Context, filter *observation.Filter, limit *int) (observation.StreamRowReader, error) {
+	if filter == nil {
+		return nil, ErrEmptyFilter
 	}
 
-	q += obsQuery
+	q := fmt.Sprintf(query.GetInstanceHeader, filter.InstanceID)
+
+	q += buildObservationsQuery(filter)
+	q += query.GetObservationSelectRowPart
+
 	if limit != nil {
 		q += fmt.Sprintf(query.LimitPart, *limit)
 	}
@@ -29,6 +32,10 @@ func (n *NeptuneDB) StreamCSVRows(ctx context.Context, filter *observation.Filte
 }
 
 func buildObservationsQuery(f *observation.Filter) string {
+	if f.IsEmpty() {
+		return fmt.Sprintf(query.GetAllObservationsPart, f.InstanceID)
+	}
+
 	q := fmt.Sprintf(query.GetObservationsPart, f.InstanceID)
 
 	for _, dim := range f.DimensionFilters {
@@ -43,8 +50,10 @@ func buildObservationsQuery(f *observation.Filter) string {
 		q += fmt.Sprintf(query.GetObservationDimensionPart, f.InstanceID, dim.Name, strings.Join(dim.Options, ",")) + ","
 	}
 
+	//remove trailing comma and close match statement
 	q = strings.Trim(q, ",")
-	q += query.GetObservationSelectRowPart
+	q += ")"
+
 	return q
 }
 
