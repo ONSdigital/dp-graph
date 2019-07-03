@@ -8,16 +8,12 @@ import (
 	"github.com/ONSdigital/dp-graph/neptune/query"
 	"github.com/ONSdigital/dp-graph/observation"
 	"github.com/ONSdigital/dp-observation-importer/models"
-	"github.com/davecgh/go-spew/spew"
 )
 
 func (n *NeptuneDB) StreamCSVRows(ctx context.Context, filter *observation.Filter, limit *int) (observation.StreamRowReader, error) {
-	//build query
-	//get header - instance node, return i.header as row
 	q := fmt.Sprintf(query.GetInstanceHeader, filter.InstanceID)
 
 	var obsQuery string
-	//also retrieve observations
 	if filter.IsEmpty() {
 		obsQuery = fmt.Sprintf(query.GetAllObservations, filter.InstanceID)
 	} else {
@@ -25,13 +21,10 @@ func (n *NeptuneDB) StreamCSVRows(ctx context.Context, filter *observation.Filte
 	}
 
 	q += obsQuery
-	//apply limit if provided
 	if limit != nil {
 		q += fmt.Sprintf(query.LimitPart, *limit)
 	}
 
-	spew.Dump(q)
-	//return stream to this query
 	return n.Pool.OpenCursorCtx(ctx, q, nil, nil)
 }
 

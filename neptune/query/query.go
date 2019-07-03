@@ -59,9 +59,8 @@ const (
 	CreateDimensionToInstanceRelationship = "g.addV('_%s_%s').property('value','%s').as('d').addE('HAS_DIMENSION').from(V().hasLabel('_%s_Instance')).select('d').by(id)"
 
 	// observation
-	//GetInstanceHeader  = "g.V().hasLabel('_%s_Instance').as('instance')."
 	GetInstanceHeader  = "g.V().hasLabel('_%s_Instance').as('instance')."
-	GetAllObservations = "g.V().hasLabel('_%s_observation').values('row')" //should this be called row or value?
+	GetAllObservations = "g.V().hasLabel('_%s_observation').values('row')"
 
 	GetObservationsPart         = "V().hasLabel('_%s_observation').match("
 	GetObservationDimensionPart = "__.as('row').out('isValueOf').hasLabel('_%s_%s').where(values('value').is(within(%s)))"
