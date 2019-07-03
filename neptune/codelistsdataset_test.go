@@ -54,8 +54,31 @@ func TestBuildDim2Edition(t *testing.T) {
 				So(err, ShouldBeNil)
 			})
 			Convey("Then the returned data structure should be properly constructed", func() {
+				So(d2e, ShouldHaveLength, 2)
+				So(d2e["dim0"], ShouldHaveLength, 2)
+				So(d2e["dim1"], ShouldHaveLength, 2)
 				latestVersion := d2e["dim0"]["edition0"]
 				So(latestVersion, ShouldEqual, 1)
+			})
+		})
+	})
+}
+
+func TestBuildResponse(t *testing.T) {
+	Convey("Given triples derived from a 2 * 2 * 2 combinatorial input", t, func() {
+		inputTriples := makeTestTriples()
+		Convey("When you call buildDim2Edition with them", func() {
+			d2e, err := buildDim2Edition(inputTriples)
+			Convey("Then no error should be returned", func() {
+				So(err, ShouldBeNil)
+				Convey("Then when buildResponse() is called using these datastructures", func() {
+					codeValue := "testCodeValue"
+					codeListID := "testCodeListID"
+					response := buildResponse(d2e, codeValue, codeListID)
+					Convey("Then the response should be well formed", func() {
+						So(response, ShouldNotBeNil)
+					})
+				})
 			})
 		})
 	})
@@ -75,7 +98,3 @@ func makeTestTriples() [][]string {
 	}
 	return triples
 }
-
-// add other combinations
-// add empty input
-// add error handling

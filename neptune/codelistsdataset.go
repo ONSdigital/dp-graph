@@ -19,6 +19,26 @@ import (
 	"github.com/ONSdigital/dp-graph/neptune/query"
 )
 
+/*
+GetCodeDatasets searches the database for datasets that are associated with
+the given code list, code and code list edition. Specifically those that
+satisfy all of:
+    1) code lists that match the requested code list ID.
+    2) code lists of the requested edition.
+    3) codes that match the requested code value.
+    4) datasets that are related to qualifying codes by *inDataset*.
+    5) datasets that have the *isPublished* state.
+
+Each such result from the database has the properties:
+    - dimensionName (what this label is called in the context of the dataset)
+    - datasetEdition
+    - version
+
+The results include all permuations of dimensionName and datasetEdition - 
+BUT ONLY CITES the most recent dataset *version* of those found for that
+permuation.
+
+*/
 func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error) {
 
 	// Emit the query and parse the responses.
@@ -41,18 +61,12 @@ func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition str
 		return nil, errors.Wrap(err, "Cannot isolate latest versions.")
 	}
 
-	// Build the request response from the reduced data
-	for dimensionName, e2v := range dimensionNameToEditions {
-		for dataSetEdition, version := range e2v {
-			fmt.Printf("XXXXX %s, %s, %d\n", dimensionName, dataSetEdition, version)
-		}
-	}
+	// Package up the model-ised response.
+	response := buildResponse(dimensionNameToEditions, code, codeListID)
+	return response, nil
+}
 
-	// todo
-	// 1) reconcile the permuations of dimensionName and edition.
-	// 2) for each permutation, find (among duplicates) the most recent version.
-	// 3) populate a data structure the same shape as that below accordingly.
-
+/*
 	return &models.Datasets{
 		Items: []models.Dataset{
 			{
@@ -107,6 +121,7 @@ func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition str
 		},
 	}, nil
 }
+*/
 
 /*
 createTriples splits a list of strings into clumps of 3
@@ -160,4 +175,33 @@ func buildDim2Edition(responseTriples [][]string) (dim2Edition, error) {
 		}
 	}
 	return d2e, nil
+}
+
+func buildResponse(d2e dim2Edition, code string, codeListID string) *models.Datasets {
+	datasets := &models.Datasets{
+		Items:      []models.Dataset{},
+		Count:      len(d2e),
+		Limit:      len(d2e),
+		TotalCount: len(d2e),
+	}
+	for dimensionName, e2v := range d2e {
+		datasetLinks := &models.DatasetLinks{Self: &models.Link{ID: code}}
+		dataset := models.Dataset{
+			Links:          datasetLinks,
+			DimensionLabel: dimensionName,
+			Editions:       []models.DatasetEdition{},
+		}
+		datasets.Items = append(datasets.Items, dataset)
+		for dataSetEdition, version := range e2v {
+			versionStr := fmt.Sprintf("%d", version)
+			edition := models.DatasetEdition{}
+			edition.Links = &models.DatasetEditionLinks{
+				Self:             &models.Link{ID: dataSetEdition},
+				LatestVersion:    &models.Link{ID: versionStr},
+				DatasetDimension: &models.Link{ID: codeListID},
+			}
+			dataset.Editions = append(dataset.Editions, edition)
+		}
+	}
+	return datasets
 }
