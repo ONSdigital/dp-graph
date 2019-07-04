@@ -7,6 +7,9 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+/*
+TestCreateTriples validates a low level test input generator utility.
+*/
 func TestCreateTriples(t *testing.T) {
 	Convey("Given an input list of 6 strings", t, func() {
 		input := []string{"a", "b", "c", "d", "e", "f"}
@@ -45,6 +48,25 @@ func TestCreateTriples(t *testing.T) {
 	})
 }
 
+/*
+TestCreateTestTriples makes sure that a particular intended test input is
+what it is expected to be.
+*/
+func TestCreateTestTriples(t *testing.T) {
+	Convey("When createTestTriples() is alled", t, func() {
+		triples := makeTestTriples()
+		Convey("Then the returned [][]string structure should be composed correctly", func() {
+			So(triples, ShouldHaveLength, 8)
+			// Take a couple of samples.
+			So(triples[3], ShouldResemble, []string{"dim0", "edition1", "1"})
+			So(triples[6], ShouldResemble, []string{"dim1", "edition1", "0"})
+		})
+	})
+}
+
+/*
+TestBuildDim2Edition validates an individual function used in the implementation.
+*/
 func TestBuildDim2Edition(t *testing.T) {
 	Convey("Given a 2 * 2 * 2 combinatorial input", t, func() {
 		inputTriples := makeTestTriples()
@@ -57,6 +79,7 @@ func TestBuildDim2Edition(t *testing.T) {
 				So(d2e, ShouldHaveLength, 2)
 				So(d2e["dim0"], ShouldHaveLength, 2)
 				So(d2e["dim1"], ShouldHaveLength, 2)
+				// Take some samples.
 				latestVersion := d2e["dim0"]["edition0"]
 				So(latestVersion, ShouldEqual, 1)
 			})
@@ -64,6 +87,9 @@ func TestBuildDim2Edition(t *testing.T) {
 	})
 }
 
+/*
+TestBuildResponse validates an individual function used in the implementation.
+*/
 func TestBuildResponse(t *testing.T) {
 	Convey("Given triples derived from a 2 * 2 * 2 combinatorial input", t, func() {
 		inputTriples := makeTestTriples()
@@ -76,7 +102,19 @@ func TestBuildResponse(t *testing.T) {
 					codeListID := "testCodeListID"
 					response := buildResponse(d2e, codeValue, codeListID)
 					Convey("Then the response should be well formed", func() {
-						So(response, ShouldNotBeNil)
+						So(response.Count, ShouldEqual, 2)
+						So(response.Items, ShouldHaveLength, 2)
+						dataset := response.Items[1]
+						// Whether dim0 or dim1 is returned first is not deterministic.
+						// In repeat test runs if flips seemingly randomly.
+						// so we use the ShouldBeIn assertion.
+						So(dataset.DimensionLabel, ShouldBeIn, []string{"dim0", "dim1"})
+						So(dataset.Links.Self.ID, ShouldEqual, "testCodeValue")
+						editions := dataset.Editions
+						So(editions, ShouldHaveLength, 2)
+						datasetEdition := editions[1]
+						So(datasetEdition.Links.Self.ID, ShouldBeIn, []string{"edition0", "edition1"})
+						So(datasetEdition.Links.LatestVersion.ID, ShouldEqual, "1")
 					})
 				})
 			})
@@ -84,6 +122,11 @@ func TestBuildResponse(t *testing.T) {
 	})
 }
 
+/*
+makeTestTriples returns 8 lists of strings, in this pattern:
+[["dim0", "edition0", "0"], ["dim0", "edition0", "1"], ...]
+With all the permutations of the numeric suffix in {0|1}.
+*/
 func makeTestTriples() [][]string {
 	triples := [][]string{}
 	for i := 0; i < 2; i++ {

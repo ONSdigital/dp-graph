@@ -3,7 +3,7 @@ This module, when combined with codelist.go, provides code that
 satisfies the graph.driver.CodeList interface using Gremlin queries into
 a Neptune database.
 
-This module is dedicated to code to satisfy the GetCodeDatasets() method -
+It is dedicated to code to satisfy the GetCodeDatasets() method -
 which is sufficiently complex to merit a module (and tests) of its own.
 */
 package neptune
@@ -21,22 +21,22 @@ import (
 
 /*
 GetCodeDatasets searches the database for datasets that are associated with
-the given code list, code and code list edition. Specifically those that
+the given code list, code, and code list edition. Specifically those that
 satisfy all of:
     1) code lists that match the requested code list ID.
     2) code lists of the requested edition.
     3) codes that match the requested code value.
-    4) datasets that are related to qualifying codes by *inDataset*.
-    5) datasets that have the *isPublished* state.
+    4) datasets that are related to qualifying codes by *inDataset* edges.
+    5) datasets that have the *isPublished* state true.
 
-Each such result from the database has the properties:
-    - dimensionName (what this label is called in the context of the dataset)
+Each such result from the database (potentially) has the properties:
+    - dimensionName (what the dataset calls this dimension)
     - datasetEdition
     - version
 
-The results include all permuations of dimensionName and datasetEdition - 
-BUT ONLY CITES the most recent dataset *version* of those found for that
-permuation.
+The results however include all permuations of dimensionName and 
+datasetEdition - BUT ONLY CITES the most recent dataset *version* of those 
+found for that permuation.
 
 */
 func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error) {
@@ -48,7 +48,7 @@ func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition str
 		return nil, errors.Wrapf(err, "Gremlin GetCodeDatasets failed: %q", qry)
 	}
 
-	// Isolate the individual records
+	// Isolate the individual records from the flattened response.
 	// [['dim', 'edition', 'version'], ['dim', 'edition', ...]]
 	responseTriples, err := createTriples(responses)
 	if err != nil {
@@ -65,63 +65,6 @@ func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition str
 	response := buildResponse(dimensionNameToEditions, code, codeListID)
 	return response, nil
 }
-
-/*
-	return &models.Datasets{
-		Items: []models.Dataset{
-			{
-				DimensionLabel: "label 1",
-				Links: &models.DatasetLinks{
-					Self: &models.Link{
-						ID: code,
-					},
-				},
-				Editions: []models.DatasetEdition{
-					{
-						Links: &models.DatasetEditionLinks{
-							Self: &models.Link{
-								ID: "edition-1",
-							},
-							LatestVersion: &models.Link{
-								ID: "1",
-							},
-							DatasetDimension: &models.Link{
-								ID: codeListID,
-							},
-						},
-					},
-					{
-						Links: &models.DatasetEditionLinks{
-							Self: &models.Link{
-								ID: "edition-2",
-							},
-							LatestVersion: &models.Link{
-								ID: "1",
-							},
-							DatasetDimension: &models.Link{
-								ID: codeListID,
-							},
-						},
-					},
-					{
-						Links: &models.DatasetEditionLinks{
-							Self: &models.Link{
-								ID: "edition-3",
-							},
-							LatestVersion: &models.Link{
-								ID: "1",
-							},
-							DatasetDimension: &models.Link{
-								ID: codeListID,
-							},
-						},
-					},
-				},
-			},
-		},
-	}, nil
-}
-*/
 
 /*
 createTriples splits a list of strings into clumps of 3
@@ -143,7 +86,7 @@ func createTriples(responses []string) ([][]string, error) {
 	return responseTriples, nil
 }
 
-// These (nested) maps offer to track the latest version cited by any combination
+// These (nested) maps track the latest version cited by any combination
 // of dimensionName and dataset edition.
 
 type editionToLatestVersion map[string]int
@@ -177,6 +120,11 @@ func buildDim2Edition(responseTriples [][]string) (dim2Edition, error) {
 	return d2e, nil
 }
 
+/*
+buildResponse is capable of consuming a dim2Edition data structure, along
+with a few other query parameters, and from these, building the data
+structure model hierchy required by the GetCodeDatasets API method.
+*/
 func buildResponse(d2e dim2Edition, code string, codeListID string) *models.Datasets {
 	datasets := &models.Datasets{
 		Items:      []models.Dataset{},
@@ -191,7 +139,6 @@ func buildResponse(d2e dim2Edition, code string, codeListID string) *models.Data
 			DimensionLabel: dimensionName,
 			Editions:       []models.DatasetEdition{},
 		}
-		datasets.Items = append(datasets.Items, dataset)
 		for dataSetEdition, version := range e2v {
 			versionStr := fmt.Sprintf("%d", version)
 			edition := models.DatasetEdition{}
@@ -202,6 +149,7 @@ func buildResponse(d2e dim2Edition, code string, codeListID string) *models.Data
 			}
 			dataset.Editions = append(dataset.Editions, edition)
 		}
+		datasets.Items = append(datasets.Items, dataset)
 	}
 	return datasets
 }
