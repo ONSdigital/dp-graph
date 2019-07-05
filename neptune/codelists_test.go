@@ -436,22 +436,3 @@ func TestGetCode(t *testing.T) {
 		})
 	})
 }
-
-
-/*
-func TestGetCodeDatasets(t *testing.T) {
-	Convey("Given a database that returns todo", t, func() {
-		poolMock := &internal.NeptunePoolMock{}
-		db := mockDB(poolMock)
-		Convey("When GetCodeDatasets() is called", func() {
-			unusedCodeListID := "unused-id"
-			unusedEdition := "unused-edition"
-			unusedCode := "unused-code"
-			_, err := db.GetCodeDatasets(context.Background(), unusedCodeListID, unusedEdition, unusedCode)
-			Convey("Then no error should be returned", func() {
-				So(err, ShouldBeNil)
-			})
-		})
-	})
-}
-*/
