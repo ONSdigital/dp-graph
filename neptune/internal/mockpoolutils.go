@@ -47,6 +47,13 @@ var ReturnMalformedNilInterfaceRequestErr = func(q string, bindings, rebindings 
 	return nil, errors.New(" MALFORMED REQUEST ")
 }
 
+// ReturnMalformedStringListRequestErr is a mock implementation for
+// NeptunePool functions that return  ([]string, error) which always returns an
+// error that is judged to be not transient by neptune.isTransientError
+var ReturnMalformedStringListRequestErr = func(q string, bindings, rebindings map[string]string) ([]string, error) {
+	return nil, errors.New(" MALFORMED REQUEST ")
+}
+
 // ReturnThreeCodeLists is mock implementation for NeptunePool.Get() that always
 // returns a slice of three graphson.Vertex(s):
 // - of type "_code_list"
@@ -153,4 +160,25 @@ func makeCodeListVertex(listIDSuffix int, edition string) graphson.Vertex {
 	setVertexStringProperty(&v, "listID", fmt.Sprintf("listID_%d", listIDSuffix))
 	setVertexStringProperty(&v, "edition", edition)
 	return v
+}
+
+// ReturnFiveStrings is a mock implementation for
+// NeptunePool functions that return  ([]string, error) which always returns
+// five strings.
+var ReturnFiveStrings = func(q string, bindings, rebindings map[string]string) ([]string, error) {
+	return []string{"a", "b", "c", "d", "e"}, nil
+}
+
+// ReturnStringTripleWithNonIntegerThirdElement is a mock implementation for
+// NeptunePool functions that return  ([]string, error) which always returns
+// 3 strings - in which the last one cannot be cast to an integer.
+var ReturnStringTripleWithNonIntegerThirdElement = func(q string, bindings, rebindings map[string]string) ([]string, error) {
+	return []string{"1", "2", "fibble"}, nil
+}
+
+// ReturnProperlyFormedDatasetTriple is a mock implementation for
+// NeptunePool functions that return  ([]string, error) which always returns
+// A single triple of strings that should satisfy the GetCodeDatasets method.
+var ReturnProperlyFormedDatasetTriple = func(q string, bindings, rebindings map[string]string) ([]string, error) {
+	return []string{"exampleDimName", "exampleDatasetEdition", "3"}, nil
 }

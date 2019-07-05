@@ -1,14 +1,17 @@
 package neptune
 
 import (
+	"context"
 	"fmt"
+	"strings"
 	"testing"
 
+	"github.com/ONSdigital/dp-graph/neptune/internal"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 /*
-TestCreateTriples validates a low level test input generator utility.
+TestCreateTriples validates a helper utility function used by the API method.
 */
 func TestCreateTriples(t *testing.T) {
 	Convey("Given an input list of 6 strings", t, func() {
@@ -49,8 +52,7 @@ func TestCreateTriples(t *testing.T) {
 }
 
 /*
-TestCreateTestTriples makes sure that a particular intended test input is
-what it is expected to be.
+TestCreateTestTriples validates a helper utility function used by the API method.
 */
 func TestCreateTestTriples(t *testing.T) {
 	Convey("When createTestTriples() is alled", t, func() {
@@ -65,7 +67,7 @@ func TestCreateTestTriples(t *testing.T) {
 }
 
 /*
-TestBuildDim2Edition validates an individual function used in the implementation.
+TestBuildDim2Edition validates a helper utility function used by the API method.
 */
 func TestBuildDim2Edition(t *testing.T) {
 	Convey("Given a 2 * 2 * 2 combinatorial input", t, func() {
@@ -88,7 +90,7 @@ func TestBuildDim2Edition(t *testing.T) {
 }
 
 /*
-TestBuildResponse validates an individual function used in the implementation.
+TestBuildResponse validates a helper utility function used by the API method.
 */
 func TestBuildResponse(t *testing.T) {
 	Convey("Given triples derived from a 2 * 2 * 2 combinatorial input", t, func() {
@@ -140,4 +142,99 @@ func makeTestTriples() [][]string {
 		}
 	}
 	return triples
+}
+
+/*
+TestGetCodeDatasetsAtAPILevel operates the GetCodeDatasets method at high
+level with a mocked database - to validate the code in the high level method
+alone.
+*/
+func TestGetCodeDatasetsAtAPILevel(t *testing.T) {
+	Convey("Given a database that raises a non-transient error", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetStringListFunc: internal.ReturnMalformedStringListRequestErr,
+		}
+		db := mockDB(poolMock)
+		Convey("When GetCodeDatasets is called", func() {
+			_, err := db.GetCodeDatasets(context.Background(), "unusedCodeListID", "unusedEdition", "unusedCode")
+			Convey("Then the returned error should wrap the underlying one", func() {
+				So(err.Error(), ShouldContainSubstring, "MALFORMED REQUEST")
+				So(err.Error(), ShouldContainSubstring, "g.V()")
+			})
+		})
+	})
+	Convey("Given a database that returns a list of strings indivisible by 3", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetStringListFunc: internal.ReturnFiveStrings,
+		}
+		db := mockDB(poolMock)
+		Convey("When GetCodeDatasets is called", func() {
+			_, err := db.GetCodeDatasets(context.Background(), "unusedCodeListID", "unusedEdition", "unusedCode")
+			Convey("Then the returned error should wrap the underlying one", func() {
+				So(err.Error(), ShouldContainSubstring, "Cannot create triples")
+			})
+		})
+	})
+	Convey("Given a database that returns non-integer version strings", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetStringListFunc: internal.ReturnStringTripleWithNonIntegerThirdElement,
+		}
+		db := mockDB(poolMock)
+		Convey("When GetCodeDatasets is called", func() {
+			_, err := db.GetCodeDatasets(context.Background(), "unusedCodeListID", "unusedEdition", "unusedCode")
+			Convey("Then the returned error should wrap the underlying one", func() {
+				So(err.Error(), ShouldContainSubstring,
+					`Cannot isolate latest versions.: Cannot cast version ("fibble") to int: strconv.Ato`)
+			})
+		})
+	})
+	Convey("Given a database that returns well-formed mocked triples", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetStringListFunc: internal.ReturnProperlyFormedDatasetTriple,
+		}
+		db := mockDB(poolMock)
+		Convey("When GetCodeDatasets is called", func() {
+			response, err := db.GetCodeDatasets(context.Background(), "unusedCodeListID", "unusedEdition", "unusedCode")
+			Convey("Then no error should be returned", func() {
+				So(err, ShouldBeNil)
+			})
+			Convey("Then the driver GetStringList function should be called once", func() {
+				calls := poolMock.GetStringListCalls()
+				So(len(calls), ShouldEqual, 1)
+				Convey("With a well formed query string", func() {
+					expectedQry := stripWhitespace(`
+
+                        g.V().hasLabel('_code_list').has('listID', 'unusedCodeListID').
+                            has('edition','unusedEdition').
+                            inE('usedBy').as('r').values('label').as('rl').select('r').
+                            match(
+                                __.as('r').outV().has('value','unusedCode').as('c'),
+                                __.as('c').out('inDataset').as('d').
+                                    select('d').values('edition').as('de').
+                                    select('d').values('version').as('dv'),
+                                __.as('d').has('is_published',true)).
+                            union(select('rl', 'de', 'dv')).unfold().select(values)
+
+                            `)
+					actualQry := calls[0].Query
+					So(stripWhitespace(actualQry), ShouldEqual, expectedQry)
+				})
+			})
+			Convey("Then the returned results should reflect the hard coded mocked database responses", func() {
+				So(response, ShouldNotBeNil)
+				dataset := response.Items[0]
+				So(dataset.DimensionLabel, ShouldEqual, "exampleDimName")
+				So(dataset.Links.Self.ID, ShouldEqual, "unusedCode")
+				editions := dataset.Editions
+				So(editions, ShouldHaveLength, 1)
+				datasetEdition := editions[0]
+				So(datasetEdition.Links.Self.ID, ShouldEqual, "exampleDatasetEdition")
+				So(datasetEdition.Links.LatestVersion.ID, ShouldEqual, "3")
+			})
+		})
+	})
+}
+
+func stripWhitespace(in string) string {
+	return strings.Join(strings.Fields(in), "")
 }
