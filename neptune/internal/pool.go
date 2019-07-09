@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/ONSdigital/dp-graph/neptune/driver"
-	"github.com/gedge/gremgo-neptune"
+	"github.com/ONSdigital/gremgo-neptune"
 )
 
 var (

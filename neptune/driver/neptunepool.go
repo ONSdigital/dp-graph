@@ -3,7 +3,7 @@ package driver
 import (
 	"context"
 
-	gremgo "github.com/gedge/gremgo-neptune"
+	gremgo "github.com/ONSdigital/gremgo-neptune"
 )
 
 //go:generate moq -out ../internal/pool.go -pkg internal . NeptunePool

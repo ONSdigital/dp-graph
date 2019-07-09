@@ -1,6 +1,7 @@
 package neptune
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -8,6 +9,7 @@ import (
 	"github.com/ONSdigital/dp-graph/neptune/internal"
 	"github.com/ONSdigital/dp-graph/neptune/query"
 	"github.com/ONSdigital/dp-graph/observation"
+	"github.com/ONSdigital/gremgo-neptune"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -77,7 +79,11 @@ func Test_buildObservationsQuery(t *testing.T) {
 func Test_StreamCSVRows(t *testing.T) {
 
 	Convey("Given a store with a mock DB connection and an empty filter job", t, func() {
-		poolMock := &internal.NeptunePoolMock{}
+		poolMock := &internal.NeptunePoolMock{
+			OpenCursorCtxFunc: func(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Cursor, error) {
+				return &gremgo.Cursor{}, nil
+			},
+		}
 		db := mockDB(poolMock)
 
 		Convey("When StreamCSVRows is called", func() {
@@ -92,7 +98,11 @@ func Test_StreamCSVRows(t *testing.T) {
 	})
 
 	Convey("Given a store with a mock DB connection and a valid filter job", t, func() {
-		poolMock := &internal.NeptunePoolMock{}
+		poolMock := &internal.NeptunePoolMock{
+			OpenCursorCtxFunc: func(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Cursor, error) {
+				return &gremgo.Cursor{}, nil
+			},
+		}
 		db := mockDB(poolMock)
 
 		filter := &observation.Filter{
