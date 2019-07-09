@@ -169,16 +169,16 @@ var ReturnFiveStrings = func(q string, bindings, rebindings map[string]string) (
 	return []string{"a", "b", "c", "d", "e"}, nil
 }
 
-// ReturnStringTripleWithNonIntegerThirdElement is a mock implementation for
+// ReturnStringRecordWithNonIntegerFourthElement is a mock implementation for
 // NeptunePool functions that return  ([]string, error) which always returns
-// 3 strings - in which the last one cannot be cast to an integer.
-var ReturnStringTripleWithNonIntegerThirdElement = func(q string, bindings, rebindings map[string]string) ([]string, error) {
-	return []string{"1", "2", "fibble"}, nil
+// 4 strings - in which the third one cannot be cast to an integer.
+var ReturnStringRecordWithNonIntegerFourthElement = func(q string, bindings, rebindings map[string]string) ([]string, error) {
+	return []string{"1", "2", "fibble", "3"}, nil
 }
 
-// ReturnProperlyFormedDatasetTriple is a mock implementation for
+// ReturnProperlyFormedDatasetRecord is a mock implementation for
 // NeptunePool functions that return  ([]string, error) which always returns
-// A single triple of strings that should satisfy the GetCodeDatasets method.
-var ReturnProperlyFormedDatasetTriple = func(q string, bindings, rebindings map[string]string) ([]string, error) {
-	return []string{"exampleDimName", "exampleDatasetEdition", "3"}, nil
+// A single quartet of strings that should satisfy the GetCodeDatasets method.
+var ReturnProperlyFormedDatasetRecord = func(q string, bindings, rebindings map[string]string) ([]string, error) {
+	return []string{"exampleDimName", "exampleDatasetEdition", "3", "exampleDatasetID"}, nil
 }

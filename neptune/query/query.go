@@ -38,8 +38,9 @@ const (
 			__.as('c').out('inDataset').as('d').
 				select('d').values('edition').as('de').
 				select('d').values('version').as('dv'),
+				select('d').values('dataset_id').as('did').
 			__.as('d').has('is_published',true)).
-		union(select('rl', 'de', 'dv')).unfold().select(values)
+		union(select('rl', 'de', 'dv', 'did')).unfold().select(values)
 	`
 
 	// hierarchy write

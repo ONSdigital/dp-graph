@@ -14,23 +14,23 @@ import (
 TestCreateTriples validates a helper utility function used by the API method.
 */
 func TestCreateTriples(t *testing.T) {
-	Convey("Given an input list of 6 strings", t, func() {
-		input := []string{"a", "b", "c", "d", "e", "f"}
-		Convey("When getTriples() is called", func() {
-			triples, err := createTriples(input)
+	Convey("Given an input list of 8 strings", t, func() {
+		input := []string{"a", "b", "c", "d", "e", "f", "g", "h"}
+		Convey("When createRecords() is called", func() {
+			triples, err := createRecords(input)
 			Convey("Then no error should be returned", func() {
 				So(err, ShouldBeNil)
 			})
-			Convey("Then the 3-member clumps should be properly constructed", func() {
-				So(triples[0], ShouldResemble, []string{"a", "b", "c"})
-				So(triples[1], ShouldResemble, []string{"d", "e", "f"})
+			Convey("Then the 4-member clumps should be properly constructed", func() {
+				So(triples[0], ShouldResemble, []string{"a", "b", "c", "d"})
+				So(triples[1], ShouldResemble, []string{"e", "f", "g", "h"})
 			})
 		})
 	})
 	Convey("Given an empty input list", t, func() {
 		input := []string{}
-		Convey("When getTriples() is called", func() {
-			triples, err := createTriples(input)
+		Convey("When createRecords() is called", func() {
+			triples, err := createRecords(input)
 			Convey("Then no error should be returned", func() {
 				So(err, ShouldBeNil)
 			})
@@ -39,12 +39,12 @@ func TestCreateTriples(t *testing.T) {
 			})
 		})
 	})
-	Convey("Given a list with length that is not divisible by 3", t, func() {
+	Convey("Given a list with length that is not divisible by 4", t, func() {
 		input := []string{"a"}
-		Convey("When getTriples() is called", func() {
-			_, err := createTriples(input)
+		Convey("When createRecords() is called", func() {
+			_, err := createRecords(input)
 			Convey("Then an appropriate error should be returned", func() {
-				expectedErr := "List length is not divisible by 3"
+				expectedErr := "List length is not divisible by 4"
 				So(err.Error(), ShouldEqual, expectedErr)
 			})
 		})
@@ -54,35 +54,39 @@ func TestCreateTriples(t *testing.T) {
 /*
 TestCreateTestTriples validates a helper utility function used by the API method.
 */
-func TestCreateTestTriples(t *testing.T) {
+func TestMakeTestRecords(t *testing.T) {
 	Convey("When createTestTriples() is alled", t, func() {
-		triples := makeTestTriples()
+		records := makeTestRecords()
 		Convey("Then the returned [][]string structure should be composed correctly", func() {
-			So(triples, ShouldHaveLength, 8)
+			So(records, ShouldHaveLength, 16)
 			// Take a couple of samples.
-			So(triples[3], ShouldResemble, []string{"dim0", "edition1", "1"})
-			So(triples[6], ShouldResemble, []string{"dim1", "edition1", "0"})
+			So(records[3], ShouldResemble, []string{"dim0", "edition0", "1", "dataset1"})
+			So(records[13], ShouldResemble, []string{"dim1", "edition1", "0", "dataset1"})
+			So(records[14], ShouldResemble, []string{"dim1", "edition1", "1", "dataset0"})
 		})
 	})
 }
 
 /*
-TestBuildDim2Edition validates a helper utility function used by the API method.
+TestBuildLatestVersionMaps validates a helper utility function used by the API method.
 */
-func TestBuildDim2Edition(t *testing.T) {
-	Convey("Given a 2 * 2 * 2 combinatorial input", t, func() {
-		inputTriples := makeTestTriples()
-		Convey("When buildDim2Edition() is called", func() {
-			d2e, err := buildDim2Edition(inputTriples)
+func TestBuildLatestVersionMaps(t *testing.T) {
+	// Recall the map schema...
+	// latestVersion = foo[datasetID][dimension][edition]
+
+	Convey("Given a 2 * 2 * 2 * 2 combinatoria	l input", t, func() {
+		inputRecords := makeTestRecords()
+		Convey("When buildLatestVersionMaps() is called", func() {
+			did2Dim, err := buildLatestVersionMaps(inputRecords)
 			Convey("Then no error should be returned", func() {
 				So(err, ShouldBeNil)
 			})
 			Convey("Then the returned data structure should be properly constructed", func() {
-				So(d2e, ShouldHaveLength, 2)
-				So(d2e["dim0"], ShouldHaveLength, 2)
-				So(d2e["dim1"], ShouldHaveLength, 2)
-				// Take some samples.
-				latestVersion := d2e["dim0"]["edition0"]
+				So(did2Dim, ShouldHaveLength, 2)
+				So(did2Dim["dataset0"], ShouldHaveLength, 2)
+				So(did2Dim["dataset0"]["dim0"], ShouldHaveLength, 2)
+				// Take a sample
+				latestVersion := did2Dim["dataset0"]["dim0"]["edition0"]
 				So(latestVersion, ShouldEqual, 1)
 			})
 		})
@@ -93,25 +97,26 @@ func TestBuildDim2Edition(t *testing.T) {
 TestBuildResponse validates a helper utility function used by the API method.
 */
 func TestBuildResponse(t *testing.T) {
-	Convey("Given triples derived from a 2 * 2 * 2 combinatorial input", t, func() {
-		inputTriples := makeTestTriples()
-		Convey("When you call buildDim2Edition with them", func() {
-			d2e, err := buildDim2Edition(inputTriples)
+	Convey("Given records derived from a 2 * 2 * 2 * 2 combinatorial input", t, func() {
+		inputRecords := makeTestRecords()
+		Convey("When you call buildLatestVersionMaps with them", func() {
+			did2Dim, err := buildLatestVersionMaps(inputRecords)
 			Convey("Then no error should be returned", func() {
 				So(err, ShouldBeNil)
 				Convey("Then when buildResponse() is called using these datastructures", func() {
 					codeValue := "testCodeValue"
 					codeListID := "testCodeListID"
-					response := buildResponse(d2e, codeValue, codeListID)
+					response := buildResponse(did2Dim, codeValue, codeListID)
 					Convey("Then the response should be well formed", func() {
 						So(response.Count, ShouldEqual, 2)
-						So(response.Items, ShouldHaveLength, 2)
+						So(response.Items, ShouldHaveLength, 4)
 						dataset := response.Items[1]
-						// Whether dim0 or dim1 is returned first is not deterministic.
+						// The order in which the responses come back is not
+						// deterministic.
 						// In repeat test runs if flips seemingly randomly.
 						// so we use the ShouldBeIn assertion.
 						So(dataset.DimensionLabel, ShouldBeIn, []string{"dim0", "dim1"})
-						So(dataset.Links.Self.ID, ShouldEqual, "testCodeValue")
+						So(dataset.Links.Self.ID, ShouldBeIn, []string{"dataset0", "dataset1"})
 						editions := dataset.Editions
 						So(editions, ShouldHaveLength, 2)
 						datasetEdition := editions[1]
@@ -125,23 +130,26 @@ func TestBuildResponse(t *testing.T) {
 }
 
 /*
-makeTestTriples returns 8 lists of strings, in this pattern:
-[["dim0", "edition0", "0"], ["dim0", "edition0", "1"], ...]
+makeTestRecords returns 8 lists of strings, in this pattern:
+[["dim0", "edition0", "0", "dataset0"], ["dim0", "edition0", "1", "dataset1"], ...]
 With all the permutations of the numeric suffix in {0|1}.
 */
-func makeTestTriples() [][]string {
-	triples := [][]string{}
+func makeTestRecords() [][]string {
+	records := [][]string{}
 	for i := 0; i < 2; i++ {
 		dimName := fmt.Sprintf("dim%d", i)
 		for j := 0; j < 2; j++ {
 			edition := fmt.Sprintf("edition%d", j)
 			for k := 0; k < 2; k++ {
 				version := fmt.Sprintf("%d", k)
-				triples = append(triples, []string{dimName, edition, version})
+				for m := 0; m < 2; m++ {
+					datasetID := fmt.Sprintf("dataset%d", m)
+					records = append(records, []string{dimName, edition, version, datasetID})
+				}
 			}
 		}
 	}
-	return triples
+	return records
 }
 
 /*
@@ -158,12 +166,13 @@ func TestGetCodeDatasetsAtAPILevel(t *testing.T) {
 		Convey("When GetCodeDatasets is called", func() {
 			_, err := db.GetCodeDatasets(context.Background(), "unusedCodeListID", "unusedEdition", "unusedCode")
 			Convey("Then the returned error should wrap the underlying one", func() {
+				So(err, ShouldNotBeNil)
 				So(err.Error(), ShouldContainSubstring, "MALFORMED REQUEST")
 				So(err.Error(), ShouldContainSubstring, "g.V()")
 			})
 		})
 	})
-	Convey("Given a database that returns a list of strings indivisible by 3", t, func() {
+	Convey("Given a database that returns a list of strings indivisible by 4", t, func() {
 		poolMock := &internal.NeptunePoolMock{
 			GetStringListFunc: internal.ReturnFiveStrings,
 		}
@@ -171,26 +180,28 @@ func TestGetCodeDatasetsAtAPILevel(t *testing.T) {
 		Convey("When GetCodeDatasets is called", func() {
 			_, err := db.GetCodeDatasets(context.Background(), "unusedCodeListID", "unusedEdition", "unusedCode")
 			Convey("Then the returned error should wrap the underlying one", func() {
-				So(err.Error(), ShouldContainSubstring, "Cannot create triples")
+				So(err, ShouldNotBeNil)
+				So(err.Error(), ShouldContainSubstring, "Cannot create records")
 			})
 		})
 	})
 	Convey("Given a database that returns non-integer version strings", t, func() {
 		poolMock := &internal.NeptunePoolMock{
-			GetStringListFunc: internal.ReturnStringTripleWithNonIntegerThirdElement,
+			GetStringListFunc: internal.ReturnStringRecordWithNonIntegerFourthElement,
 		}
 		db := mockDB(poolMock)
 		Convey("When GetCodeDatasets is called", func() {
 			_, err := db.GetCodeDatasets(context.Background(), "unusedCodeListID", "unusedEdition", "unusedCode")
 			Convey("Then the returned error should wrap the underlying one", func() {
+				So(err, ShouldNotBeNil)
 				So(err.Error(), ShouldContainSubstring,
 					`Cannot isolate latest versions.: Cannot cast version ("fibble") to int: strconv.Ato`)
 			})
 		})
 	})
-	Convey("Given a database that returns well-formed mocked triples", t, func() {
+	Convey("Given a database that returns well-formed mocked records", t, func() {
 		poolMock := &internal.NeptunePoolMock{
-			GetStringListFunc: internal.ReturnProperlyFormedDatasetTriple,
+			GetStringListFunc: internal.ReturnProperlyFormedDatasetRecord,
 		}
 		db := mockDB(poolMock)
 		Convey("When GetCodeDatasets is called", func() {
@@ -204,18 +215,19 @@ func TestGetCodeDatasetsAtAPILevel(t *testing.T) {
 				Convey("With a well formed query string", func() {
 					expectedQry := stripWhitespace(`
 
-                        g.V().hasLabel('_code_list').has('listID', 'unusedCodeListID').
-                            has('edition','unusedEdition').
-                            inE('usedBy').as('r').values('label').as('rl').select('r').
-                            match(
-                                __.as('r').outV().has('value','unusedCode').as('c'),
-                                __.as('c').out('inDataset').as('d').
-                                    select('d').values('edition').as('de').
-                                    select('d').values('version').as('dv'),
-                                __.as('d').has('is_published',true)).
-                            union(select('rl', 'de', 'dv')).unfold().select(values)
+						g.V().hasLabel('_code_list').has('listID', 'unusedCodeListID').
+						has('edition','unusedEdition').
+						inE('usedBy').as('r').values('label').as('rl').select('r').
+						match(
+							__.as('r').outV().has('value','unusedCode').as('c'),
+							__.as('c').out('inDataset').as('d').
+								select('d').values('edition').as('de').
+								select('d').values('version').as('dv'),
+								select('d').values('dataset_id').as('did').
+							__.as('d').has('is_published',true)).
+						union(select('rl', 'de', 'dv', 'did')).unfold().select(values)
 
-                            `)
+                    `)
 					actualQry := calls[0].Query
 					So(stripWhitespace(actualQry), ShouldEqual, expectedQry)
 				})
@@ -224,7 +236,7 @@ func TestGetCodeDatasetsAtAPILevel(t *testing.T) {
 				So(response, ShouldNotBeNil)
 				dataset := response.Items[0]
 				So(dataset.DimensionLabel, ShouldEqual, "exampleDimName")
-				So(dataset.Links.Self.ID, ShouldEqual, "unusedCode")
+				So(dataset.Links.Self.ID, ShouldEqual, "exampleDatasetID")
 				editions := dataset.Editions
 				So(editions, ShouldHaveLength, 1)
 				datasetEdition := editions[0]
