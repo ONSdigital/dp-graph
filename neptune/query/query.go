@@ -66,7 +66,7 @@ const (
 
 	// hierarchy read
 	HierarchyExists     = "g.V().hasLabel('_hierarchy_node_%s_%s').limit(1)"
-	GetHierarchyRoot    = "g.V().hasLabel('_hierarchy_node_%s_%s').not(outE('hasParent')).limit(1)"
+	GetHierarchyRoot    = "g.V().hasLabel('_hierarchy_node_%s_%s').not(outE('hasParent'))"
 	GetHierarchyElement = "g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s')"
 	GetChildren         = "g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s').in('hasParent').order().by('label')"
 	GetAncestry         = "g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s').out('hasParent')"

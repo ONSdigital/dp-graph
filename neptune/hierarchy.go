@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ONSdigital/dp-graph/graph/driver"
 	"github.com/ONSdigital/dp-graph/neptune/query"
 	"github.com/ONSdigital/dp-hierarchy-api/models"
 	"github.com/ONSdigital/go-ns/log"
@@ -239,11 +240,23 @@ func (n *NeptuneDB) GetHierarchyRoot(ctx context.Context, instanceID, dimension 
 		"dimension_name": dimension,
 	}
 
-	var vertex graphson.Vertex
-	if vertex, err = n.getVertex(gremStmt); err != nil {
+	var vertices []graphson.Vertex
+	if vertices, err = n.getVertices(gremStmt); err != nil {
 		log.ErrorC("get", err, logData)
 		return
 	}
+	if len(vertices) == 0 {
+		err = driver.ErrNotFound
+		log.ErrorC("get", err, logData)
+		return
+	}
+	if len(vertices) > 1 {
+		err = driver.ErrMultipleFound
+		log.ErrorC("get", err, logData)
+		return
+	}
+	var vertex graphson.Vertex
+	vertex = vertices[0]
 	if node, err = n.convertVertexToResponse(vertex, instanceID, dimension); err != nil {
 		log.ErrorC("conv", err, logData)
 		return
