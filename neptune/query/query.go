@@ -47,6 +47,7 @@ const (
 	CloneHierarchyNodes = "g.V().hasLabel('_generic_hierarchy_node_%s').as('old')" +
 		".addV('_hierarchy_node_%s_%s')" +
 		".property('code',select('old').values('code'))" +
+		".property('label',select('old').values('label'))" +
 		".property('code_list','%s').as('new')" +
 		".addE('clone_of').to('old').select('new')"
 	CountHierarchyNodes         = "g.V().hasLabel('_hierarchy_node_%s_%s').count()"
