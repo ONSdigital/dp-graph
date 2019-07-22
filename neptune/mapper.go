@@ -12,9 +12,12 @@ import (
 func (n *NeptuneDB) convertVertexToResponse(v graphson.Vertex, instanceID, dimension string) (res *models.Response, err error) {
 	logData := log.Data{"fn": "convertVertexToResponse"}
 
-	res = &models.Response{
-		ID: v.GetID(),
+	res = &models.Response{}
+	if res.ID, err = v.GetProperty("code"); err != nil {
+		log.ErrorC("bad GetProp code", err, logData)
+		return
 	}
+
 	if res.Label, err = v.GetLabel(); err != nil {
 		log.ErrorC("bad label", err, logData)
 		return
@@ -63,8 +66,10 @@ func (n *NeptuneDB) convertVertexToResponse(v graphson.Vertex, instanceID, dimen
 func convertVertexToElement(v graphson.Vertex) (res *models.Element, err error) {
 	logData := log.Data{"fn": "convertVertexToElement"}
 
-	res = &models.Element{
-		ID: v.GetID(),
+	res = &models.Element{}
+	if res.ID, err = v.GetProperty("code"); err != nil {
+		log.ErrorC("bad GetProp code", err, logData)
+		return
 	}
 
 	if res.Label, err = v.GetLabel(); err != nil {
