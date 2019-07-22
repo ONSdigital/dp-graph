@@ -48,6 +48,7 @@ const (
 		".addV('_hierarchy_node_%s_%s')" +
 		".property('code',select('old').values('code'))" +
 		".property('label',select('old').values('label'))" +
+		".property(single, 'hasData', false)" +
 		".property('code_list','%s').as('new')" +
 		".addE('clone_of').to('old').select('new')"
 	CountHierarchyNodes         = "g.V().hasLabel('_hierarchy_node_%s_%s').count()"
@@ -59,7 +60,7 @@ const (
 	SetNumberOfChildren = "g.V().hasLabel('_hierarchy_node_%s_%s').property(single,'numberOfChildren',__.in('hasParent').count())"
 	SetHasData          = "g.V().hasLabel('_hierarchy_node_%s_%s').as('v')" +
 		`.V().hasLabel('_%s_%s').as('c').where('v',eq('c')).by('code').by('value').` +
-		`select('v').property('hasData',true)`
+		`select('v').property(single, 'hasData',true)`
 	MarkNodesToRemain = "g.V().hasLabel('_hierarchy_node_%s_%s').has('hasData').property('remain',true)" +
 		".repeat(out('hasParent')).emit().property('remain',true)"
 	RemoveNodesNotMarkedToRemain = "g.V().hasLabel('_hierarchy_node_%s_%s').not(has('remain',true)).drop()"
