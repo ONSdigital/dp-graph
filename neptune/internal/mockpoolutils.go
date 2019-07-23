@@ -3,7 +3,7 @@ package internal
 import (
 	"fmt"
 
-	"github.com/gedge/graphson"
+	"github.com/ONSdigital/graphson"
 )
 
 /*
@@ -118,7 +118,7 @@ makeVertex makes a graphson.Vertex of a given type (e.g. "_code_list").
 */
 func makeVertex(vertexType string) graphson.Vertex {
 	vertexValue := graphson.VertexValue{
-		ID:         "unused_vertex_value_ID",
+		ID:         graphson.GenericValue{Value: "unused_vertex_value_ID"},
 		Label:      vertexType,
 		Properties: map[string][]graphson.VertexProperty{},
 	}

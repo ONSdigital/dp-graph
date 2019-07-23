@@ -7,7 +7,7 @@ import (
 	"github.com/ONSdigital/dp-graph/neptune/query"
 	"github.com/ONSdigital/dp-hierarchy-api/models"
 	"github.com/ONSdigital/go-ns/log"
-	"github.com/gedge/graphson"
+	"github.com/ONSdigital/graphson"
 )
 
 func (n *NeptuneDB) CreateInstanceHierarchyConstraints(ctx context.Context, attempt int, instanceID, dimensionName string) error {

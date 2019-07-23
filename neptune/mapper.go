@@ -6,7 +6,7 @@ import (
 	"github.com/ONSdigital/dp-graph/neptune/query"
 	"github.com/ONSdigital/dp-hierarchy-api/models"
 	"github.com/ONSdigital/go-ns/log"
-	"github.com/gedge/graphson"
+	"github.com/ONSdigital/graphson"
 )
 
 func (n *NeptuneDB) convertVertexToResponse(v graphson.Vertex, instanceID, dimension string) (res *models.Response, err error) {
