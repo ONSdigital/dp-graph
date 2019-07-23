@@ -120,7 +120,7 @@ func (n *NeptuneDB) SetNumberOfChildren(ctx context.Context, attempt int, instan
 	log.Debug("setting number-of-children property value on the instance hierarchy nodes", logData)
 
 	if _, err = n.getVertices(gremStmt); err != nil {
-		log.ErrorC("cannot find vertices while settting nChildren on hierarhy nodes", err, logData)
+		log.ErrorC("cannot find vertices while settting nChildren on hierarchy nodes", err, logData)
 		return
 	}
 
