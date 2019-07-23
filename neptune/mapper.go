@@ -13,8 +13,8 @@ import (
 	"github.com/ONSdigital/graphson"
 )
 
-func (n *NeptuneDB) convertVertexToResponse(v graphson.Vertex, instanceID, dimension string) (res *models.Response, err error) {
-	logData := log.Data{"fn": "convertVertexToResponse"}
+func (n *NeptuneDB) buildHierarchyNodeFromGraphsonVertex(v graphson.Vertex, instanceID, dimension string, wantBreadcrumbs bool) (res *models.Response, err error) {
+	logData := log.Data{"fn": "buildHierarchyNodeFromGraphsonVertex"}
 
 	res = &models.Response{}
 	// Note we are using the vertex' *code* property for the response model's
@@ -69,7 +69,7 @@ func (n *NeptuneDB) convertVertexToResponse(v graphson.Vertex, instanceID, dimen
 		}
 	}
 	// Fetch new data from the database concerned with the node's breadcrumbs.
-	if res.HasData {
+	if wantBreadcrumbs {
 		res.Breadcrumbs, err = n.buildBreadcrumbs(instanceID, dimension, res.ID)
 		if err != nil {
 			log.ErrorC("building breadcrumbs", err, logData)
