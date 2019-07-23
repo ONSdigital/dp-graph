@@ -71,7 +71,8 @@ const (
 	GetHierarchyRoot    = "g.V().hasLabel('_hierarchy_node_%s_%s').not(outE('hasParent'))"
 	GetHierarchyElement = "g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s')"
 	GetChildren         = "g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s').in('hasParent').order().by('label')"
-	GetAncestry         = "g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s').out('hasParent')"
+	// Note this query is recursive
+	GetAncestry = "g.V().hasLabel('_hierarchy_node_%s_%s').has('code', '%s').repeat(out('hasParent')).emit()"
 
 	// instance - import process
 	CreateInstance                   = "g.addV('_%s_Instance').property(single,'header','%s')"

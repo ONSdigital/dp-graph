@@ -257,6 +257,9 @@ func (n *NeptuneDB) GetHierarchyRoot(ctx context.Context, instanceID, dimension 
 	}
 	var vertex graphson.Vertex
 	vertex = vertices[0]
+	// Note the call to convertVertexToResponse below does much more than meets the eye,
+	// including launching new queries in of itself to fetch child nodes, and
+	// breadcrumb nodes.
 	if node, err = n.convertVertexToResponse(vertex, instanceID, dimension); err != nil {
 		log.ErrorC("conv", err, logData)
 		return
@@ -279,6 +282,9 @@ func (n *NeptuneDB) GetHierarchyElement(ctx context.Context, instanceID, dimensi
 		log.ErrorC("get", err, logData)
 		return
 	}
+	// Note the call to convertVertexToResponse below does much more than meets the eye,
+	// including launching new queries in of itself to fetch child nodes, and
+	// breadcrumb nodes.
 	if node, err = n.convertVertexToResponse(vertex, instanceID, dimension); err != nil {
 		log.ErrorC("conv", err, logData)
 		return
