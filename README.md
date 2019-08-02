@@ -18,6 +18,10 @@ and set reasonable defaults for use in that context. It's feasible that some imp
 might not have configurable timeouts for example, so whether this can be set should be
 documented in each driver.
 
+### Design
+
+See [DESIGN](DESIGN-NOTES.md) for details.
+
 ### Contributing
 
 See [CONTRIBUTING](CONTRIBUTING.md) for details.

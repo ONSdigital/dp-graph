@@ -4,6 +4,7 @@
 package internal
 
 import (
+	"github.com/ONSdigital/dp-graph/neo4j/neo4jdriver"
 	"sync"
 )
 
@@ -13,6 +14,10 @@ var (
 	lockResultMockRowsAffected sync.RWMutex
 )
 
+// Ensure, that ResultMock does implement Result.
+// If this is not the case, regenerate this file with moq.
+var _ neo4jdriver.Result = &ResultMock{}
+
 // ResultMock is a mock implementation of Result.
 //
 //     func TestSomethingThatUsesResult(t *testing.T) {
@@ -20,18 +25,18 @@ var (
 //         // make and configure a mocked Result
 //         mockedResult := &ResultMock{
 //             LastInsertIdFunc: func() (int64, error) {
-// 	               panic("TODO: mock out the LastInsertId method")
+// 	               panic("mock out the LastInsertId method")
 //             },
 //             MetadataFunc: func() map[string]interface{} {
-// 	               panic("TODO: mock out the Metadata method")
+// 	               panic("mock out the Metadata method")
 //             },
 //             RowsAffectedFunc: func() (int64, error) {
-// 	               panic("TODO: mock out the RowsAffected method")
+// 	               panic("mock out the RowsAffected method")
 //             },
 //         }
 //
-//         // TODO: use mockedResult in code that requires Result
-//         //       and then make assertions.
+//         // use mockedResult in code that requires Result
+//         // and then make assertions.
 //
 //     }
 type ResultMock struct {

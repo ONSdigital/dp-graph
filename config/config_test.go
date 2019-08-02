@@ -11,7 +11,7 @@ import (
 func TestGetFailsByDefault(t *testing.T) {
 	Convey("When configuration not provided, fail by default", t, func() {
 		cfg = nil
-		cfg, err := Get()
+		cfg, err := Get(nil)
 		So(err, ShouldNotBeNil)
 		So(cfg, ShouldBeNil)
 
@@ -28,7 +28,7 @@ func TestGetReturnsChosenDriver(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		Convey("then the correct driver is returned", func() {
-			cfg, err = Get()
+			cfg, err = Get(nil)
 			So(err, ShouldBeNil)
 			So(cfg, ShouldNotBeNil)
 

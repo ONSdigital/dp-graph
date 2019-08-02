@@ -5,8 +5,8 @@ package internal
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-graph/neo4j/driver"
 	"github.com/ONSdigital/dp-graph/neo4j/mapper"
+	"github.com/ONSdigital/dp-graph/neo4j/neo4jdriver"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"sync"
 )
@@ -21,6 +21,10 @@ var (
 	lockNeo4jDriverMockStreamRows     sync.RWMutex
 )
 
+// Ensure, that Neo4jDriverMock does implement Neo4jDriver.
+// If this is not the case, regenerate this file with moq.
+var _ neo4jdriver.Neo4jDriver = &Neo4jDriverMock{}
+
 // Neo4jDriverMock is a mock implementation of Neo4jDriver.
 //
 //     func TestSomethingThatUsesNeo4jDriver(t *testing.T) {
@@ -28,30 +32,30 @@ var (
 //         // make and configure a mocked Neo4jDriver
 //         mockedNeo4jDriver := &Neo4jDriverMock{
 //             CloseFunc: func(ctx context.Context) error {
-// 	               panic("TODO: mock out the Close method")
+// 	               panic("mock out the Close method")
 //             },
 //             CountFunc: func(query string) (int64, error) {
-// 	               panic("TODO: mock out the Count method")
+// 	               panic("mock out the Count method")
 //             },
 //             ExecFunc: func(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Result, error) {
-// 	               panic("TODO: mock out the Exec method")
+// 	               panic("mock out the Exec method")
 //             },
 //             HealthcheckFunc: func() (string, error) {
-// 	               panic("TODO: mock out the Healthcheck method")
+// 	               panic("mock out the Healthcheck method")
 //             },
 //             ReadFunc: func(query string, mapp mapper.ResultMapper, single bool) error {
-// 	               panic("TODO: mock out the Read method")
+// 	               panic("mock out the Read method")
 //             },
 //             ReadWithParamsFunc: func(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error {
-// 	               panic("TODO: mock out the ReadWithParams method")
+// 	               panic("mock out the ReadWithParams method")
 //             },
-//             StreamRowsFunc: func(query string) (*driver.BoltRowReader, error) {
-// 	               panic("TODO: mock out the StreamRows method")
+//             StreamRowsFunc: func(query string) (*neo4jdriver.BoltRowReader, error) {
+// 	               panic("mock out the StreamRows method")
 //             },
 //         }
 //
-//         // TODO: use mockedNeo4jDriver in code that requires Neo4jDriver
-//         //       and then make assertions.
+//         // use mockedNeo4jDriver in code that requires Neo4jDriver
+//         // and then make assertions.
 //
 //     }
 type Neo4jDriverMock struct {
@@ -74,7 +78,7 @@ type Neo4jDriverMock struct {
 	ReadWithParamsFunc func(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error
 
 	// StreamRowsFunc mocks the StreamRows method.
-	StreamRowsFunc func(query string) (*driver.BoltRowReader, error)
+	StreamRowsFunc func(query string) (*neo4jdriver.BoltRowReader, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -332,7 +336,7 @@ func (mock *Neo4jDriverMock) ReadWithParamsCalls() []struct {
 }
 
 // StreamRows calls StreamRowsFunc.
-func (mock *Neo4jDriverMock) StreamRows(query string) (*driver.BoltRowReader, error) {
+func (mock *Neo4jDriverMock) StreamRows(query string) (*neo4jdriver.BoltRowReader, error) {
 	if mock.StreamRowsFunc == nil {
 		panic("Neo4jDriverMock.StreamRowsFunc: method is nil but Neo4jDriver.StreamRows was just called")
 	}
