@@ -6,6 +6,7 @@ package internal
 import (
 	"context"
 	"github.com/ONSdigital/dp-graph/neptune/driver"
+	"github.com/ONSdigital/graphson"
 	"github.com/ONSdigital/gremgo-neptune"
 	"sync"
 )
@@ -36,7 +37,7 @@ var _ driver.NeptunePool = &NeptunePoolMock{}
 //             ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
 // 	               panic("mock out the Execute method")
 //             },
-//             GetFunc: func(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+//             GetFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]graphson.Vertex, error) {
 // 	               panic("mock out the Get method")
 //             },
 //             GetCountFunc: func(q string, bindings map[string]string, rebindings map[string]string) (int64, error) {
@@ -65,7 +66,7 @@ type NeptunePoolMock struct {
 	ExecuteFunc func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error)
 
 	// GetFunc mocks the Get method.
-	GetFunc func(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error)
+	GetFunc func(query string, bindings map[string]string, rebindings map[string]string) ([]graphson.Vertex, error)
 
 	// GetCountFunc mocks the GetCount method.
 	GetCountFunc func(q string, bindings map[string]string, rebindings map[string]string) (int64, error)
@@ -209,7 +210,7 @@ func (mock *NeptunePoolMock) ExecuteCalls() []struct {
 }
 
 // Get calls GetFunc.
-func (mock *NeptunePoolMock) Get(query string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+func (mock *NeptunePoolMock) Get(query string, bindings map[string]string, rebindings map[string]string) ([]graphson.Vertex, error) {
 	if mock.GetFunc == nil {
 		panic("NeptunePoolMock.GetFunc: method is nil but NeptunePool.Get was just called")
 	}
