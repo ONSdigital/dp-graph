@@ -19,6 +19,6 @@ type NeptunePool interface {
 	Get(query string, bindings, rebindings map[string]string) ([]graphson.Vertex, error)
 	GetCount(q string, bindings, rebindings map[string]string) (i int64, err error)
 	GetE(q string, bindings, rebindings map[string]string) (resp interface{}, err error)
-	OpenCursorCtx(ctx context.Context, query string, bindings, rebindings map[string]string) (cursor *gremgo.Cursor, err error)
+	OpenStreamCursor(ctx context.Context, query string, bindings, rebindings map[string]string) (stream *gremgo.Stream, err error)
 	GetStringList(query string, bindings, rebindings map[string]string) (vals []string, err error)
 }

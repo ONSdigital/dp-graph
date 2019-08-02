@@ -106,7 +106,6 @@ func (n *NeptuneDB) getStringList(gremStmt string) (strings []string, err error)
 	return
 }
 
-
 func (n *NeptuneDB) getVertex(gremStmt string) (vertex graphson.Vertex, err error) {
 	logData := log.Data{"fn": "getVertex", "statement": gremStmt}
 

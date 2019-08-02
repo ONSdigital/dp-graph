@@ -60,7 +60,7 @@ const (
 	SetNumberOfChildren = "g.V().hasLabel('_hierarchy_node_%s_%s').property(single,'numberOfChildren',__.in('hasParent').count())"
 	SetHasData          = "g.V().hasLabel('_hierarchy_node_%s_%s').as('v')" +
 		`.V().hasLabel('_%s_%s').as('c').where('v',eq('c')).by('code').by('value').` +
-		`select('v').property(single, 'hasData',true)`
+		`select('v').property('hasData',true)`
 	MarkNodesToRemain = "g.V().hasLabel('_hierarchy_node_%s_%s').has('hasData').property('remain',true)" +
 		".repeat(out('hasParent')).emit().property('remain',true)"
 	RemoveNodesNotMarkedToRemain = "g.V().hasLabel('_hierarchy_node_%s_%s').not(has('remain',true)).drop()"
@@ -89,7 +89,12 @@ const (
 	CreateDimensionToInstanceRelationship = "g.addV('_%s_%s').property('value','%s').as('d').addE('HAS_DIMENSION').from(V().hasLabel('_%s_Instance')).select('d').by(id)"
 
 	// observation
-	GetInstanceHeader      = "g.V().hasLabel('_%s_Instance').as('instance')"
+	DropObservationRelationships   = "g.V().hasLabel('_%s_observation').has('value', '%s').bothE().drop().iterate()"
+	DropObservation                = "g.V().hasLabel('_%s_observation').has('value', '%s').drop().iterate()"
+	CreateObservationPart          = "g.addV('_%s_observation').property(single, 'value', '%s').property(single, 'rowIndex', '%d')"
+	AddObservationRelationshipPart = ".addE('isValueOf').to(V().hasId('%s').hasLabel('_%s_%s').where(values('value').is('%s'))).outV()"
+
+	GetInstanceHeaderPart  = "g.V().hasLabel('_%s_Instance').as('instance')"
 	GetAllObservationsPart = ".V().hasLabel('_%s_observation').values('row')"
 
 	GetObservationsPart         = ".V().hasLabel('_%s_observation').match("
