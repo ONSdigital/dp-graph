@@ -4,19 +4,22 @@
 package internal
 
 import (
+	"context"
+	"sync"
+
 	"github.com/ONSdigital/dp-graph/neptune/driver"
 	"github.com/ONSdigital/graphson"
 	"github.com/ONSdigital/gremgo-neptune"
-	"sync"
 )
 
 var (
-	lockNeptunePoolMockClose         sync.RWMutex
-	lockNeptunePoolMockExecute       sync.RWMutex
-	lockNeptunePoolMockGet           sync.RWMutex
-	lockNeptunePoolMockGetCount      sync.RWMutex
-	lockNeptunePoolMockGetE          sync.RWMutex
-	lockNeptunePoolMockGetStringList sync.RWMutex
+	lockNeptunePoolMockClose            sync.RWMutex
+	lockNeptunePoolMockExecute          sync.RWMutex
+	lockNeptunePoolMockGet              sync.RWMutex
+	lockNeptunePoolMockGetCount         sync.RWMutex
+	lockNeptunePoolMockGetE             sync.RWMutex
+	lockNeptunePoolMockGetStringList    sync.RWMutex
+	lockNeptunePoolMockOpenStreamCursor sync.RWMutex
 )
 
 // Ensure, that NeptunePoolMock does implement NeptunePool.
@@ -47,6 +50,9 @@ var _ driver.NeptunePool = &NeptunePoolMock{}
 //             GetStringListFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
 // 	               panic("mock out the GetStringList method")
 //             },
+//             OpenStreamCursorFunc: func(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Stream, error) {
+// 	               panic("mock out the OpenStreamCursor method")
+//             },
 //         }
 //
 //         // use mockedNeptunePool in code that requires NeptunePool
@@ -71,6 +77,9 @@ type NeptunePoolMock struct {
 
 	// GetStringListFunc mocks the GetStringList method.
 	GetStringListFunc func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error)
+
+	// OpenStreamCursorFunc mocks the OpenStreamCursor method.
+	OpenStreamCursorFunc func(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Stream, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -115,6 +124,17 @@ type NeptunePoolMock struct {
 		}
 		// GetStringList holds details about calls to the GetStringList method.
 		GetStringList []struct {
+			// Query is the query argument value.
+			Query string
+			// Bindings is the bindings argument value.
+			Bindings map[string]string
+			// Rebindings is the rebindings argument value.
+			Rebindings map[string]string
+		}
+		// OpenStreamCursor holds details about calls to the OpenStreamCursor method.
+		OpenStreamCursor []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
 			// Query is the query argument value.
 			Query string
 			// Bindings is the bindings argument value.
@@ -343,5 +363,48 @@ func (mock *NeptunePoolMock) GetStringListCalls() []struct {
 	lockNeptunePoolMockGetStringList.RLock()
 	calls = mock.calls.GetStringList
 	lockNeptunePoolMockGetStringList.RUnlock()
+	return calls
+}
+
+// OpenStreamCursor calls OpenStreamCursorFunc.
+func (mock *NeptunePoolMock) OpenStreamCursor(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Stream, error) {
+	if mock.OpenStreamCursorFunc == nil {
+		panic("NeptunePoolMock.OpenStreamCursorFunc: method is nil but NeptunePool.OpenStreamCursor was just called")
+	}
+	callInfo := struct {
+		Ctx        context.Context
+		Query      string
+		Bindings   map[string]string
+		Rebindings map[string]string
+	}{
+		Ctx:        ctx,
+		Query:      query,
+		Bindings:   bindings,
+		Rebindings: rebindings,
+	}
+	lockNeptunePoolMockOpenStreamCursor.Lock()
+	mock.calls.OpenStreamCursor = append(mock.calls.OpenStreamCursor, callInfo)
+	lockNeptunePoolMockOpenStreamCursor.Unlock()
+	return mock.OpenStreamCursorFunc(ctx, query, bindings, rebindings)
+}
+
+// OpenStreamCursorCalls gets all the calls that were made to OpenStreamCursor.
+// Check the length with:
+//     len(mockedNeptunePool.OpenStreamCursorCalls())
+func (mock *NeptunePoolMock) OpenStreamCursorCalls() []struct {
+	Ctx        context.Context
+	Query      string
+	Bindings   map[string]string
+	Rebindings map[string]string
+} {
+	var calls []struct {
+		Ctx        context.Context
+		Query      string
+		Bindings   map[string]string
+		Rebindings map[string]string
+	}
+	lockNeptunePoolMockOpenStreamCursor.RLock()
+	calls = mock.calls.OpenStreamCursor
+	lockNeptunePoolMockOpenStreamCursor.RUnlock()
 	return calls
 }
