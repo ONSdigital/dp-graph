@@ -80,8 +80,8 @@ func Test_StreamCSVRows(t *testing.T) {
 
 	Convey("Given a store with a mock DB connection and an empty filter job", t, func() {
 		poolMock := &internal.NeptunePoolMock{
-			OpenCursorCtxFunc: func(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Cursor, error) {
-				return &gremgo.Cursor{}, nil
+			OpenStreamCursorFunc: func(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Stream, error) {
+				return &gremgo.Stream{}, nil
 			},
 		}
 		db := mockDB(poolMock)
@@ -92,15 +92,15 @@ func Test_StreamCSVRows(t *testing.T) {
 			Convey("Then an error is returned", func() {
 				So(stream, ShouldBeNil)
 				So(err, ShouldNotBeNil)
-				So(err, ShouldEqual, ErrEmptyFilter)
+				So(err, ShouldEqual, ErrInvalidFilter)
 			})
 		})
 	})
 
 	Convey("Given a store with a mock DB connection and a valid filter job", t, func() {
 		poolMock := &internal.NeptunePoolMock{
-			OpenCursorCtxFunc: func(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Cursor, error) {
-				return &gremgo.Cursor{}, nil
+			OpenStreamCursorFunc: func(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Stream, error) {
+				return &gremgo.Stream{}, nil
 			},
 		}
 		db := mockDB(poolMock)
@@ -116,7 +116,7 @@ func Test_StreamCSVRows(t *testing.T) {
 		Convey("When StreamCSVRows is called", func() {
 			stream, err := db.StreamCSVRows(nil, filter, nil)
 
-			Convey("Then an error is returned", func() {
+			Convey("Then no error should be returned", func() {
 				So(stream, ShouldNotBeNil)
 				So(err, ShouldBeNil)
 			})
