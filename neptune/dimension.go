@@ -10,7 +10,7 @@ import (
 
 // InsertDimension node to neptune and create relationships to the instance node.
 // Where nodes and relationships already exist, ensure they are upserted.
-func (n *NeptuneDB) InsertDimension(ctx context.Context, cache map[string]string, i *model.Instance, d *model.Dimension) (*model.Dimension, error) {
+func (n *NeptuneDB) InsertDimension(ctx context.Context, uniqueDimensions map[string]string, i *model.Instance, d *model.Dimension) (*model.Dimension, error) {
 	if err := i.Validate(); err != nil {
 		return nil, err
 	}
@@ -27,8 +27,8 @@ func (n *NeptuneDB) InsertDimension(ctx context.Context, cache map[string]string
 
 	d.NodeID = res.GetID()
 
-	if _, ok := cache[dimensionLabel]; !ok {
-		cache[dimensionLabel] = dimensionLabel
+	if _, ok := uniqueDimensions[dimensionLabel]; !ok {
+		uniqueDimensions[dimensionLabel] = dimensionLabel
 		i.AddDimension(d)
 	}
 	return d, nil
