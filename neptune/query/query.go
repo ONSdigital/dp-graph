@@ -94,8 +94,10 @@ const (
 	AddInstanceDimensionsPropertyPart = `.property('dimensions', "%s")`
 
 	// dimension
-	CreateDimensionToInstanceRelationship = `g.V().hasLabel('_%s_%s').has('value', "%s").fold().coalesce(unfold(), ` +
-		`addV('_%s_%s').as('d').property('value',"%s").addE('HAS_DIMENSION').V().hasLabel('_%s_Instance').select('d'))`
+	DropDimensionRelationships            = `g.V().hasLabel('_%s_%s').has('value', "%s").bothE().drop().iterate();`
+	DropDimension                         = `g.V().hasLabel('_%s_%s').has('value', "%s").drop().iterate();`
+	CreateDimensionToInstanceRelationship = `g.addV('_%s_%s').as('d').property('value',"%s").addE('HAS_DIMENSION')` +
+		`.V().hasLabel('_%s_Instance').select('d'))`
 
 	// observation
 	DropObservationRelationships   = `g.V().hasLabel('_%s_observation').has('value', "%s").bothE().drop().iterate();`
