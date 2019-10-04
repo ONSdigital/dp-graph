@@ -85,8 +85,9 @@ const (
 	// instance - import process
 	CreateInstance                   = `g.addV('_%s_Instance').property(single,'header',"%s")`
 	CheckInstance                    = `g.V().hasLabel('_%s_Instance').count()`
-	CreateInstanceToCodeRelationship = `g.V().hasLabel('_%s_Instance').as('i').addE('inDataset').` +
-		`V().hasLabel('_code').has('value',"%s").where(out('usedBy').hasLabel('_code_list').has('listID','%s'))`
+	CreateInstanceToCodeRelationship = `g.V().hasLabel('_%s_Instance').as('i').` +
+		`V().hasLabel('_code').has('value',"%s").where(out('usedBy').hasLabel('_code_list').has('listID','%s')).as('c')` +
+		`.addE('inDataset').to('i')`
 	AddVersionDetailsToInstance = `g.V().hasLabel('_%s_Instance').property(single,'dataset_id','%s').` +
 		`property(single,'edition','%s').property(single,'version','%s')`
 	SetInstanceIsPublished = `g.V().hasLabel('_%s_Instance').property(single,'is_published',true)`
@@ -106,8 +107,9 @@ const (
 	// observation
 	DropObservationRelationships   = `g.V().hasLabel('_%s_observation').has('value', "%s").bothE().drop().iterate();`
 	DropObservation                = `g.V().hasLabel('_%s_observation').has('value', "%s").drop().iterate();`
-	CreateObservationPart          = `g.addV('_%s_observation').property(single, 'value', "%s").property(single, 'rowIndex', '%d')`
-	AddObservationRelationshipPart = `.addE('isValueOf').as('%s').V().hasId('%s').hasLabel('_%s_%s').where(values('value').is("%s")).select('%s').outV()`
+	CreateObservationPart          = `g.addV('_%s_observation').property(single, 'value', "%s").property(single, 'rowIndex', '%d').as('o')`
+	AddObservationRelationshipPart = `.V().hasId('%s').hasLabel('_%s_%s').where(values('value').is("%s"))` +
+		`.addE('isValueOf').from('o').select('o')`
 
 	GetInstanceHeaderPart  = `g.V().hasLabel('_%s_Instance').as('instance')`
 	GetAllObservationsPart = `.V().hasLabel('_%s_observation').values('row')`

@@ -3,7 +3,6 @@ package neptune
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -83,7 +82,6 @@ func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, ins
 	}
 
 	var create string
-	count := 0
 	for _, o := range observations {
 		create += fmt.Sprintf(query.DropObservationRelationships, instanceID, o.Row)
 		create += fmt.Sprintf(query.DropObservation, instanceID, o.Row)
@@ -97,12 +95,11 @@ func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, ins
 				return fmt.Errorf("no nodeID [%s] found in dimension map", dimensionLookup)
 			}
 
-			create += fmt.Sprintf(query.AddObservationRelationshipPart, nodeID, instanceID, d.DimensionName, d.Name, strconv.Itoa(count), strconv.Itoa(count))
+			create += fmt.Sprintf(query.AddObservationRelationshipPart, nodeID, instanceID, d.DimensionName, d.Name)
 		}
 
 		create = strings.TrimSuffix(create, ".outV()")
 		create += ".iterate();"
-		count++
 	}
 
 	create = strings.TrimSuffix(create, ".iterate();")
