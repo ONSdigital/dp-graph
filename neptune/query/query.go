@@ -4,7 +4,6 @@ package query
 // (https://docs.aws.amazon.com/neptune/latest/userguide/access-graph-gremlin-differences.html)
 // Important practices:
 // 1) .property() function must contain 'single' where not a list, as the Neptune default is 'set'
-// 2) .from() and .to() functions do not work in Neptune, g.V('thing1').addE('newEdge').V('thing2') is valid
 
 const (
 	// codelists
