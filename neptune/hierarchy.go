@@ -65,6 +65,7 @@ func (n *NeptuneDB) CloneRelationships(ctx context.Context, attempt int, instanc
 		instanceID,
 		dimensionName,
 	)
+
 	logData := log.Data{
 		"fn":             "CloneRelationships",
 		"instance_id":    instanceID,
