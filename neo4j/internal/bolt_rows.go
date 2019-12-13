@@ -16,15 +16,15 @@ var (
 	lockBoltRowsMockNextNeo  sync.RWMutex
 )
 
-// Ensure, that BoltRowsMock does implement BoltRows.
+// Ensure, that BoltRowsMock does implement neo4jdriver.BoltRows.
 // If this is not the case, regenerate this file with moq.
 var _ neo4jdriver.BoltRows = &BoltRowsMock{}
 
-// BoltRowsMock is a mock implementation of BoltRows.
+// BoltRowsMock is a mock implementation of neo4jdriver.BoltRows.
 //
 //     func TestSomethingThatUsesBoltRows(t *testing.T) {
 //
-//         // make and configure a mocked BoltRows
+//         // make and configure a mocked neo4jdriver.BoltRows
 //         mockedBoltRows := &BoltRowsMock{
 //             AllFunc: func() ([][]interface{}, map[string]interface{}, error) {
 // 	               panic("mock out the All method")
@@ -43,7 +43,7 @@ var _ neo4jdriver.BoltRows = &BoltRowsMock{}
 //             },
 //         }
 //
-//         // use mockedBoltRows in code that requires BoltRows
+//         // use mockedBoltRows in code that requires neo4jdriver.BoltRows
 //         // and then make assertions.
 //
 //     }

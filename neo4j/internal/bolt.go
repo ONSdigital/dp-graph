@@ -14,15 +14,15 @@ var (
 	lockResultMockRowsAffected sync.RWMutex
 )
 
-// Ensure, that ResultMock does implement Result.
+// Ensure, that ResultMock does implement neo4jdriver.Result.
 // If this is not the case, regenerate this file with moq.
 var _ neo4jdriver.Result = &ResultMock{}
 
-// ResultMock is a mock implementation of Result.
+// ResultMock is a mock implementation of neo4jdriver.Result.
 //
 //     func TestSomethingThatUsesResult(t *testing.T) {
 //
-//         // make and configure a mocked Result
+//         // make and configure a mocked neo4jdriver.Result
 //         mockedResult := &ResultMock{
 //             LastInsertIdFunc: func() (int64, error) {
 // 	               panic("mock out the LastInsertId method")
@@ -35,7 +35,7 @@ var _ neo4jdriver.Result = &ResultMock{}
 //             },
 //         }
 //
-//         // use mockedResult in code that requires Result
+//         // use mockedResult in code that requires neo4jdriver.Result
 //         // and then make assertions.
 //
 //     }
