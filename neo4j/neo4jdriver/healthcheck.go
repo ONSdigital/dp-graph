@@ -10,8 +10,8 @@ import (
 // ServiceName : neo4j
 const ServiceName = "neo4j"
 
-// MsgHealthy Check message returned when vault is healthy
-const MsgHealthy = "elasticsearch is healthy"
+// MsgHealthy Check message returned when Neo4j is healthy
+const MsgHealthy = "Neo4j is healthy"
 
 const pingStmt = "MATCH (i) RETURN i LIMIT 1"
 
