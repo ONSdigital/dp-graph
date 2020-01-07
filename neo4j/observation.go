@@ -67,13 +67,13 @@ func createObservationQuery(filter *observation.Filter) string {
 }
 
 func createOptionList(name string, opts []string) string {
-	var q []string
+	q := make([]string, len(opts))
 
-	for _, o := range opts {
-		q = append(q, fmt.Sprintf("`%s`.value='%s'", name, o))
+	for idx, o := range opts {
+		q[idx] = fmt.Sprintf("'%s'", o)
 	}
 
-	return fmt.Sprintf("(%s)", strings.Join(q, " OR "))
+	return fmt.Sprintf("`%s`.value IN [%s]", name, strings.Join(q, ","))
 }
 
 // InsertObservationBatch creates a batch query based on a provided list of
