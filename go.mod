@@ -5,7 +5,7 @@ go 1.12
 require (
 	github.com/ONSdigital/dp-code-list-api v0.0.0-20191210144507-f59b8560081b
 	github.com/ONSdigital/dp-dimension-importer v0.0.0-20190530123722-f43044c4fddb
-	github.com/ONSdigital/dp-healthcheck v0.0.0-20191218093917-b10c00bc4439
+	github.com/ONSdigital/dp-healthcheck v0.0.0-20200108090555-e18ed65f5bdd
 	github.com/ONSdigital/dp-hierarchy-api v0.0.0-20190530123622-0be246287b59
 	github.com/ONSdigital/dp-observation-importer v0.0.0-20190530123707-54356cab6a79
 	github.com/ONSdigital/go-ns v0.0.0-20191104121206-f144c4ec2e58

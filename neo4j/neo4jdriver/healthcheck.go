@@ -37,7 +37,7 @@ func (n *NeoDriver) Healthcheck() (string, error) {
 }
 
 // Checker : Check health of Neo4j and return it inside a Check structure
-func (n *NeoDriver) Checker(ctx *context.Context) (*health.Check, error) {
+func (n *NeoDriver) Checker(ctx context.Context) (*health.Check, error) {
 	_, err := n.Healthcheck()
 	if err != nil {
 		return getCheck(ctx, health.StatusCritical, err.Error()), err
@@ -46,7 +46,7 @@ func (n *NeoDriver) Checker(ctx *context.Context) (*health.Check, error) {
 }
 
 // getCheck : Create a Check structure and populate it according the status and message
-func getCheck(ctx *context.Context, status, message string) *health.Check {
+func getCheck(ctx context.Context, status, message string) *health.Check {
 
 	currentTime := time.Now().UTC()
 
@@ -59,16 +59,9 @@ func getCheck(ctx *context.Context, status, message string) *health.Check {
 		LastFailure: minTime,
 	}
 
-	switch status {
-	case health.StatusOK:
-		check.StatusCode = 200
+	if status == health.StatusOK {
 		check.LastSuccess = currentTime
-	case health.StatusWarning:
-		check.StatusCode = 429
-		check.LastFailure = currentTime
-	default:
-		check.Status = health.StatusCritical
-		check.StatusCode = 500
+	} else {
 		check.LastFailure = currentTime
 	}
 

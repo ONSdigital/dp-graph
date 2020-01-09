@@ -21,6 +21,6 @@ func (n *NeptuneDriver) Healthcheck() (s string, err error) {
 }
 
 // Checker not implemented for NeptueDriver
-func (n *NeptuneDriver) Checker(ctx *context.Context) (*health.Check, error) {
+func (n *NeptuneDriver) Checker(ctx context.Context) (*health.Check, error) {
 	return nil, errors.New("Not implemented")
 }

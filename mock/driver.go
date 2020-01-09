@@ -21,7 +21,7 @@ func (m *Mock) Healthcheck() (string, error) {
 	return "mock", nil
 }
 
-func (m *Mock) Checker(ctx *context.Context) (*health.Check, error) {
+func (m *Mock) Checker(ctx context.Context) (*health.Check, error) {
 	return &health.Check{}, nil
 }
 

@@ -15,7 +15,7 @@ import (
 type Driver interface {
 	Close(ctx context.Context) error
 	Healthcheck() (string, error)
-	Checker(ctx *context.Context) (*health.Check, error)
+	Checker(ctx context.Context) (*health.Check, error)
 }
 
 // CodeList defines functions to retrieve code list and code nodes

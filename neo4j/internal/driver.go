@@ -33,7 +33,7 @@ var _ neo4jdriver.Neo4jDriver = &Neo4jDriverMock{}
 //
 //         // make and configure a mocked neo4jdriver.Neo4jDriver
 //         mockedNeo4jDriver := &Neo4jDriverMock{
-//             CheckerFunc: func(ctx *context.Context) (*healthcheck.Check, error) {
+//             CheckerFunc: func(ctx context.Context) (*healthcheck.Check, error) {
 // 	               panic("mock out the Checker method")
 //             },
 //             CloseFunc: func(ctx context.Context) error {
@@ -65,7 +65,7 @@ var _ neo4jdriver.Neo4jDriver = &Neo4jDriverMock{}
 //     }
 type Neo4jDriverMock struct {
 	// CheckerFunc mocks the Checker method.
-	CheckerFunc func(ctx *context.Context) (*healthcheck.Check, error)
+	CheckerFunc func(ctx context.Context) (*healthcheck.Check, error)
 
 	// CloseFunc mocks the Close method.
 	CloseFunc func(ctx context.Context) error
@@ -93,7 +93,7 @@ type Neo4jDriverMock struct {
 		// Checker holds details about calls to the Checker method.
 		Checker []struct {
 			// Ctx is the ctx argument value.
-			Ctx *context.Context
+			Ctx context.Context
 		}
 		// Close holds details about calls to the Close method.
 		Close []struct {
@@ -144,12 +144,12 @@ type Neo4jDriverMock struct {
 }
 
 // Checker calls CheckerFunc.
-func (mock *Neo4jDriverMock) Checker(ctx *context.Context) (*healthcheck.Check, error) {
+func (mock *Neo4jDriverMock) Checker(ctx context.Context) (*healthcheck.Check, error) {
 	if mock.CheckerFunc == nil {
 		panic("Neo4jDriverMock.CheckerFunc: method is nil but Neo4jDriver.Checker was just called")
 	}
 	callInfo := struct {
-		Ctx *context.Context
+		Ctx context.Context
 	}{
 		Ctx: ctx,
 	}
@@ -163,10 +163,10 @@ func (mock *Neo4jDriverMock) Checker(ctx *context.Context) (*healthcheck.Check, 
 // Check the length with:
 //     len(mockedNeo4jDriver.CheckerCalls())
 func (mock *Neo4jDriverMock) CheckerCalls() []struct {
-	Ctx *context.Context
+	Ctx context.Context
 } {
 	var calls []struct {
-		Ctx *context.Context
+		Ctx context.Context
 	}
 	lockNeo4jDriverMockChecker.RLock()
 	calls = mock.calls.Checker
