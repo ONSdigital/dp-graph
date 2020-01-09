@@ -67,7 +67,7 @@ func TestNeo4jHealthNotReacheable(t *testing.T) {
 		d := driver.NewWithPool(mockPool)
 
 		Convey("Checker returns a critical Check structure", func() {
-			_, err := validateCriticalCheck(d, 500, "Driver pool has been closed")
+			_, err := validateCriticalCheck(d, "Driver pool has been closed")
 			So(err, ShouldNotBeNil)
 			So(len(mockPool.OpenPoolCalls()), ShouldEqual, 1)
 		})
@@ -92,7 +92,7 @@ func TestNeo4jHealthQueryFailed(t *testing.T) {
 		d := driver.NewWithPool(mockPool)
 
 		Convey("Checker returns a critical Check structure", func() {
-			_, err := validateCriticalCheck(d, 500, "An open statement already exists")
+			_, err := validateCriticalCheck(d, "An open statement already exists")
 			So(err, ShouldNotBeNil)
 			So(len(mockPool.OpenPoolCalls()), ShouldEqual, 1)
 			So(len(connBoltErrQuery.QueryNeoCalls()), ShouldEqual, 1)
@@ -107,7 +107,6 @@ func validateSuccessfulCheck(n *neo4jdriver.NeoDriver) (check *health.Check) {
 	So(err, ShouldBeNil)
 	So(check.Name, ShouldEqual, neo4jdriver.ServiceName)
 	So(check.Status, ShouldEqual, health.StatusOK)
-	So(check.StatusCode, ShouldEqual, 200)
 	So(check.Message, ShouldEqual, neo4jdriver.MsgHealthy)
 	So(check.LastChecked, ShouldHappenOnOrBetween, t0, t1)
 	So(check.LastSuccess, ShouldHappenOnOrBetween, t0, t1)
@@ -115,13 +114,12 @@ func validateSuccessfulCheck(n *neo4jdriver.NeoDriver) (check *health.Check) {
 	return check
 }
 
-func validateWarningCheck(d *neo4jdriver.NeoDriver, expectedCode int, expectedMessage string) (check *health.Check, err error) {
+func validateWarningCheck(d *neo4jdriver.NeoDriver, expectedMessage string) (check *health.Check, err error) {
 	t0 := time.Now().UTC()
 	check, err = d.Checker(nil)
 	t1 := time.Now().UTC()
 	So(check.Name, ShouldEqual, neo4jdriver.ServiceName)
 	So(check.Status, ShouldEqual, health.StatusWarning)
-	So(check.StatusCode, ShouldEqual, expectedCode)
 	So(check.Message, ShouldEqual, expectedMessage)
 	So(check.LastChecked, ShouldHappenOnOrBetween, t0, t1)
 	So(check.LastSuccess, ShouldHappenBefore, t0)
@@ -129,13 +127,12 @@ func validateWarningCheck(d *neo4jdriver.NeoDriver, expectedCode int, expectedMe
 	return check, err
 }
 
-func validateCriticalCheck(cli *neo4jdriver.NeoDriver, expectedCode int, expectedMessage string) (check *health.Check, err error) {
+func validateCriticalCheck(cli *neo4jdriver.NeoDriver, expectedMessage string) (check *health.Check, err error) {
 	t0 := time.Now().UTC()
 	check, err = cli.Checker(nil)
 	t1 := time.Now().UTC()
 	So(check.Name, ShouldEqual, neo4jdriver.ServiceName)
 	So(check.Status, ShouldEqual, health.StatusCritical)
-	So(check.StatusCode, ShouldEqual, expectedCode)
 	So(check.Message, ShouldEqual, expectedMessage)
 	So(check.LastChecked, ShouldHappenOnOrBetween, t0, t1)
 	So(check.LastSuccess, ShouldHappenBefore, t0)
