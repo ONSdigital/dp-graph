@@ -3,7 +3,6 @@ package neptune
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/ONSdigital/dp-dimension-importer/model"
@@ -30,7 +29,7 @@ func (n *NeptuneDB) AddVersionDetailsToInstance(ctx context.Context, instanceID 
 		"version":     version,
 	}
 
-	q := fmt.Sprintf(query.AddVersionDetailsToInstance, instanceID, datasetID, edition, strconv.Itoa(version))
+	q := fmt.Sprintf(query.AddVersionDetailsToInstance, instanceID, datasetID, edition, version)
 
 	if _, err := n.exec(q); err != nil {
 		log.ErrorC("neptune exec failed on AddVersionDetailsToInstance", err, data)
@@ -133,7 +132,7 @@ func (n *NeptuneDB) CreateCodeRelationship(ctx context.Context, i *model.Instanc
 		if len(res) > 0 && res[0].Status.Code == gremgo.StatusScriptEvaluationError &&
 			strings.Contains(res[0].Status.Message, fmt.Sprintf(codeListNotFoundFmt, codeListID)) {
 
-			return errors.Wrapf(err, "error creating relationship from instance to code: code or code list not found: %v", data)
+			return errors.Wrapf(err, "error creating relationship from instance to code: code or code list not found: %+v", data)
 		}
 		log.ErrorC("neptune exec failed on CreateCodeRelationship", err, data)
 		return err
