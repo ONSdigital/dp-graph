@@ -15,9 +15,6 @@ const MsgHealthy = "Neo4j is healthy"
 
 const pingStmt = "MATCH (i) RETURN i LIMIT 1"
 
-// minTime : Oldest time for Check structure.
-var minTime = time.Unix(0, 0)
-
 // Healthcheck calls neo4j to check its health status.
 func (n *NeoDriver) Healthcheck() (string, error) {
 	conn, err := n.pool.OpenPool()
@@ -39,31 +36,16 @@ func (n *NeoDriver) Healthcheck() (string, error) {
 // Checker : Check health of Neo4j and return it inside a Check structure
 func (n *NeoDriver) Checker(ctx context.Context) (*health.Check, error) {
 	_, err := n.Healthcheck()
-	if err != nil {
-		return getCheck(ctx, health.StatusCritical, err.Error()), err
-	}
-	return getCheck(ctx, health.StatusOK, MsgHealthy), nil
-}
-
-// getCheck : Create a Check structure and populate it according the status and message
-func getCheck(ctx context.Context, status, message string) *health.Check {
-
 	currentTime := time.Now().UTC()
-
-	check := &health.Check{
-		Name:        ServiceName,
-		Status:      status,
-		Message:     message,
-		LastChecked: currentTime,
-		LastSuccess: minTime,
-		LastFailure: minTime,
+	n.Check.LastChecked = &currentTime
+	if err != nil {
+		n.Check.LastFailure = &currentTime
+		n.Check.Status = health.StatusCritical
+		n.Check.Message = err.Error()
+		return n.Check, err
 	}
-
-	if status == health.StatusOK {
-		check.LastSuccess = currentTime
-	} else {
-		check.LastFailure = currentTime
-	}
-
-	return check
+	n.Check.LastSuccess = &currentTime
+	n.Check.Status = health.StatusOK
+	n.Check.Message = MsgHealthy
+	return n.Check, nil
 }
