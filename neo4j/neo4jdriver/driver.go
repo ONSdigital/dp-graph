@@ -6,6 +6,7 @@ import (
 
 	"github.com/ONSdigital/dp-graph/graph/driver"
 	"github.com/ONSdigital/dp-graph/neo4j/mapper"
+	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"github.com/pkg/errors"
 )
@@ -39,7 +40,8 @@ type Neo4jDriver interface {
 
 // NeoDriver contains a connection pool and allows basic interaction with the database
 type NeoDriver struct {
-	pool ClosableDriverPool // TODO Use 'bolt.ClosableDriverPool' if it exports only public fields in the future
+	pool  ClosableDriverPool // TODO Use 'bolt.ClosableDriverPool' if it exports only public fields in the future
+	Check *health.Check
 }
 
 // New neo4j closeable connection pool configured with the provided address,
@@ -49,15 +51,16 @@ func New(dbAddr string, size, timeout int) (n *NeoDriver, err error) {
 	if err != nil {
 		return nil, err
 	}
-
-	return &NeoDriver{
-		pool: pool,
-	}, nil
+	return NewWithPool(pool), nil
 }
 
-// NewWithPool : New NeoDriver structure containing the pool passed as parameter
+// NewWithPool : New NeoDriver structure containing the pool passed as parameter and a new Check
 func NewWithPool(pool ClosableDriverPool) (n *NeoDriver) {
-	return &NeoDriver{pool: pool}
+	check := &health.Check{Name: ServiceName}
+	return &NeoDriver{
+		pool:  pool,
+		Check: check,
+	}
 }
 
 //Close the contained connection pool
