@@ -32,7 +32,7 @@ func (n *NeoDriver) Healthcheck() (string, error) {
 	return ServiceName, nil
 }
 
-// Checker : Check health of Neo4j and updates the provided CheckState object
+// Checker hecks health of Neo4j and updates the provided CheckState accordingly
 func (n *NeoDriver) Checker(ctx context.Context, state CheckState) error {
 
 	// Perform healthcheck
