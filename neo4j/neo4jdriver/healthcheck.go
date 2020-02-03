@@ -2,7 +2,6 @@ package neo4jdriver
 
 import (
 	"context"
-	"time"
 
 	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
 )
@@ -33,19 +32,19 @@ func (n *NeoDriver) Healthcheck() (string, error) {
 	return ServiceName, nil
 }
 
-// Checker : Check health of Neo4j and return it inside a Check structure
-func (n *NeoDriver) Checker(ctx context.Context) (*health.Check, error) {
+// Checker : Check health of Neo4j and updates the provided CheckState object
+func (n *NeoDriver) Checker(ctx context.Context, state CheckState) error {
+
+	// Perform healthcheck
 	_, err := n.Healthcheck()
-	currentTime := time.Now().UTC()
-	n.Check.LastChecked = &currentTime
+
+	// All errors are mapped to Critical status
 	if err != nil {
-		n.Check.LastFailure = &currentTime
-		n.Check.Status = health.StatusCritical
-		n.Check.Message = err.Error()
-		return n.Check, err
+		state.Update(health.StatusCritical, err.Error(), 0)
+		return nil
 	}
-	n.Check.LastSuccess = &currentTime
-	n.Check.Status = health.StatusOK
-	n.Check.Message = MsgHealthy
-	return n.Check, nil
+
+	// Success healthcheck is mapped to OK status
+	state.Update(health.StatusOK, MsgHealthy, 0)
+	return nil
 }

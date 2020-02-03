@@ -1,12 +1,5 @@
 package driver
 
-import (
-	"context"
-	"errors"
-
-	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
-)
-
 const (
 	serviceName = "neptune"
 	pingStmt    = "g.V().limit(1)"
@@ -18,9 +11,4 @@ func (n *NeptuneDriver) Healthcheck() (s string, err error) {
 		return serviceName, err
 	}
 	return serviceName, nil
-}
-
-// Checker not implemented for NeptueDriver
-func (n *NeptuneDriver) Checker(ctx context.Context) (*health.Check, error) {
-	return nil, errors.New("Not implemented")
 }
