@@ -54,7 +54,7 @@ func TestNeo4jHealthOK(t *testing.T) {
 			},
 		}
 
-		Convey("Checker returns a successful Check structure", func() {
+		Convey("Checker updates the CheckState to a successful state", func() {
 			d.Checker(context.Background(), &mockCheckState)
 			So(len(mockPool.OpenPoolCalls()), ShouldEqual, 1)
 			So(len(connBoltNoErr.QueryNeoCalls()), ShouldEqual, 1)
@@ -85,7 +85,7 @@ func TestNeo4jHealthNotReachable(t *testing.T) {
 			},
 		}
 
-		Convey("Checker returns a critical Check structure", func() {
+		Convey("Checker updates the CheckState to a critical state", func() {
 			d.Checker(context.Background(), &mockCheckState)
 			So(len(mockPool.OpenPoolCalls()), ShouldEqual, 1)
 			updateCalls := mockCheckState.UpdateCalls()
@@ -121,7 +121,7 @@ func TestNeo4jHealthQueryFailed(t *testing.T) {
 			},
 		}
 
-		Convey("Checker returns a critical Check structure", func() {
+		Convey("Checker updates the CheckState to a critical state", func() {
 			d.Checker(context.Background(), &mockCheckState)
 			So(len(mockPool.OpenPoolCalls()), ShouldEqual, 1)
 			So(len(connBoltErrQuery.QueryNeoCalls()), ShouldEqual, 1)
