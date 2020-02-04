@@ -7,6 +7,7 @@ import (
 	"context"
 	"github.com/ONSdigital/dp-graph/neo4j/mapper"
 	"github.com/ONSdigital/dp-graph/neo4j/neo4jdriver"
+	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"sync"
 )
@@ -32,7 +33,7 @@ var _ neo4jdriver.Neo4jDriver = &Neo4jDriverMock{}
 //
 //         // make and configure a mocked neo4jdriver.Neo4jDriver
 //         mockedNeo4jDriver := &Neo4jDriverMock{
-//             CheckerFunc: func(ctx context.Context, state neo4jdriver.CheckState) error {
+//             CheckerFunc: func(ctx context.Context, state *healthcheck.CheckState) error {
 // 	               panic("mock out the Checker method")
 //             },
 //             CloseFunc: func(ctx context.Context) error {
@@ -64,7 +65,7 @@ var _ neo4jdriver.Neo4jDriver = &Neo4jDriverMock{}
 //     }
 type Neo4jDriverMock struct {
 	// CheckerFunc mocks the Checker method.
-	CheckerFunc func(ctx context.Context, state neo4jdriver.CheckState) error
+	CheckerFunc func(ctx context.Context, state *healthcheck.CheckState) error
 
 	// CloseFunc mocks the Close method.
 	CloseFunc func(ctx context.Context) error
@@ -94,7 +95,7 @@ type Neo4jDriverMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// State is the state argument value.
-			State neo4jdriver.CheckState
+			State *healthcheck.CheckState
 		}
 		// Close holds details about calls to the Close method.
 		Close []struct {
@@ -145,13 +146,13 @@ type Neo4jDriverMock struct {
 }
 
 // Checker calls CheckerFunc.
-func (mock *Neo4jDriverMock) Checker(ctx context.Context, state neo4jdriver.CheckState) error {
+func (mock *Neo4jDriverMock) Checker(ctx context.Context, state *healthcheck.CheckState) error {
 	if mock.CheckerFunc == nil {
 		panic("Neo4jDriverMock.CheckerFunc: method is nil but Neo4jDriver.Checker was just called")
 	}
 	callInfo := struct {
 		Ctx   context.Context
-		State neo4jdriver.CheckState
+		State *healthcheck.CheckState
 	}{
 		Ctx:   ctx,
 		State: state,
@@ -167,11 +168,11 @@ func (mock *Neo4jDriverMock) Checker(ctx context.Context, state neo4jdriver.Chec
 //     len(mockedNeo4jDriver.CheckerCalls())
 func (mock *Neo4jDriverMock) CheckerCalls() []struct {
 	Ctx   context.Context
-	State neo4jdriver.CheckState
+	State *healthcheck.CheckState
 } {
 	var calls []struct {
 		Ctx   context.Context
-		State neo4jdriver.CheckState
+		State *healthcheck.CheckState
 	}
 	lockNeo4jDriverMockChecker.RLock()
 	calls = mock.calls.Checker

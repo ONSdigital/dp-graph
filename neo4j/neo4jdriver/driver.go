@@ -6,6 +6,7 @@ import (
 
 	"github.com/ONSdigital/dp-graph/graph/driver"
 	"github.com/ONSdigital/dp-graph/neo4j/mapper"
+	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"github.com/pkg/errors"
 )
@@ -13,7 +14,6 @@ import (
 //go:generate moq -out ../internal/driver.go -pkg internal . Neo4jDriver
 //go:generate moq -out ../internal/bolt.go -pkg internal . Result
 //go:generate moq -out ../internal/bolt_closable.go -pkg internal . ClosableDriverPool
-//go:generate moq -out ../internal/check_state.go -pkg internal . CheckState
 
 // Result of queries to neo4j - needed for mocking and tests
 type Result bolt.Result
@@ -27,11 +27,6 @@ type ClosableDriverPool interface {
 	Close() error
 }
 
-// CheckState interface corresponds to the healthcheck CheckState structure
-type CheckState interface {
-	Update(status, message string, statusCode int) error
-}
-
 // Neo4jDriver is the interface that wraps basic neo4j driver functionality
 type Neo4jDriver interface {
 	Count(query string) (count int64, err error)
@@ -39,7 +34,7 @@ type Neo4jDriver interface {
 	Read(query string, mapp mapper.ResultMapper, single bool) error
 	ReadWithParams(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error
 	StreamRows(query string) (*BoltRowReader, error)
-	Checker(ctx context.Context, state CheckState) error
+	Checker(ctx context.Context, state *health.CheckState) error
 
 	driver.Driver
 }

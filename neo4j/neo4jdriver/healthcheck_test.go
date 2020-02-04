@@ -47,22 +47,16 @@ func TestNeo4jHealthOK(t *testing.T) {
 		}
 		d := driver.NewWithPool(mockPool)
 
-		// mock CheckState for test validation
-		mockCheckState := internal.CheckStateMock{
-			UpdateFunc: func(status, message string, statusCode int) error {
-				return nil
-			},
-		}
+		// CheckState for test validation
+		checkState := health.NewCheckState(neo4jdriver.ServiceName)
 
 		Convey("Checker updates the CheckState to a successful state", func() {
-			d.Checker(context.Background(), &mockCheckState)
+			d.Checker(context.Background(), checkState)
 			So(len(mockPool.OpenPoolCalls()), ShouldEqual, 1)
 			So(len(connBoltNoErr.QueryNeoCalls()), ShouldEqual, 1)
-			updateCalls := mockCheckState.UpdateCalls()
-			So(len(updateCalls), ShouldEqual, 1)
-			So(updateCalls[0].Status, ShouldEqual, health.StatusOK)
-			So(updateCalls[0].Message, ShouldEqual, neo4jdriver.MsgHealthy)
-			So(updateCalls[0].StatusCode, ShouldEqual, 0)
+			So(checkState.Status(), ShouldEqual, health.StatusOK)
+			So(checkState.Message(), ShouldEqual, neo4jdriver.MsgHealthy)
+			So(checkState.StatusCode(), ShouldEqual, 0)
 		})
 	})
 }
@@ -78,21 +72,15 @@ func TestNeo4jHealthNotReachable(t *testing.T) {
 		}
 		d := driver.NewWithPool(mockPool)
 
-		// mock CheckState for test validation
-		mockCheckState := internal.CheckStateMock{
-			UpdateFunc: func(status, message string, statusCode int) error {
-				return nil
-			},
-		}
+		// CheckState for test validation
+		checkState := health.NewCheckState(neo4jdriver.ServiceName)
 
 		Convey("Checker updates the CheckState to a critical state with the relevant error message", func() {
-			d.Checker(context.Background(), &mockCheckState)
+			d.Checker(context.Background(), checkState)
 			So(len(mockPool.OpenPoolCalls()), ShouldEqual, 1)
-			updateCalls := mockCheckState.UpdateCalls()
-			So(len(updateCalls), ShouldEqual, 1)
-			So(updateCalls[0].Status, ShouldEqual, health.StatusCritical)
-			So(updateCalls[0].Message, ShouldEqual, "Driver pool has been closed")
-			So(updateCalls[0].StatusCode, ShouldEqual, 0)
+			So(checkState.Status(), ShouldEqual, health.StatusCritical)
+			So(checkState.Message(), ShouldEqual, "Driver pool has been closed")
+			So(checkState.StatusCode(), ShouldEqual, 0)
 		})
 	})
 }
@@ -114,22 +102,16 @@ func TestNeo4jHealthQueryFailed(t *testing.T) {
 		}
 		d := driver.NewWithPool(mockPool)
 
-		// mock CheckState for test validation
-		mockCheckState := internal.CheckStateMock{
-			UpdateFunc: func(status, message string, statusCode int) error {
-				return nil
-			},
-		}
+		// CheckState for test validation
+		checkState := health.NewCheckState(neo4jdriver.ServiceName)
 
 		Convey("Checker updates the CheckState to a critical state with the relevant error message", func() {
-			d.Checker(context.Background(), &mockCheckState)
+			d.Checker(context.Background(), checkState)
 			So(len(mockPool.OpenPoolCalls()), ShouldEqual, 1)
 			So(len(connBoltErrQuery.QueryNeoCalls()), ShouldEqual, 1)
-			updateCalls := mockCheckState.UpdateCalls()
-			So(len(updateCalls), ShouldEqual, 1)
-			So(updateCalls[0].Status, ShouldEqual, health.StatusCritical)
-			So(updateCalls[0].Message, ShouldEqual, "An open statement already exists")
-			So(updateCalls[0].StatusCode, ShouldEqual, 0)
+			So(checkState.Status(), ShouldEqual, health.StatusCritical)
+			So(checkState.Message(), ShouldEqual, "An open statement already exists")
+			So(checkState.StatusCode(), ShouldEqual, 0)
 		})
 	})
 }

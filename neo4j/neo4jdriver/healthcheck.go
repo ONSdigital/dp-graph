@@ -33,7 +33,7 @@ func (n *NeoDriver) Healthcheck() (string, error) {
 }
 
 // Checker hecks health of Neo4j and updates the provided CheckState accordingly
-func (n *NeoDriver) Checker(ctx context.Context, state CheckState) error {
+func (n *NeoDriver) Checker(ctx context.Context, state *health.CheckState) error {
 
 	// Perform healthcheck
 	_, err := n.Healthcheck()
