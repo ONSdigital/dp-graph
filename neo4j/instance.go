@@ -8,8 +8,8 @@ import (
 
 	"github.com/ONSdigital/dp-dimension-importer/model"
 	"github.com/ONSdigital/dp-graph/neo4j/query"
-	"github.com/ONSdigital/go-ns/log"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
+	"github.com/ONSdigital/log.go/log"
 	"github.com/pkg/errors"
 )
 
@@ -25,7 +25,7 @@ func (n *Neo4j) CreateInstanceConstraint(ctx context.Context, i *model.Instance)
 		return errors.Wrap(err, "neo4j.Exec returned an error when creating observation constraint")
 	}
 
-	log.Info("created observation constraint", log.Data{"instance_id": i.InstanceID, "statement": createStmt})
+	log.Event(ctx, "created observation constraint", log.Data{"instance_id": i.InstanceID, "statement": createStmt})
 	return nil
 }
 
@@ -41,7 +41,7 @@ func (n *Neo4j) CreateInstance(ctx context.Context, i *model.Instance) error {
 		return errors.Wrap(err, "neo4j.Exec returned an error")
 	}
 
-	log.Info("create instance success", log.Data{"instance_id": i.InstanceID, "statement": createStmt})
+	log.Event(ctx, "create instance success", log.Data{"instance_id": i.InstanceID, "statement": createStmt})
 	return nil
 }
 
@@ -58,7 +58,7 @@ func (n *Neo4j) AddDimensions(ctx context.Context, i *model.Instance) error {
 		return errors.Wrap(err, "neo4j.Exec returned an error")
 	}
 
-	log.Info("add instance dimensions success", log.Data{
+	log.Event(ctx, "add instance dimensions success", log.Data{
 		"statement":   stmt,
 		"params":      params,
 		"instance_id": i.InstanceID,
@@ -80,7 +80,7 @@ func (n *Neo4j) CreateCodeRelationship(ctx context.Context, i *model.Instance, c
 	stmt := fmt.Sprintf(query.CreateInstanceToCodeRelationship, i.InstanceID, codeListID)
 	params := map[string]interface{}{"code": code}
 
-	logDebug := map[string]interface{}{
+	logData := log.Data{
 		"statement":   stmt,
 		"params":      params,
 		"instance_id": i.InstanceID,
@@ -97,12 +97,12 @@ func (n *Neo4j) CreateCodeRelationship(ctx context.Context, i *model.Instance, c
 		return errors.Wrap(err, "result.RowsAffected() returned an error")
 	}
 
-	logDebug["rows_affected"] = rowsAffected
+	logData["rows_affected"] = rowsAffected
 	if rowsAffected != 1 {
 		return errors.New("unexpected number of rows affected. expected 1 but was " + strconv.FormatInt(rowsAffected, 10))
 	}
 
-	log.Info("create code relationship success", logDebug)
+	log.Event(ctx, "create code relationship success", logData)
 	return nil
 }
 
@@ -149,7 +149,7 @@ func (n *Neo4j) AddVersionDetailsToInstance(ctx context.Context, instanceID stri
 		return errors.WithMessage(err, "neoClient AddVersionDetailsToInstance: invalid results")
 	}
 
-	log.InfoCtx(ctx, "neoClient AddVersionDetailsToInstance: update successful", data)
+	log.Event(ctx, "neoClient AddVersionDetailsToInstance: update successful", data)
 	return nil
 }
 
@@ -159,7 +159,7 @@ func (n *Neo4j) SetInstanceIsPublished(ctx context.Context, instanceID string) e
 		"instance_id": instanceID,
 	}
 
-	log.InfoCtx(ctx, "neoClient SetInstanceIsPublished: attempting to set is_published property on instance node", data)
+	log.Event(ctx, "neoClient SetInstanceIsPublished: attempting to set is_published property on instance node", data)
 
 	q := fmt.Sprintf(query.SetInstanceIsPublished, instanceID)
 
@@ -172,7 +172,7 @@ func (n *Neo4j) SetInstanceIsPublished(ctx context.Context, instanceID string) e
 		return errors.WithMessage(err, "neoClient SetInstanceIsPublished: invalid results")
 	}
 
-	log.InfoCtx(ctx, "neoClient SetInstanceIsPublished: update successful", data)
+	log.Event(ctx, "neoClient SetInstanceIsPublished: update successful", data)
 	return nil
 }
 

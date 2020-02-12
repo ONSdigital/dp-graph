@@ -1,6 +1,7 @@
 package neo4j
 
 import (
+	"context"
 	"math"
 	"math/rand"
 	"strings"
@@ -8,9 +9,9 @@ import (
 
 	graph "github.com/ONSdigital/dp-graph/graph/driver"
 	driver "github.com/ONSdigital/dp-graph/neo4j/neo4jdriver"
-	"github.com/ONSdigital/go-ns/log"
 	neoErrors "github.com/ONSdigital/golang-neo4j-bolt-driver/errors"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/messages"
+	"github.com/ONSdigital/log.go/log"
 )
 
 const transientErrorPrefix = "Neo.TransientError"
@@ -53,8 +54,9 @@ func New(dbAddr string, size, timeout, retries int) (n *Neo4j, err error) {
 }
 
 func (n *Neo4j) checkAttempts(err error, instanceID string, attempt int) error {
+	ctx := context.Background()
 	if !isTransientError(err) {
-		log.Info("received an error from neo4j that cannot be retried",
+		log.Event(ctx, "received an error from neo4j that cannot be retried",
 			log.Data{"instance_id": instanceID, "error": err})
 
 		return graph.ErrNonRetriable{err}

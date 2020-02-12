@@ -7,11 +7,11 @@ import (
 	"github.com/ONSdigital/dp-dimension-importer/model"
 	"github.com/ONSdigital/dp-graph/neo4j/mapper"
 	"github.com/ONSdigital/dp-graph/neo4j/query"
-	"github.com/ONSdigital/go-ns/log"
+	"github.com/ONSdigital/log.go/log"
 	"github.com/pkg/errors"
 )
 
-// InsertDimesion node to neo4j and create a unique constraint on the dimension
+// InsertDimension node to neo4j and create a unique constraint on the dimension
 // label & value if one does not already exist.
 func (n *Neo4j) InsertDimension(ctx context.Context, cache map[string]string, i *model.Instance, d *model.Dimension) (*model.Dimension, error) {
 	if err := i.Validate(); err != nil {
@@ -45,7 +45,7 @@ func (n *Neo4j) createUniqueConstraint(ctx context.Context, instanceID string, d
 		return errors.Wrap(err, "neoClient.Exec returned an error")
 	}
 
-	log.Info("successfully created unique constraint on dimension", log.Data{"dimension": d.DimensionID})
+	log.Event(ctx, "successfully created unique constraint on dimension", log.Data{"dimension": d.DimensionID})
 	return nil
 }
 

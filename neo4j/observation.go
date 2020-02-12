@@ -8,7 +8,7 @@ import (
 
 	"github.com/ONSdigital/dp-graph/observation"
 	"github.com/ONSdigital/dp-observation-importer/models"
-	"github.com/ONSdigital/go-ns/log"
+	"github.com/ONSdigital/log.go/log"
 	"github.com/pkg/errors"
 )
 
@@ -26,7 +26,7 @@ func (n *Neo4j) StreamCSVRows(ctx context.Context, filter *observation.Filter, l
 		unionQuery += " LIMIT " + limitAsString
 	}
 
-	log.Info("neo4j query", log.Data{
+	log.Event(ctx, "neo4j query", log.Data{
 		"filterID":   filter.FilterID,
 		"instanceID": filter.InstanceID,
 		"query":      unionQuery,
@@ -36,9 +36,10 @@ func (n *Neo4j) StreamCSVRows(ctx context.Context, filter *observation.Filter, l
 }
 
 func createObservationQuery(filter *observation.Filter) string {
+	ctx := context.Background()
 	if filter.IsEmpty() {
 		// if no dimension filter are specified than match all observations
-		log.Info("no dimension filters supplied, generating entire dataset query", log.Data{
+		log.Event(ctx, "no dimension filters supplied, generating entire dataset query", log.Data{
 			"filterID":   filter.FilterID,
 			"instanceID": filter.InstanceID,
 		})
@@ -95,7 +96,7 @@ func (n *Neo4j) InsertObservationBatch(ctx context.Context, attempt int, instanc
 			return errors.Wrap(err, "observation batch save failed")
 		}
 
-		log.Info("got an error when saving observations, attempting to retry", log.Data{
+		log.Event(ctx, "got an error when saving observations, attempting to retry", log.Data{
 			"instance_id":  instanceID,
 			"retry_number": attempt,
 			"max_attempts": n.maxRetries,
@@ -109,7 +110,7 @@ func (n *Neo4j) InsertObservationBatch(ctx context.Context, attempt int, instanc
 		return errors.Wrap(err, "error attempting to get number of rows affected in query result")
 	}
 
-	log.Info("successfully saved observation batch", log.Data{"rows_affected": rowsAffected, "instance_id": instanceID})
+	log.Event(ctx, "successfully saved observation batch", log.Data{"rows_affected": rowsAffected, "instance_id": instanceID})
 	return nil
 }
 
