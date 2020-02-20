@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/ONSdigital/dp-code-list-api v0.0.0-20191210144507-f59b8560081b
 	github.com/ONSdigital/dp-dimension-importer v0.0.0-20190530123722-f43044c4fddb
-	github.com/ONSdigital/dp-healthcheck v0.0.0-20200131122546-9db6d3f0494e
+	github.com/ONSdigital/dp-healthcheck v0.0.0-20200219161048-205cb782aff1
 	github.com/ONSdigital/dp-hierarchy-api v0.0.0-20190530123622-0be246287b59
 	github.com/ONSdigital/dp-observation-importer v0.0.0-20190530123707-54356cab6a79
 	github.com/ONSdigital/golang-neo4j-bolt-driver v0.0.0-20190228153339-da534111531d
