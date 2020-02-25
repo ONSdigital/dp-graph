@@ -56,7 +56,7 @@ func New(dbAddr string, size, timeout, retries int) (n *Neo4j, err error) {
 func (n *Neo4j) checkAttempts(err error, instanceID string, attempt int) error {
 	ctx := context.Background()
 	if !isTransientError(err) {
-		log.Event(ctx, "received an error from neo4j that cannot be retried",
+		log.Event(ctx, "received an error from neo4j that cannot be retried", log.ERROR,
 			log.Data{"instance_id": instanceID, "error": err})
 
 		return graph.ErrNonRetriable{err}

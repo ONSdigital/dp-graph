@@ -26,7 +26,7 @@ func (n *Neo4j) StreamCSVRows(ctx context.Context, filter *observation.Filter, l
 		unionQuery += " LIMIT " + limitAsString
 	}
 
-	log.Event(ctx, "neo4j query", log.Data{
+	log.Event(ctx, "neo4j query", log.INFO, log.Data{
 		"filterID":   filter.FilterID,
 		"instanceID": filter.InstanceID,
 		"query":      unionQuery,
@@ -39,7 +39,7 @@ func createObservationQuery(filter *observation.Filter) string {
 	ctx := context.Background()
 	if filter.IsEmpty() {
 		// if no dimension filter are specified than match all observations
-		log.Event(ctx, "no dimension filters supplied, generating entire dataset query", log.Data{
+		log.Event(ctx, "no dimension filters supplied, generating entire dataset query", log.INFO, log.Data{
 			"filterID":   filter.FilterID,
 			"instanceID": filter.InstanceID,
 		})
@@ -96,7 +96,7 @@ func (n *Neo4j) InsertObservationBatch(ctx context.Context, attempt int, instanc
 			return errors.Wrap(err, "observation batch save failed")
 		}
 
-		log.Event(ctx, "got an error when saving observations, attempting to retry", log.Data{
+		log.Event(ctx, "got an error when saving observations, attempting to retry", log.INFO, log.Data{
 			"instance_id":  instanceID,
 			"retry_number": attempt,
 			"max_attempts": n.maxRetries,
@@ -110,7 +110,7 @@ func (n *Neo4j) InsertObservationBatch(ctx context.Context, attempt int, instanc
 		return errors.Wrap(err, "error attempting to get number of rows affected in query result")
 	}
 
-	log.Event(ctx, "successfully saved observation batch", log.Data{"rows_affected": rowsAffected, "instance_id": instanceID})
+	log.Event(ctx, "successfully saved observation batch", log.INFO, log.Data{"rows_affected": rowsAffected, "instance_id": instanceID})
 	return nil
 }
 

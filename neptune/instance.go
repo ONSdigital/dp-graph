@@ -32,7 +32,7 @@ func (n *NeptuneDB) AddVersionDetailsToInstance(ctx context.Context, instanceID 
 	q := fmt.Sprintf(query.AddVersionDetailsToInstance, instanceID, datasetID, edition, version)
 
 	if _, err := n.exec(q); err != nil {
-		log.Event(ctx, "neptune exec failed on AddVersionDetailsToInstance", data, log.Error(err))
+		log.Event(ctx, "neptune exec failed on AddVersionDetailsToInstance", log.ERROR, data, log.Error(err))
 		return err
 	}
 	return nil
@@ -47,7 +47,7 @@ func (n *NeptuneDB) SetInstanceIsPublished(ctx context.Context, instanceID strin
 	q := fmt.Sprintf(query.SetInstanceIsPublished, instanceID)
 
 	if _, err := n.exec(q); err != nil {
-		log.Event(ctx, "neptune exec failed on SetInstanceIsPublished", data, log.Error(err))
+		log.Event(ctx, "neptune exec failed on SetInstanceIsPublished", log.ERROR, data, log.Error(err))
 		return err
 	}
 	return nil
@@ -76,13 +76,13 @@ func (n *NeptuneDB) CreateInstance(ctx context.Context, i *model.Instance) error
 	}
 
 	if exists {
-		log.Event(ctx, "instance already exists in neptune", data)
+		log.Event(ctx, "instance already exists in neptune", log.INFO, data)
 		return nil
 	}
 
 	create := fmt.Sprintf(query.CreateInstance, i.InstanceID, strings.Join(i.CSVHeader, ","))
 	if _, err := n.exec(create); err != nil {
-		log.Event(ctx, "neptune exec failed on CreateInstance", data, log.Error(err))
+		log.Event(ctx, "neptune exec failed on CreateInstance", log.ERROR, data, log.Error(err))
 		return err
 	}
 	return nil
@@ -104,7 +104,7 @@ func (n *NeptuneDB) AddDimensions(ctx context.Context, i *model.Instance) error 
 	}
 
 	if _, err := n.exec(q); err != nil {
-		log.Event(ctx, "neptune exec failed on AddDimensions", data, log.Error(err))
+		log.Event(ctx, "neptune exec failed on AddDimensions", log.ERROR, data, log.Error(err))
 		return err
 	}
 
@@ -134,7 +134,7 @@ func (n *NeptuneDB) CreateCodeRelationship(ctx context.Context, i *model.Instanc
 
 			return errors.Wrapf(err, "error creating relationship from instance to code: code or code list not found: %+v", data)
 		}
-		log.Event(ctx, "neptune exec failed on CreateCodeRelationship", data, log.Error(err))
+		log.Event(ctx, "neptune exec failed on CreateCodeRelationship", log.ERROR, data, log.Error(err))
 		return err
 	}
 
@@ -150,7 +150,7 @@ func (n *NeptuneDB) InstanceExists(ctx context.Context, i *model.Instance) (bool
 	exists := fmt.Sprintf(query.CheckInstance, i.InstanceID)
 	count, err := n.getNumber(exists)
 	if err != nil {
-		log.Event(ctx, "neptune getNumber failed to check if instance exists", data, log.Error(err))
+		log.Event(ctx, "neptune getNumber failed to check if instance exists", log.ERROR, data, log.Error(err))
 		return false, err
 	}
 

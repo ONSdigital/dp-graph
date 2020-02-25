@@ -22,7 +22,7 @@ func (n *Neo4j) GetHierarchyCodelist(ctx context.Context, instanceID, dimension 
 	codelistID := new(string)
 
 	if err := n.Read(neoStmt, mapper.HierarchyCodelist(codelistID), false); err != nil {
-		log.Event(ctx, "getProps query", logData, log.Error(err))
+		log.Event(ctx, "getProps query", log.ERROR, logData, log.Error(err))
 		return "", err
 	}
 
@@ -54,7 +54,7 @@ func (n *Neo4j) GetHierarchyElement(ctx context.Context, instanceID, dimension, 
 func (n *Neo4j) queryResponse(instanceID, dimension string, neoStmt string, neoArgs neoArgMap) (*models.Response, error) {
 	ctx := context.Background()
 	logData := log.Data{"statement": neoStmt, "neo_args": neoArgs}
-	log.Event(ctx, "QueryResponse executing get query", logData)
+	log.Event(ctx, "QueryResponse executing get query", log.INFO, logData)
 
 	res := &models.Response{}
 	var err error
@@ -72,7 +72,7 @@ func (n *Neo4j) queryResponse(instanceID, dimension string, neoStmt string, neoA
 
 func (n *Neo4j) getChildren(instanceID, dimension, code string) ([]*models.Element, error) {
 	ctx := context.Background()
-	log.Event(ctx, "get children", log.Data{"instance": instanceID, "dimension": dimension, "code": code})
+	log.Event(ctx, "get children", log.INFO, log.Data{"instance": instanceID, "dimension": dimension, "code": code})
 	neoStmt := fmt.Sprintf(query.GetChildren, instanceID, dimension)
 
 	return n.queryElements(instanceID, dimension, neoStmt, neoArgMap{"code": code})
@@ -81,7 +81,7 @@ func (n *Neo4j) getChildren(instanceID, dimension, code string) ([]*models.Eleme
 // getAncestry retrieves a list of ancestors for this code - as breadcrumbs (ordered, nearest first)
 func (n *Neo4j) getAncestry(instanceID, dimension, code string) ([]*models.Element, error) {
 	ctx := context.Background()
-	log.Event(ctx, "get ancestry", log.Data{"instance_id": instanceID, "dimension": dimension, "code": code})
+	log.Event(ctx, "get ancestry", log.INFO, log.Data{"instance_id": instanceID, "dimension": dimension, "code": code})
 	neoStmt := fmt.Sprintf(query.GetAncestry, instanceID, dimension)
 
 	return n.queryElements(instanceID, dimension, neoStmt, neoArgMap{"code": code})
@@ -91,11 +91,11 @@ func (n *Neo4j) getAncestry(instanceID, dimension, code string) ([]*models.Eleme
 func (n *Neo4j) queryElements(instanceID, dimension, neoStmt string, neoArgs neoArgMap) ([]*models.Element, error) {
 	ctx := context.Background()
 	logData := log.Data{"db_statement": neoStmt, "db_args": neoArgs}
-	log.Event(ctx, "QueryElements: executing get query", logData)
+	log.Event(ctx, "QueryElements: executing get query", log.INFO, logData)
 
 	res := &mapper.HierarchyElements{}
 	if err := n.ReadWithParams(neoStmt, neoArgs, mapper.HierarchyElement(res), false); err != nil {
-		log.Event(ctx, "QueryElements query", logData, log.Error(err))
+		log.Event(ctx, "QueryElements query", log.ERROR, logData, log.Error(err))
 		return nil, err
 	}
 

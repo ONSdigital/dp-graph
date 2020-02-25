@@ -57,7 +57,7 @@ func (n *NeptuneDB) getVertices(gremStmt string) (vertices []graphson.Vertex, er
 	var res interface{}
 	for attempt := 1; attempt < n.maxAttempts; attempt++ {
 		if attempt > 1 {
-			log.Event(ctx, "will retry", logData, log.Error(err))
+			log.Event(ctx, "will retry", log.WARN, logData, log.Error(err))
 			sleepy(attempt, 20*time.Millisecond)
 			logData["attempt"] = attempt
 		}
@@ -66,7 +66,7 @@ func (n *NeptuneDB) getVertices(gremStmt string) (vertices []graphson.Vertex, er
 			var ok bool
 			if vertices, ok = res.([]graphson.Vertex); !ok {
 				err = errors.New("cannot cast Get results to []Vertex")
-				log.Event(ctx, "cast", logData, log.Error(err))
+				log.Event(ctx, "cast", log.ERROR, logData, log.Error(err))
 				return
 			}
 			// success
@@ -78,9 +78,8 @@ func (n *NeptuneDB) getVertices(gremStmt string) (vertices []graphson.Vertex, er
 		}
 	}
 	// ASSERT: failed all attempts
-	log.Event(ctx, "maxAttempts reached", logData, log.Error(err))
+	log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
 	err = ErrAttemptsExceededLimit{err}
-	return
 	return
 }
 
@@ -90,7 +89,7 @@ func (n *NeptuneDB) getStringList(gremStmt string) (strings []string, err error)
 
 	for attempt := 1; attempt < n.maxAttempts; attempt++ {
 		if attempt > 1 {
-			log.Event(ctx, "will retry", logData, log.Error(err))
+			log.Event(ctx, "will retry", log.WARN, logData, log.Error(err))
 			sleepy(attempt, 20*time.Millisecond)
 			logData["attempt"] = attempt
 		}
@@ -104,7 +103,7 @@ func (n *NeptuneDB) getStringList(gremStmt string) (strings []string, err error)
 		}
 	}
 	// ASSERT: failed all attempts
-	log.Event(ctx, "maxAttempts reached", logData, log.Error(err))
+	log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
 	err = ErrAttemptsExceededLimit{err}
 	return
 }
@@ -115,12 +114,12 @@ func (n *NeptuneDB) getVertex(gremStmt string) (vertex graphson.Vertex, err erro
 
 	var vertices []graphson.Vertex
 	if vertices, err = n.getVertices(gremStmt); err != nil {
-		log.Event(ctx, "get", logData, log.Error(err))
+		log.Event(ctx, "get", log.ERROR, logData, log.Error(err))
 		return
 	}
 	if len(vertices) != 1 {
 		err = errors.New("expected one vertex")
-		log.Event(ctx, "not one", logData, log.Error(err))
+		log.Event(ctx, "not one", log.ERROR, logData, log.Error(err))
 		return
 	}
 	return vertices[0], nil
@@ -133,7 +132,7 @@ func (n *NeptuneDB) getEdges(gremStmt string) (edges []graphson.Edge, err error)
 	var res interface{}
 	for attempt := 1; attempt < n.maxAttempts; attempt++ {
 		if attempt > 1 {
-			log.Event(ctx, "will retry", logData, log.Error(err))
+			log.Event(ctx, "will retry", log.WARN, logData, log.Error(err))
 			sleepy(attempt, 20*time.Millisecond)
 			logData["attempt"] = attempt
 		}
@@ -143,7 +142,7 @@ func (n *NeptuneDB) getEdges(gremStmt string) (edges []graphson.Edge, err error)
 			var ok bool
 			if edges, ok = res.([]graphson.Edge); !ok {
 				err = errors.New("cannot cast GetE results to []Edge")
-				log.Event(ctx, "cast", logData, log.Error(err))
+				log.Event(ctx, "cast", log.ERROR, logData, log.Error(err))
 				return
 			}
 			// return re-cast success
@@ -155,7 +154,7 @@ func (n *NeptuneDB) getEdges(gremStmt string) (edges []graphson.Edge, err error)
 		}
 	}
 	// ASSERT: failed all attempts
-	log.Event(ctx, "maxAttempts reached", logData, log.Error(err))
+	log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
 	err = ErrAttemptsExceededLimit{err}
 	return
 }
@@ -166,7 +165,7 @@ func (n *NeptuneDB) exec(gremStmt string) (res []gremgo.Response, err error) {
 
 	for attempt := 1; attempt < n.maxAttempts; attempt++ {
 		if attempt > 1 {
-			log.Event(ctx, "will retry", logData, log.Error(err))
+			log.Event(ctx, "will retry", log.WARN, logData, log.Error(err))
 			sleepy(attempt, 20*time.Millisecond)
 			logData["attempt"] = attempt
 		}
@@ -174,10 +173,10 @@ func (n *NeptuneDB) exec(gremStmt string) (res []gremgo.Response, err error) {
 			// success
 			if res == nil {
 				err = errors.New("res returned nil")
-				log.Event(ctx, "bad res", logData, log.Error(err))
+				log.Event(ctx, "bad res", log.ERROR, logData, log.Error(err))
 				return
 			}
-			log.Event(ctx, "exec ok", logData)
+			log.Event(ctx, "exec ok", log.INFO, logData)
 			return
 		}
 		// XXX check err more thoroughly (isTransientError?) (non-err failures?)
@@ -186,7 +185,7 @@ func (n *NeptuneDB) exec(gremStmt string) (res []gremgo.Response, err error) {
 		}
 	}
 	// ASSERT: failed all attempts
-	log.Event(ctx, "maxAttempts reached", logData, log.Error(err))
+	log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
 	err = ErrAttemptsExceededLimit{err}
 	return
 }
@@ -197,7 +196,7 @@ func (n *NeptuneDB) getNumber(gremStmt string) (count int64, err error) {
 
 	for attempt := 1; attempt < n.maxAttempts; attempt++ {
 		if attempt > 1 {
-			log.Event(ctx, "will retry", logData, log.Error(err))
+			log.Event(ctx, "will retry", log.WARN, logData, log.Error(err))
 			sleepy(attempt, 20*time.Millisecond)
 			logData["attempt"] = attempt
 		}
@@ -211,7 +210,7 @@ func (n *NeptuneDB) getNumber(gremStmt string) (count int64, err error) {
 		}
 	}
 	// ASSERT: failed all attempts
-	log.Event(ctx, "maxAttempts reached", logData, log.Error(err))
+	log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
 	err = ErrAttemptsExceededLimit{err}
 	return
 }

@@ -68,7 +68,7 @@ func buildObservationsQuery(f *observation.Filter) string {
 
 func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, instanceID string, observations []*models.Observation, dimensionNodeIDs map[string]string) error {
 	if len(observations) == 0 {
-		log.Event(ctx, "no observations in batch", log.Data{"instance_ID": instanceID})
+		log.Event(ctx, "no observations in batch", log.INFO, log.Data{"instance_ID": instanceID})
 		return nil
 	}
 
@@ -78,7 +78,7 @@ func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, ins
 	if totalTime.IsZero() {
 		totalTime = batchStart
 	} else {
-		log.Event(ctx, "opening batch", log.Data{"size": len(observations), "batchID": bID})
+		log.Event(ctx, "opening batch", log.INFO, log.Data{"size": len(observations), "batchID": bID})
 	}
 
 	var create string
@@ -106,6 +106,6 @@ func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, ins
 		return err
 	}
 
-	log.Event(ctx, "batch complete", log.Data{"batchID": bID, "elapsed": time.Since(totalTime), "batchTime": time.Since(batchStart)})
+	log.Event(ctx, "batch complete", log.INFO, log.Data{"batchID": bID, "elapsed": time.Since(totalTime), "batchTime": time.Since(batchStart)})
 	return nil
 }

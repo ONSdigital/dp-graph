@@ -23,27 +23,27 @@ func (n *NeptuneDB) buildHierarchyNodeFromGraphsonVertex(v graphson.Vertex, inst
 	// ID field - because in the case of a hierarchy node, this is the ID
 	// used to format links.
 	if res.ID, err = v.GetProperty("code"); err != nil {
-		log.Event(ctx, "bad GetProp code", logData, log.Error(err))
+		log.Event(ctx, "bad GetProp code", log.ERROR, logData, log.Error(err))
 		return
 	}
 
 	if res.Label, err = v.GetLabel(); err != nil {
-		log.Event(ctx, "bad label", logData, log.Error(err))
+		log.Event(ctx, "bad label", log.ERROR, logData, log.Error(err))
 		return
 	}
 	if res.NoOfChildren, err = v.GetPropertyInt64("numberOfChildren"); err != nil {
-		log.Event(ctx, "bad numberOfChildren", logData, log.Error(err))
+		log.Event(ctx, "bad numberOfChildren", log.ERROR, logData, log.Error(err))
 		return
 	}
 	if res.HasData, err = v.GetPropertyBool("hasData"); err != nil {
-		log.Event(ctx, "bad hasData", logData, log.Error(err))
+		log.Event(ctx, "bad hasData", log.ERROR, logData, log.Error(err))
 		return
 	}
 	// Fetch new data from the database concerned with the node's children.
 	if res.NoOfChildren > 0 && instanceID != "" {
 		var code string
 		if code, err = v.GetProperty("code"); err != nil {
-			log.Event(ctx, "bad GetProp code", logData, log.Error(err))
+			log.Event(ctx, "bad GetProp code", log.ERROR, logData, log.Error(err))
 			return
 		}
 
@@ -52,19 +52,19 @@ func (n *NeptuneDB) buildHierarchyNodeFromGraphsonVertex(v graphson.Vertex, inst
 
 		var childVertices []graphson.Vertex
 		if childVertices, err = n.getVertices(gremStmt); err != nil {
-			log.Event(ctx, "get", logData, log.Error(err))
+			log.Event(ctx, "get", log.ERROR, logData, log.Error(err))
 			return
 		}
 		if int64(len(childVertices)) != res.NoOfChildren {
 			logData["num_children_prop"] = res.NoOfChildren
 			logData["num_children_get"] = len(childVertices)
 			logData["node_id"] = res.ID
-			log.Event(ctx, "child count mismatch", logData)
+			log.Event(ctx, "child count mismatch", log.WARN, logData)
 		}
 		var childElement *models.Element
 		for _, child := range childVertices {
 			if childElement, err = convertVertexToElement(child); err != nil {
-				log.Event(ctx, "converting child", logData, log.Error(err))
+				log.Event(ctx, "converting child", log.ERROR, logData, log.Error(err))
 				return
 			}
 			res.Children = append(res.Children, childElement)
@@ -74,7 +74,7 @@ func (n *NeptuneDB) buildHierarchyNodeFromGraphsonVertex(v graphson.Vertex, inst
 	if wantBreadcrumbs {
 		res.Breadcrumbs, err = n.buildBreadcrumbs(instanceID, dimension, res.ID)
 		if err != nil {
-			log.Event(ctx, "building breadcrumbs", logData, log.Error(err))
+			log.Event(ctx, "building breadcrumbs", log.ERROR, logData, log.Error(err))
 		}
 	}
 	return
@@ -93,14 +93,14 @@ func (n *NeptuneDB) buildBreadcrumbs(instanceID, dimension, code string) ([]*mod
 	logData["statement"] = gremStmt
 	ancestorVertices, err := n.getVertices(gremStmt)
 	if err != nil {
-		log.Event(ctx, "getVertices", logData, log.Error(err))
+		log.Event(ctx, "getVertices", log.ERROR, logData, log.Error(err))
 		return nil, err
 	}
 	elements := []*models.Element{}
 	for _, ancestor := range ancestorVertices {
 		element, err := convertVertexToElement(ancestor)
 		if err != nil {
-			log.Event(ctx, "convertVertexToElement", logData, log.Error(err))
+			log.Event(ctx, "convertVertexToElement", log.ERROR, logData, log.Error(err))
 			return nil, err
 		}
 		elements = append(elements, element)
@@ -116,20 +116,20 @@ func convertVertexToElement(v graphson.Vertex) (res *models.Element, err error) 
 	// ID field - because in the case of a hierarchy node, this is the ID
 	// used to format links.
 	if res.ID, err = v.GetProperty("code"); err != nil {
-		log.Event(ctx, "bad GetProp code", logData, log.Error(err))
+		log.Event(ctx, "bad GetProp code", log.ERROR, logData, log.Error(err))
 		return
 	}
 
 	if res.Label, err = v.GetLabel(); err != nil {
-		log.Event(ctx, "bad label", logData, log.Error(err))
+		log.Event(ctx, "bad label", log.ERROR, logData, log.Error(err))
 		return
 	}
 	if res.NoOfChildren, err = v.GetPropertyInt64("numberOfChildren"); err != nil {
-		log.Event(ctx, "bad numberOfChildren", logData, log.Error(err))
+		log.Event(ctx, "bad numberOfChildren", log.ERROR, logData, log.Error(err))
 		return
 	}
 	if res.HasData, err = v.GetPropertyBool("hasData"); err != nil {
-		log.Event(ctx, "bad hasData", logData, log.Error(err))
+		log.Event(ctx, "bad hasData", log.ERROR, logData, log.Error(err))
 		return
 	}
 	return

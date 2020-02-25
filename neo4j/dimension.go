@@ -45,7 +45,7 @@ func (n *Neo4j) createUniqueConstraint(ctx context.Context, instanceID string, d
 		return errors.Wrap(err, "neoClient.Exec returned an error")
 	}
 
-	log.Event(ctx, "successfully created unique constraint on dimension", log.Data{"dimension": d.DimensionID})
+	log.Event(ctx, "successfully created unique constraint on dimension", log.INFO, log.Data{"dimension": d.DimensionID})
 	return nil
 }
 
