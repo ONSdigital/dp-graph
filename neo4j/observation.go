@@ -96,7 +96,7 @@ func (n *Neo4j) InsertObservationBatch(ctx context.Context, attempt int, instanc
 			return errors.Wrap(err, "observation batch save failed")
 		}
 
-		log.Event(ctx, "got an error when saving observations, attempting to retry", log.INFO, log.Data{
+		log.Event(ctx, "got an error when saving observations, attempting to retry", log.WARN, log.Data{
 			"instance_id":  instanceID,
 			"retry_number": attempt,
 			"max_attempts": n.maxRetries,

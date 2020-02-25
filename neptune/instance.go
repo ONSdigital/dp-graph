@@ -76,7 +76,7 @@ func (n *NeptuneDB) CreateInstance(ctx context.Context, i *model.Instance) error
 	}
 
 	if exists {
-		log.Event(ctx, "instance already exists in neptune", log.INFO, data)
+		log.Event(ctx, "instance already exists in neptune", log.WARN, data)
 		return nil
 	}
 
