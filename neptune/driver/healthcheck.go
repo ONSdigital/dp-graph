@@ -20,7 +20,7 @@ func (n *NeptuneDriver) Healthcheck() (s string, err error) {
 	return serviceName, nil
 }
 
-// Checker hecks health of Neo4j and updates the provided CheckState accordingly
+// Checker checks health of Neptune and updates the provided CheckState accordingly
 func (n *NeptuneDriver) Checker(ctx context.Context, state *health.CheckState) error {
 
 	// Perform healthcheck
