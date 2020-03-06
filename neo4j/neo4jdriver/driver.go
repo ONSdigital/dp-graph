@@ -6,7 +6,6 @@ import (
 
 	"github.com/ONSdigital/dp-graph/graph/driver"
 	"github.com/ONSdigital/dp-graph/neo4j/mapper"
-	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"github.com/pkg/errors"
 )
@@ -34,7 +33,6 @@ type Neo4jDriver interface {
 	Read(query string, mapp mapper.ResultMapper, single bool) error
 	ReadWithParams(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error
 	StreamRows(query string) (*BoltRowReader, error)
-	Checker(ctx context.Context, state *health.CheckState) error
 
 	driver.Driver
 }

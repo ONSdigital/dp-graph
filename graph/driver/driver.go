@@ -6,6 +6,7 @@ import (
 	codelistModels "github.com/ONSdigital/dp-code-list-api/models"
 	importModels "github.com/ONSdigital/dp-dimension-importer/model"
 	"github.com/ONSdigital/dp-graph/observation"
+	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
 	hierarchyModels "github.com/ONSdigital/dp-hierarchy-api/models"
 	obsModels "github.com/ONSdigital/dp-observation-importer/models"
 )
@@ -14,6 +15,7 @@ import (
 type Driver interface {
 	Close(ctx context.Context) error
 	Healthcheck() (string, error)
+	Checker(ctx context.Context, state *health.CheckState) error
 }
 
 // CodeList defines functions to retrieve code list and code nodes
