@@ -3,7 +3,7 @@ package mock
 import (
 	"context"
 
-	"github.com/ONSdigital/dp-dimension-importer/model"
+	"github.com/ONSdigital/dp-graph/models"
 )
 
 func (m *Mock) CountInsertedObservations(ctx context.Context, instanceID string) (count int64, err error) {
@@ -18,22 +18,22 @@ func (m *Mock) SetInstanceIsPublished(ctx context.Context, instanceID string) er
 	return m.checkForErrors()
 }
 
-func (m *Mock) CreateInstanceConstraint(ctx context.Context, i *model.Instance) error {
+func (m *Mock) CreateInstanceConstraint(ctx context.Context, i *models.Instance) error {
 	return m.checkForErrors()
 }
 
-func (m *Mock) CreateInstance(ctx context.Context, i *model.Instance) error {
+func (m *Mock) CreateInstance(ctx context.Context, i *models.Instance) error {
 	return m.checkForErrors()
 }
 
-func (m *Mock) AddDimensions(ctx context.Context, i *model.Instance) error {
+func (m *Mock) AddDimensions(ctx context.Context, i *models.Instance) error {
 	return m.checkForErrors()
 }
 
-func (m *Mock) CreateCodeRelationship(ctx context.Context, i *model.Instance, codeListID, code string) error {
+func (m *Mock) CreateCodeRelationship(ctx context.Context, i *models.Instance, codeListID, code string) error {
 	return m.checkForErrors()
 }
 
-func (m *Mock) InstanceExists(ctx context.Context, i *model.Instance) (bool, error) {
+func (m *Mock) InstanceExists(ctx context.Context, i *models.Instance) (bool, error) {
 	return true, m.checkForErrors()
 }

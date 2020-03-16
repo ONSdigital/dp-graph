@@ -1,7 +1,3 @@
-github.com/ONSdigital/dp-code-list-api v0.0.0-20191210144507-f59b8560081b h1:28pjE/we9FyEO+QbFY4IVet8rgKXLKJ/cUgiQ840TNY=
-github.com/ONSdigital/dp-code-list-api v0.0.0-20191210144507-f59b8560081b/go.mod h1:7IPu9DP8bkoj8axKeyblssZeS1zak6iGqGKotwFYTNE=
-github.com/ONSdigital/dp-dimension-importer v0.0.0-20190530123722-f43044c4fddb h1:+cca7nzFG0XQPyh0kE9U6w3Tk4OLIvzAZA1HmQHTpO8=
-github.com/ONSdigital/dp-dimension-importer v0.0.0-20190530123722-f43044c4fddb/go.mod h1:Hi08VrefBETyfK4Lqx6XNEkNEDIdbuX+GGNLB6Fd/Kc=
 github.com/ONSdigital/dp-healthcheck v1.0.0 h1:bySQU8kQRs4n3WbgH8QtVwCJLqG9ri722saATjvNNfc=
 github.com/ONSdigital/dp-healthcheck v1.0.0/go.mod h1:zighxZ/0m5u7zo0eAr8XFlA+Dz2ic7A1vna6YXvhCjQ=
 github.com/ONSdigital/dp-hierarchy-api v0.0.0-20190530123622-0be246287b59 h1:5heWNUnwY+m1o02A4nuvo6sjj647LV1oTSo6p2DBDis=

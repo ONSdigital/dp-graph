@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/graph"
 	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"

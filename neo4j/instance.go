@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ONSdigital/dp-dimension-importer/model"
+	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/dp-graph/neo4j/query"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"github.com/ONSdigital/log.go/log"
@@ -14,7 +14,7 @@ import (
 )
 
 // CreateInstanceConstraint creates a constraint on observations inserted for this instance.
-func (n *Neo4j) CreateInstanceConstraint(ctx context.Context, i *model.Instance) error {
+func (n *Neo4j) CreateInstanceConstraint(ctx context.Context, i *models.Instance) error {
 	if err := i.Validate(); err != nil {
 		return err
 	}
@@ -30,7 +30,7 @@ func (n *Neo4j) CreateInstanceConstraint(ctx context.Context, i *model.Instance)
 }
 
 // CreateInstance node in a neo4j graph database
-func (n *Neo4j) CreateInstance(ctx context.Context, i *model.Instance) error {
+func (n *Neo4j) CreateInstance(ctx context.Context, i *models.Instance) error {
 	if err := i.Validate(); err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func (n *Neo4j) CreateInstance(ctx context.Context, i *model.Instance) error {
 }
 
 // AddDimensions list to the specified instance node.
-func (n *Neo4j) AddDimensions(ctx context.Context, i *model.Instance) error {
+func (n *Neo4j) AddDimensions(ctx context.Context, i *models.Instance) error {
 	if err := i.Validate(); err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (n *Neo4j) AddDimensions(ctx context.Context, i *model.Instance) error {
 }
 
 // CreateCodeRelationship links an instance to a code for the given dimension option
-func (n *Neo4j) CreateCodeRelationship(ctx context.Context, i *model.Instance, codeListID, code string) error {
+func (n *Neo4j) CreateCodeRelationship(ctx context.Context, i *models.Instance, codeListID, code string) error {
 	if err := i.Validate(); err != nil {
 		return err
 	}
@@ -107,7 +107,7 @@ func (n *Neo4j) CreateCodeRelationship(ctx context.Context, i *model.Instance, c
 }
 
 // InstanceExists returns true if an instance already exists with the provided id.
-func (n *Neo4j) InstanceExists(ctx context.Context, i *model.Instance) (bool, error) {
+func (n *Neo4j) InstanceExists(ctx context.Context, i *models.Instance) (bool, error) {
 	c, err := n.Count(fmt.Sprintf(query.CountInstance, i.InstanceID))
 	if err != nil {
 		return false, errors.Wrap(err, "neo4j.Count returned an error")

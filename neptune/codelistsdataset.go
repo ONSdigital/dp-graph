@@ -15,7 +15,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/dp-graph/neptune/query"
 )
 

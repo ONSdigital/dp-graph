@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/ONSdigital/dp-dimension-importer/model"
+	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/dp-graph/neo4j/internal"
 	"github.com/ONSdigital/dp-graph/neo4j/mapper"
 	"github.com/ONSdigital/dp-graph/neo4j/query"
@@ -15,13 +15,13 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-var instance = &model.Instance{InstanceID: instanceID}
-var dimension = &model.Dimension{
+var instance = &models.Instance{InstanceID: instanceID}
+var dimension = &models.Dimension{
 	DimensionID: "Sex",
 	Option:      "Male",
 }
 
-var expectedDimension = &model.Dimension{
+var expectedDimension = &models.Dimension{
 	DimensionID: "Sex",
 	Option:      "Male",
 	NodeID:      "1234",

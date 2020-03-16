@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ONSdigital/dp-dimension-importer/model"
+	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/dp-graph/neo4j/mapper"
 	"github.com/ONSdigital/dp-graph/neo4j/query"
 	"github.com/ONSdigital/log.go/log"
@@ -13,7 +13,7 @@ import (
 
 // InsertDimension node to neo4j and create a unique constraint on the dimension
 // label & value if one does not already exist.
-func (n *Neo4j) InsertDimension(ctx context.Context, cache map[string]string, i *model.Instance, d *model.Dimension) (*model.Dimension, error) {
+func (n *Neo4j) InsertDimension(ctx context.Context, cache map[string]string, i *models.Instance, d *models.Dimension) (*models.Dimension, error) {
 	if err := i.Validate(); err != nil {
 		return nil, err
 	}
@@ -38,7 +38,7 @@ func (n *Neo4j) InsertDimension(ctx context.Context, cache map[string]string, i 
 	return d, nil
 }
 
-func (n *Neo4j) createUniqueConstraint(ctx context.Context, instanceID string, d *model.Dimension) error {
+func (n *Neo4j) createUniqueConstraint(ctx context.Context, instanceID string, d *models.Dimension) error {
 	stmt := fmt.Sprintf(query.CreateDimensionConstraint, instanceID, d.DimensionID)
 
 	if _, err := n.Exec(stmt, nil); err != nil {
@@ -49,7 +49,7 @@ func (n *Neo4j) createUniqueConstraint(ctx context.Context, instanceID string, d
 	return nil
 }
 
-func (n *Neo4j) insertDimension(ctx context.Context, i *model.Instance, d *model.Dimension) error {
+func (n *Neo4j) insertDimension(ctx context.Context, i *models.Instance, d *models.Dimension) error {
 	logData := log.Data{
 		"dimension_id": d.DimensionID,
 		"value":        d.Option,

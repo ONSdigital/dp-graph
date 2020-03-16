@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ONSdigital/dp-dimension-importer/model"
+	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/dp-graph/neo4j/internal"
 	"github.com/ONSdigital/dp-graph/neo4j/query"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
@@ -187,7 +187,7 @@ func Test_AddDimensions(t *testing.T) {
 
 		db := &Neo4j{neo4jMock, 5, 30}
 
-		instance := &model.Instance{
+		instance := &models.Instance{
 			InstanceID: instanceID,
 			Dimensions: dimensionNames,
 		}
@@ -224,7 +224,7 @@ func Test_AddDimensions(t *testing.T) {
 
 		db := &Neo4j{neo4jMock, 5, 30}
 
-		instance := &model.Instance{
+		instance := &models.Instance{
 			InstanceID: instanceID,
 			Dimensions: dimensionNames,
 		}
@@ -252,7 +252,7 @@ func Test_AddDimensions(t *testing.T) {
 
 func Test_CreateInstance(t *testing.T) {
 	Convey("Given a Neo4j.Exec returns an error", t, func() {
-		instance := &model.Instance{
+		instance := &models.Instance{
 			InstanceID: instanceID,
 			CSVHeader:  []string{"the", "csv", "header"},
 		}
@@ -284,7 +284,7 @@ func Test_CreateInstance(t *testing.T) {
 	})
 
 	Convey("Given a Neo4j.Exec returns no error", t, func() {
-		instance := &model.Instance{
+		instance := &models.Instance{
 			InstanceID: instanceID,
 			CSVHeader:  []string{"the", "csv", "header"},
 		}
@@ -320,7 +320,7 @@ func Test_CreateInstanceConstraint_StatementError(t *testing.T) {
 
 	Convey("Given mock Neo4j client that returns an error", t, func() {
 
-		instance := &model.Instance{
+		instance := &models.Instance{
 			InstanceID: instanceID,
 			CSVHeader:  []string{"the", "csv", "header"},
 		}
@@ -357,7 +357,7 @@ func Test_CreateInstanceConstraint(t *testing.T) {
 
 	Convey("Given mock Neo4j client that returns no error", t, func() {
 
-		instance := &model.Instance{
+		instance := &models.Instance{
 			InstanceID: instanceID,
 			CSVHeader:  []string{"the", "csv", "header"},
 		}
@@ -394,7 +394,7 @@ func Test_CreateCodeRelationship(t *testing.T) {
 
 	codeListID := "432"
 	code := "123"
-	instance := &model.Instance{
+	instance := &models.Instance{
 		InstanceID: instanceID,
 	}
 

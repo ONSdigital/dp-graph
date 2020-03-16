@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ONSdigital/dp-dimension-importer/model"
+	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/dp-graph/neptune/query"
 	gremgo "github.com/ONSdigital/gremgo-neptune"
 	"github.com/ONSdigital/log.go/log"
@@ -55,13 +55,13 @@ func (n *NeptuneDB) SetInstanceIsPublished(ctx context.Context, instanceID strin
 
 // CreateInstanceConstraint is not needed for the neptune implementation, as constraints are
 // not a neptune construct
-func (n *NeptuneDB) CreateInstanceConstraint(ctx context.Context, i *model.Instance) error {
+func (n *NeptuneDB) CreateInstanceConstraint(ctx context.Context, i *models.Instance) error {
 	return nil
 }
 
 // CreateInstance will check if an instance node already exists and create one from
 // the provided details if one does not exist
-func (n *NeptuneDB) CreateInstance(ctx context.Context, i *model.Instance) error {
+func (n *NeptuneDB) CreateInstance(ctx context.Context, i *models.Instance) error {
 	if err := i.Validate(); err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (n *NeptuneDB) CreateInstance(ctx context.Context, i *model.Instance) error
 }
 
 // AddDimensions list to the specified instance node
-func (n *NeptuneDB) AddDimensions(ctx context.Context, i *model.Instance) error {
+func (n *NeptuneDB) AddDimensions(ctx context.Context, i *models.Instance) error {
 	if err := i.Validate(); err != nil {
 		return err
 	}
@@ -112,7 +112,7 @@ func (n *NeptuneDB) AddDimensions(ctx context.Context, i *model.Instance) error 
 }
 
 // CreateCodeRelationship links an instance to a code for the given dimension option
-func (n *NeptuneDB) CreateCodeRelationship(ctx context.Context, i *model.Instance, codeListID, code string) error {
+func (n *NeptuneDB) CreateCodeRelationship(ctx context.Context, i *models.Instance, codeListID, code string) error {
 	if err := i.Validate(); err != nil {
 		return err
 	}
@@ -142,7 +142,7 @@ func (n *NeptuneDB) CreateCodeRelationship(ctx context.Context, i *model.Instanc
 }
 
 // InstanceExists returns true if an instance already exists with the provided id
-func (n *NeptuneDB) InstanceExists(ctx context.Context, i *model.Instance) (bool, error) {
+func (n *NeptuneDB) InstanceExists(ctx context.Context, i *models.Instance) (bool, error) {
 	data := log.Data{
 		"instance_id": i.InstanceID,
 	}
