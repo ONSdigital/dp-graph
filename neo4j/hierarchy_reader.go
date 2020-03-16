@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/ONSdigital/dp-graph/graph/driver"
+	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/dp-graph/neo4j/mapper"
 	"github.com/ONSdigital/dp-graph/neo4j/query"
-	"github.com/ONSdigital/dp-hierarchy-api/models"
 	"github.com/ONSdigital/log.go/log"
 )
 
@@ -30,13 +30,13 @@ func (n *Neo4j) GetHierarchyCodelist(ctx context.Context, instanceID, dimension 
 }
 
 // GetHierarchyRoot returns the upper-most node for a given hierarchy
-func (n *Neo4j) GetHierarchyRoot(ctx context.Context, instanceID, dimension string) (*models.Response, error) {
+func (n *Neo4j) GetHierarchyRoot(ctx context.Context, instanceID, dimension string) (*models.HierarchyResponse, error) {
 	neoStmt := fmt.Sprintf(query.GetHierarchyRoot, instanceID, dimension)
 	return n.queryResponse(instanceID, dimension, neoStmt, nil)
 }
 
 // GetHierarchyElement gets a node in a given hierarchy for a given code
-func (n *Neo4j) GetHierarchyElement(ctx context.Context, instanceID, dimension, code string) (res *models.Response, err error) {
+func (n *Neo4j) GetHierarchyElement(ctx context.Context, instanceID, dimension, code string) (res *models.HierarchyResponse, err error) {
 	neoStmt := fmt.Sprintf(query.GetHierarchyElement, instanceID, dimension)
 
 	if res, err = n.queryResponse(instanceID, dimension, neoStmt, neoArgMap{"code": code}); err != nil {
@@ -51,12 +51,12 @@ func (n *Neo4j) GetHierarchyElement(ctx context.Context, instanceID, dimension, 
 }
 
 // queryResponse performs DB query (neoStmt, neoArgs) returning Response (should be singular)
-func (n *Neo4j) queryResponse(instanceID, dimension string, neoStmt string, neoArgs neoArgMap) (*models.Response, error) {
+func (n *Neo4j) queryResponse(instanceID, dimension string, neoStmt string, neoArgs neoArgMap) (*models.HierarchyResponse, error) {
 	ctx := context.Background()
 	logData := log.Data{"statement": neoStmt, "neo_args": neoArgs}
 	log.Event(ctx, "QueryResponse executing get query", log.INFO, logData)
 
-	res := &models.Response{}
+	res := &models.HierarchyResponse{}
 	var err error
 
 	if err = n.ReadWithParams(neoStmt, neoArgs, mapper.Hierarchy(res), false); err != nil {
@@ -70,7 +70,7 @@ func (n *Neo4j) queryResponse(instanceID, dimension string, neoStmt string, neoA
 	return res, nil
 }
 
-func (n *Neo4j) getChildren(instanceID, dimension, code string) ([]*models.Element, error) {
+func (n *Neo4j) getChildren(instanceID, dimension, code string) ([]*models.HierarchyElement, error) {
 	ctx := context.Background()
 	log.Event(ctx, "get children", log.INFO, log.Data{"instance": instanceID, "dimension": dimension, "code": code})
 	neoStmt := fmt.Sprintf(query.GetChildren, instanceID, dimension)
@@ -79,7 +79,7 @@ func (n *Neo4j) getChildren(instanceID, dimension, code string) ([]*models.Eleme
 }
 
 // getAncestry retrieves a list of ancestors for this code - as breadcrumbs (ordered, nearest first)
-func (n *Neo4j) getAncestry(instanceID, dimension, code string) ([]*models.Element, error) {
+func (n *Neo4j) getAncestry(instanceID, dimension, code string) ([]*models.HierarchyElement, error) {
 	ctx := context.Background()
 	log.Event(ctx, "get ancestry", log.INFO, log.Data{"instance_id": instanceID, "dimension": dimension, "code": code})
 	neoStmt := fmt.Sprintf(query.GetAncestry, instanceID, dimension)
@@ -88,7 +88,7 @@ func (n *Neo4j) getAncestry(instanceID, dimension, code string) ([]*models.Eleme
 }
 
 // queryElements returns a list of models.Elements from the database
-func (n *Neo4j) queryElements(instanceID, dimension, neoStmt string, neoArgs neoArgMap) ([]*models.Element, error) {
+func (n *Neo4j) queryElements(instanceID, dimension, neoStmt string, neoArgs neoArgMap) ([]*models.HierarchyElement, error) {
 	ctx := context.Background()
 	logData := log.Data{"db_statement": neoStmt, "db_args": neoArgs}
 	log.Event(ctx, "QueryElements: executing get query", log.INFO, logData)

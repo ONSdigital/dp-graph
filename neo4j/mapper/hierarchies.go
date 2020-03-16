@@ -3,14 +3,14 @@ package mapper
 import (
 	"errors"
 
-	"github.com/ONSdigital/dp-hierarchy-api/models"
+	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/graph"
 )
 
 // HierarchyElements encases a list so a pointer to the list can more easily
 // be passed into the mapper functions
 type HierarchyElements struct {
-	List []*models.Element
+	List []*models.HierarchyElement
 }
 
 // HierarchyCodelist returns a dpbolt.ResultMapper which converts a dpbolt.Result to CodelistID string
@@ -34,8 +34,8 @@ func HierarchyCodelist(codelistID *string) ResultMapper {
 	}
 }
 
-// Hierarchy returns a dpbolt.ResultMapper mapper which converts dpbolt.Result to models.Response
-func Hierarchy(res *models.Response) ResultMapper {
+// Hierarchy returns a dpbolt.ResultMapper mapper which converts dpbolt.Result to models.HierarchyResponse
+func Hierarchy(res *models.HierarchyResponse) ResultMapper {
 	return func(r *Result) error {
 		var node graph.Node
 		var err error
@@ -44,7 +44,7 @@ func Hierarchy(res *models.Response) ResultMapper {
 			return err
 		}
 
-		var e *models.Element
+		var e *models.HierarchyElement
 		if e, err = createElement(node); err != nil {
 			return err
 		}
@@ -69,7 +69,7 @@ func HierarchyElement(list *HierarchyElements) ResultMapper {
 			return err
 		}
 
-		var e *models.Element
+		var e *models.HierarchyElement
 		if e, err = createElement(node); err != nil {
 			return err
 		}
@@ -80,7 +80,7 @@ func HierarchyElement(list *HierarchyElements) ResultMapper {
 	}
 }
 
-func createElement(node graph.Node) (*models.Element, error) {
+func createElement(node graph.Node) (*models.HierarchyElement, error) {
 	id, err := getStringProperty("code", node.Properties)
 	if err != nil {
 		return nil, errors.New("code property not found")
@@ -101,7 +101,7 @@ func createElement(node graph.Node) (*models.Element, error) {
 		return nil, errors.New("numberOfChildren property not found")
 	}
 
-	return &models.Element{
+	return &models.HierarchyElement{
 		ID:           id,
 		Label:        label,
 		HasData:      hasData,

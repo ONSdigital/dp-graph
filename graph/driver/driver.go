@@ -6,7 +6,6 @@ import (
 	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/dp-graph/observation"
 	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
-	hierarchyModels "github.com/ONSdigital/dp-hierarchy-api/models"
 )
 
 // Driver is the base interface any driver implementation must satisfy
@@ -40,8 +39,8 @@ type Hierarchy interface {
 	RemoveRemainMarker(ctx context.Context, attempt int, instanceID, dimensionName string) error
 
 	GetHierarchyCodelist(ctx context.Context, instanceID, dimension string) (string, error)
-	GetHierarchyRoot(ctx context.Context, instanceID, dimension string) (*hierarchyModels.Response, error)
-	GetHierarchyElement(ctx context.Context, instanceID, dimension, code string) (*hierarchyModels.Response, error)
+	GetHierarchyRoot(ctx context.Context, instanceID, dimension string) (*models.HierarchyResponse, error)
+	GetHierarchyElement(ctx context.Context, instanceID, dimension, code string) (*models.HierarchyResponse, error)
 }
 
 // Observation defines functions to create and retrieve observation nodes
