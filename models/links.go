@@ -20,16 +20,17 @@ type Link struct {
 	Href string `json:"href"             bson:"href"`
 }
 
-func CreateLink(id, href, host string) *Link {
+// CreateLink creates a Link struct from the provided id, href and host
+func CreateLink(id, href, host string) (*Link, error) {
 
 	rel, err := url.Parse(href)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	d, err := url.Parse(host)
 	if err != nil {
-		return nil
+		return nil, err
 	}
 
 	//if the configured host contains a path persist it
@@ -38,5 +39,5 @@ func CreateLink(id, href, host string) *Link {
 	return &Link{
 		ID:   id,
 		Href: d.String(),
-	}
+	}, nil
 }

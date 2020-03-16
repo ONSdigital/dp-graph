@@ -5,6 +5,12 @@ import (
 	"fmt"
 )
 
+const (
+	fmtEditions                   = "/datasets/%s/editions/%s"
+	fmtEditionsVersions           = "/datasets/%s/editions/%s/versions/%s"
+	fmtEditionsVersionsDimensions = "/datasets/%s/editions/%s/versions/%s/dimensions/%s"
+)
+
 // Datasets represents the model returned from the api datasets
 // endpoint
 type Datasets struct {
@@ -32,19 +38,24 @@ type DatasetEditionLinks struct {
 	LatestVersion    *Link `json:"latest_version"`
 }
 
-// DatasetLink represents the links returned specifically for a dataset
+// DatasetLinks represents the links returned specifically for a dataset
 type DatasetLinks struct {
 	Self *Link `json:"self"`
 }
 
-func (ds *Datasets) UpdateLinks(host, datasetAPIhost, codeListID, editionID, codeID string) error {
+// UpdateLinks updates the links for a Dataset struct with the provided host and editionID, returning any parsing error while trying to update.
+func (ds *Datasets) UpdateLinks(datasetAPIhost, editionID string) (err error) {
 	for i, dataset := range ds.Items {
 		if dataset.Links == nil || dataset.Links.Self == nil || dataset.Links.Self.ID == "" {
 			return errors.New("invalid dataset provided")
 		}
 
 		id := dataset.Links.Self.ID
-		l := CreateLink(id, fmt.Sprintf(datasetAPIuri, id), datasetAPIhost)
+		l, err := CreateLink(id, fmt.Sprintf(datasetAPIuri, id), datasetAPIhost)
+		if err != nil {
+			return err
+		}
+
 		dataset.Links.Self = &Link{
 			Href: l.Href,
 			ID:   id,
@@ -57,22 +68,30 @@ func (ds *Datasets) UpdateLinks(host, datasetAPIhost, codeListID, editionID, cod
 			}
 
 			editionID := edition.Links.Self.ID
-			edition.Links.Self = CreateLink(editionID, fmt.Sprintf("/datasets/%s/editions/%s", id, editionID), datasetAPIhost)
-			//	latestVersion := strconv.Itoa(max(versions))
+			edition.Links.Self, err = CreateLink(editionID, fmt.Sprintf(fmtEditions, id, editionID), datasetAPIhost)
+			if err != nil {
+				return err
+			}
 
 			if edition.Links == nil || edition.Links.LatestVersion == nil || edition.Links.LatestVersion.ID == "" {
 				continue
 			}
 
 			versionID := edition.Links.LatestVersion.ID
-			edition.Links.LatestVersion = CreateLink(versionID, fmt.Sprintf("/datasets/%s/editions/%s/versions/%s", id, editionID, versionID), datasetAPIhost)
+			edition.Links.LatestVersion, err = CreateLink(versionID, fmt.Sprintf(fmtEditionsVersions, id, editionID, versionID), datasetAPIhost)
+			if err != nil {
+				return err
+			}
 
 			if edition.Links == nil || edition.Links.DatasetDimension == nil || edition.Links.DatasetDimension.ID == "" {
 				continue
 			}
 
 			dimensionID := edition.Links.DatasetDimension.ID
-			edition.Links.DatasetDimension = CreateLink(dimensionID, fmt.Sprintf("/datasets/%s/editions/%s/versions/%s/dimensions/%s", id, editionID, versionID, dimensionID), datasetAPIhost)
+			edition.Links.DatasetDimension, err = CreateLink(dimensionID, fmt.Sprintf(fmtEditionsVersionsDimensions, id, editionID, versionID, dimensionID), datasetAPIhost)
+			if err != nil {
+				return err
+			}
 
 			editions = append(editions, edition)
 		}

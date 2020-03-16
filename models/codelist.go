@@ -26,14 +26,22 @@ type CodeListLink struct {
 	Editions *Link `json:"editions,omitempty"`
 }
 
-func (c *CodeList) UpdateLinks(url string) error {
+// UpdateLinks updates the links for a CodeList struct with the provided url, returning any parsing error while trying to update.
+func (c *CodeList) UpdateLinks(url string) (err error) {
 	if c.Links == nil || c.Links.Self == nil || c.Links.Self.ID == "" {
 		return errors.New("unable to create links - codelist id not provided")
 	}
 
 	id := c.Links.Self.ID
-	c.Links.Self = CreateLink(id, fmt.Sprintf(codeListURI, id), url)
-	c.Links.Editions = CreateLink("", fmt.Sprintf(editionsURI, id), url)
+	c.Links.Self, err = CreateLink(id, fmt.Sprintf(codeListURI, id), url)
+	if err != nil {
+		return err
+	}
+
+	c.Links.Editions, err = CreateLink("", fmt.Sprintf(editionsURI, id), url)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

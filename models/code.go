@@ -29,15 +29,16 @@ type CodeLinks struct {
 	Self     *Link `json:"self"`
 }
 
-func (c *Code) UpdateLinks(host, codeListID, edition string) error {
+// UpdateLinks updates the links for a Code struct with the provided host, codeListID and edition, returning any parsing error while trying to update.
+func (c *Code) UpdateLinks(host, codeListID, edition string) (err error) {
 	if c.Links == nil || c.Links.Self == nil || c.Links.Self.ID == "" {
 		return errors.New("unable to create links - code id not provided")
 	}
 
 	id := c.Links.Self.ID
-	c.Links.Self = CreateLink(id, fmt.Sprintf(codeURI, codeListID, edition, id), host)
-	c.Links.Datasets = CreateLink("", fmt.Sprintf(datasetsURI, codeListID, edition, id), host)
-	c.Links.CodeList = CreateLink("", fmt.Sprintf(codeListURI, codeListID), host)
+	c.Links.Self, err = CreateLink(id, fmt.Sprintf(codeURI, codeListID, edition, id), host)
+	c.Links.Datasets, err = CreateLink("", fmt.Sprintf(datasetsURI, codeListID, edition, id), host)
+	c.Links.CodeList, err = CreateLink("", fmt.Sprintf(codeListURI, codeListID), host)
 
 	return nil
 }

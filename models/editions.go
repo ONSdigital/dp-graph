@@ -28,15 +28,27 @@ type EditionLinks struct {
 	Codes    *Link `json:"codes"`
 }
 
-func (e *Edition) UpdateLinks(codeListID, url string) error {
+// UpdateLinks updates the links for an Edition struct with the provided codeListID, returning any parsing error while trying to update.
+func (e *Edition) UpdateLinks(codeListID, url string) (err error) {
 	if e.Links == nil || e.Links.Self == nil || e.Links.Self.ID == "" {
 		return errors.New("unable to create links - edition id not provided")
 	}
 
 	id := e.Links.Self.ID
-	e.Links.Self = CreateLink(id, fmt.Sprintf(editionURI, codeListID, id), url)
-	e.Links.Editions = CreateLink("", fmt.Sprintf(editionsURI, codeListID), url)
-	e.Links.Codes = CreateLink("", fmt.Sprintf(codesURI, codeListID, id), url)
+	e.Links.Self, err = CreateLink(id, fmt.Sprintf(editionURI, codeListID, id), url)
+	if err != nil {
+		return err
+	}
+
+	e.Links.Editions, err = CreateLink("", fmt.Sprintf(editionsURI, codeListID), url)
+	if err != nil {
+		return err
+	}
+
+	e.Links.Codes, err = CreateLink("", fmt.Sprintf(codesURI, codeListID, id), url)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
