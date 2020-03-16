@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/dp-graph/observation"
-	"github.com/ONSdigital/dp-observation-importer/models"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/pkg/errors"
 )

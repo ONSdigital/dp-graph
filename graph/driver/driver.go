@@ -7,7 +7,6 @@ import (
 	"github.com/ONSdigital/dp-graph/observation"
 	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
 	hierarchyModels "github.com/ONSdigital/dp-hierarchy-api/models"
-	obsModels "github.com/ONSdigital/dp-observation-importer/models"
 )
 
 // Driver is the base interface any driver implementation must satisfy
@@ -48,10 +47,10 @@ type Hierarchy interface {
 // Observation defines functions to create and retrieve observation nodes
 type Observation interface {
 	// StreamCSVRows returns a reader which the caller is ultimately responsible for closing
-	// This allows for large volumes of data to be read from a stream without signnificant
+	// This allows for large volumes of data to be read from a stream without significant
 	// memory overhead.
 	StreamCSVRows(ctx context.Context, filter *observation.Filter, limit *int) (observation.StreamRowReader, error)
-	InsertObservationBatch(ctx context.Context, attempt int, instanceID string, observations []*obsModels.Observation, dimensionIDs map[string]string) error
+	InsertObservationBatch(ctx context.Context, attempt int, instanceID string, observations []*models.Observation, dimensionIDs map[string]string) error
 }
 
 // Instance defines functions to create, update and retrieve details about instances
