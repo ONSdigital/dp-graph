@@ -12,44 +12,44 @@ import (
 )
 
 // InsertDimension node to neo4j and create a unique constraint on the dimension
-// label & value if one does not already exist.
-func (n *Neo4j) InsertDimension(ctx context.Context, cache map[string]string, i *models.Instance, d *models.Dimension) (*models.Dimension, error) {
-	if err := i.Validate(); err != nil {
-		return nil, err
+// label & value if one does not already exist, return dimension with new node ID
+func (n *Neo4j) InsertDimension(ctx context.Context, cache map[string]string, instanceID string, d *models.Dimension) (*models.Dimension, error) {
+	if len(instanceID) == 0 {
+		return nil, errors.New("instance id is required but was empty")
 	}
 	if err := d.Validate(); err != nil {
 		return nil, err
 	}
 
-	dimensionLabel := fmt.Sprintf("_%s_%s", i.InstanceID, d.DimensionID)
+	dimensionLabel := fmt.Sprintf("_%s_%s", instanceID, d.DimensionID)
 
 	if _, exists := cache[dimensionLabel]; !exists {
 
-		if err := n.createUniqueConstraint(ctx, i.InstanceID, d); err != nil {
+		if err := n.createUniqueConstraint(ctx, instanceID, d.DimensionID); err != nil {
 			return nil, err
 		}
 		cache[dimensionLabel] = dimensionLabel
-		i.AddDimension(d)
 	}
 
-	if err := n.insertDimension(ctx, i, d); err != nil {
+	if err := n.insertDimension(ctx, instanceID, d); err != nil {
 		return nil, err
 	}
+
 	return d, nil
 }
 
-func (n *Neo4j) createUniqueConstraint(ctx context.Context, instanceID string, d *models.Dimension) error {
-	stmt := fmt.Sprintf(query.CreateDimensionConstraint, instanceID, d.DimensionID)
+func (n *Neo4j) createUniqueConstraint(ctx context.Context, instanceID, dimensionID string) error {
+	stmt := fmt.Sprintf(query.CreateDimensionConstraint, instanceID, dimensionID)
 
 	if _, err := n.Exec(stmt, nil); err != nil {
 		return errors.Wrap(err, "neoClient.Exec returned an error")
 	}
 
-	log.Event(ctx, "successfully created unique constraint on dimension", log.INFO, log.Data{"dimension": d.DimensionID})
+	log.Event(ctx, "successfully created unique constraint on dimension", log.INFO, log.Data{"dimension_id": dimensionID})
 	return nil
 }
 
-func (n *Neo4j) insertDimension(ctx context.Context, i *models.Instance, d *models.Dimension) error {
+func (n *Neo4j) insertDimension(ctx context.Context, instanceID string, d *models.Dimension) error {
 	logData := log.Data{
 		"dimension_id": d.DimensionID,
 		"value":        d.Option,
@@ -59,7 +59,7 @@ func (n *Neo4j) insertDimension(ctx context.Context, i *models.Instance, d *mode
 	params := map[string]interface{}{"value": d.Option}
 	logData["params"] = params
 
-	stmt := fmt.Sprintf(query.CreateDimensionToInstanceRelationship, i.InstanceID, i.InstanceID, d.DimensionID)
+	stmt := fmt.Sprintf(query.CreateDimensionToInstanceRelationship, instanceID, instanceID, d.DimensionID)
 	logData["statement"] = stmt
 
 	nodeID := new(string)

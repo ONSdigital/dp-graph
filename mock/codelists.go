@@ -112,33 +112,7 @@ func (m *Mock) GetCodes(ctx context.Context, codeListID, edition string) (*model
 	}
 
 	return &models.CodeResults{
-		Count:      3,
-		Offset:     0,
-		Limit:      3,
-		TotalCount: 3,
-		Items: []models.Code{
-			{
-				Links: &models.CodeLinks{
-					Self: &models.Link{
-						ID: "code-1",
-					},
-				},
-			},
-			{
-				Links: &models.CodeLinks{
-					Self: &models.Link{
-						ID: "code-2",
-					},
-				},
-			},
-			{
-				Links: &models.CodeLinks{
-					Self: &models.Link{
-						ID: "code-3",
-					},
-				},
-			},
-		},
+		Items: []models.Code{},
 	}, nil
 }
 
@@ -147,13 +121,7 @@ func (m *Mock) GetCode(ctx context.Context, codeListID, edition string, code str
 		return nil, err
 	}
 
-	return &models.Code{
-		Links: &models.CodeLinks{
-			Self: &models.Link{
-				ID: code,
-			},
-		},
-	}, nil
+	return &models.Code{}, nil
 }
 
 func (m *Mock) GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error) {

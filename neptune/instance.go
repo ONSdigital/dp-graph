@@ -55,22 +55,22 @@ func (n *NeptuneDB) SetInstanceIsPublished(ctx context.Context, instanceID strin
 
 // CreateInstanceConstraint is not needed for the neptune implementation, as constraints are
 // not a neptune construct
-func (n *NeptuneDB) CreateInstanceConstraint(ctx context.Context, i *models.Instance) error {
+func (n *NeptuneDB) CreateInstanceConstraint(ctx context.Context, instanceID string) error {
 	return nil
 }
 
 // CreateInstance will check if an instance node already exists and create one from
 // the provided details if one does not exist
-func (n *NeptuneDB) CreateInstance(ctx context.Context, i *models.Instance) error {
-	if err := i.Validate(); err != nil {
-		return err
+func (n *NeptuneDB) CreateInstance(ctx context.Context, instanceID string, csvHeaders []string) error {
+	if len(instanceID) == 0 {
+		return errors.New("instance id is required but was empty")
 	}
 
 	data := log.Data{
-		"instance_id": i.InstanceID,
+		"instance_id": instanceID,
 	}
 
-	exists, err := n.InstanceExists(ctx, i)
+	exists, err := n.InstanceExists(ctx, instanceID)
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func (n *NeptuneDB) CreateInstance(ctx context.Context, i *models.Instance) erro
 		return nil
 	}
 
-	create := fmt.Sprintf(query.CreateInstance, i.InstanceID, strings.Join(i.CSVHeader, ","))
+	create := fmt.Sprintf(query.CreateInstance, instanceID, strings.Join(csvHeaders, ","))
 	if _, err := n.exec(create); err != nil {
 		log.Event(ctx, "neptune exec failed on CreateInstance", log.ERROR, data, log.Error(err))
 		return err
@@ -112,9 +112,9 @@ func (n *NeptuneDB) AddDimensions(ctx context.Context, i *models.Instance) error
 }
 
 // CreateCodeRelationship links an instance to a code for the given dimension option
-func (n *NeptuneDB) CreateCodeRelationship(ctx context.Context, i *models.Instance, codeListID, code string) error {
-	if err := i.Validate(); err != nil {
-		return err
+func (n *NeptuneDB) CreateCodeRelationship(ctx context.Context, instanceID, codeListID, code string) error {
+	if len(instanceID) == 0 {
+		return errors.New("instance id is required but was empty")
 	}
 
 	if len(code) == 0 {
@@ -122,12 +122,12 @@ func (n *NeptuneDB) CreateCodeRelationship(ctx context.Context, i *models.Instan
 	}
 
 	data := log.Data{
-		"instance_id": i.InstanceID,
+		"instance_id": instanceID,
 		"code_list":   codeListID,
 		"code":        code,
 	}
 
-	createRelationships := fmt.Sprintf(query.CreateInstanceToCodeRelationship, i.InstanceID, code, codeListID)
+	createRelationships := fmt.Sprintf(query.CreateInstanceToCodeRelationship, instanceID, code, codeListID)
 	if res, err := n.exec(createRelationships); err != nil {
 		if len(res) > 0 && res[0].Status.Code == gremgo.StatusScriptEvaluationError &&
 			strings.Contains(res[0].Status.Message, fmt.Sprintf(codeListNotFoundFmt, codeListID)) {
@@ -142,12 +142,12 @@ func (n *NeptuneDB) CreateCodeRelationship(ctx context.Context, i *models.Instan
 }
 
 // InstanceExists returns true if an instance already exists with the provided id
-func (n *NeptuneDB) InstanceExists(ctx context.Context, i *models.Instance) (bool, error) {
+func (n *NeptuneDB) InstanceExists(ctx context.Context, instanceID string) (bool, error) {
 	data := log.Data{
-		"instance_id": i.InstanceID,
+		"instance_id": instanceID,
 	}
 
-	exists := fmt.Sprintf(query.CheckInstance, i.InstanceID)
+	exists := fmt.Sprintf(query.CheckInstance, instanceID)
 	count, err := n.getNumber(exists)
 	if err != nil {
 		log.Event(ctx, "neptune getNumber failed to check if instance exists", log.ERROR, data, log.Error(err))

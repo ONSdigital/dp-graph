@@ -15,11 +15,11 @@ import (
 // StreamCSVRows returns a reader allowing individual CSV rows to be read.
 // Rows returned can be limited, to stop this pass in nil. If filter.DimensionFilters
 // is nil, empty or contains only empty values then a StreamRowReader for the entire dataset will be returned.
-func (n *Neo4j) StreamCSVRows(ctx context.Context, filter *observation.Filter, limit *int) (observation.StreamRowReader, error) {
+func (n *Neo4j) StreamCSVRows(ctx context.Context, instanceID, filterID string, filters *observation.DimensionFilters, limit *int) (observation.StreamRowReader, error) {
 
-	headerRowQuery := fmt.Sprintf("MATCH (i:`_%s_Instance`) RETURN i.header as row", filter.InstanceID)
+	headerRowQuery := fmt.Sprintf("MATCH (i:`_%s_Instance`) RETURN i.header as row", instanceID)
 
-	unionQuery := headerRowQuery + " UNION ALL " + createObservationQuery(filter)
+	unionQuery := headerRowQuery + " UNION ALL " + createObservationQuery(ctx, instanceID, filterID, filters)
 
 	if limit != nil {
 		limitAsString := strconv.Itoa(*limit)
@@ -27,30 +27,29 @@ func (n *Neo4j) StreamCSVRows(ctx context.Context, filter *observation.Filter, l
 	}
 
 	log.Event(ctx, "neo4j query", log.INFO, log.Data{
-		"filterID":   filter.FilterID,
-		"instanceID": filter.InstanceID,
+		"filterID":   filterID,
+		"instanceID": instanceID,
 		"query":      unionQuery,
 	})
 
 	return n.StreamRows(unionQuery)
 }
 
-func createObservationQuery(filter *observation.Filter) string {
-	ctx := context.Background()
-	if filter.IsEmpty() {
+func createObservationQuery(ctx context.Context, instanceID, filterID string, filters *observation.DimensionFilters) string {
+	if filters.IsEmpty() {
 		// if no dimension filter are specified than match all observations
 		log.Event(ctx, "no dimension filters supplied, generating entire dataset query", log.INFO, log.Data{
-			"filterID":   filter.FilterID,
-			"instanceID": filter.InstanceID,
+			"filterID":   filterID,
+			"instanceID": instanceID,
 		})
-		return fmt.Sprintf("MATCH(o: `_%s_observation`) return o.value as row", filter.InstanceID)
+		return fmt.Sprintf("MATCH(o: `_%s_observation`) return o.value as row", instanceID)
 	}
 
 	matchDimensions := "MATCH "
 	where := " WHERE "
 
 	count := 0
-	for _, dimension := range filter.DimensionFilters {
+	for _, dimension := range filters.Dimensions {
 		// If the dimension options is empty then don't bother specifying in the query as this will exclude all matches.
 		if len(dimension.Options) > 0 {
 			if count > 0 {
@@ -58,7 +57,7 @@ func createObservationQuery(filter *observation.Filter) string {
 				where += " AND "
 			}
 
-			matchDimensions += fmt.Sprintf("(o)-[:isValueOf]->(`%s`:`_%s_%s`)", dimension.Name, filter.InstanceID, dimension.Name)
+			matchDimensions += fmt.Sprintf("(o)-[:isValueOf]->(`%s`:`_%s_%s`)", dimension.Name, instanceID, dimension.Name)
 			where += createOptionList(dimension.Name, dimension.Options)
 			count++
 		}

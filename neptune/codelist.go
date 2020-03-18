@@ -174,11 +174,7 @@ func (n *NeptuneDB) GetCodes(ctx context.Context, codeListID, edition string) (*
 		return nil, driver.ErrNotFound
 	}
 	codeResults := &models.CodeResults{
-		Count:      len(codeResponses),
-		Offset:     0,
-		Limit:      len(codeResponses),
-		TotalCount: len(codeResponses),
-		Items:      []models.Code{},
+		Items: []models.Code{},
 	}
 
 	for _, codeResponse := range codeResponses {
@@ -186,12 +182,9 @@ func (n *NeptuneDB) GetCodes(ctx context.Context, codeListID, edition string) (*
 		if err != nil {
 			return nil, errors.Wrapf(err, `Error reading "value" property on Code vertex`)
 		}
+		// Missing ID and label
 		codeItem := models.Code{
-			Links: &models.CodeLinks{
-				Self: &models.Link{
-					ID: codeValue,
-				},
-			},
+			Code: codeValue,
 		}
 		codeResults.Items = append(codeResults.Items, codeItem)
 	}
@@ -219,11 +212,9 @@ func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, cod
 	if nFound > 1 {
 		return nil, driver.ErrMultipleFound
 	}
+
+	// Missing ID and Label fields that exist in Neo4j response
 	return &models.Code{
-		Links: &models.CodeLinks{
-			Self: &models.Link{
-				ID: code,
-			},
-		},
+		Code: code,
 	}, nil
 }

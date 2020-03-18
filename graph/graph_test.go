@@ -72,11 +72,11 @@ func Test_NewCodeListStore(t *testing.T) {
 				}, ShouldPanic)
 
 				So(func() {
-					db.StreamCSVRows(context.Background(), nil, nil)
+					db.StreamCSVRows(context.Background(), "", "", nil, nil)
 				}, ShouldPanic)
 
 				So(func() {
-					db.InsertDimension(context.Background(), nil, nil, nil)
+					db.InsertDimension(context.Background(), nil, "", nil)
 				}, ShouldPanic)
 
 				So(func() {
@@ -107,11 +107,11 @@ func Test_NewHierarchyStore(t *testing.T) {
 				}, ShouldPanic)
 
 				So(func() {
-					db.StreamCSVRows(context.Background(), nil, nil)
+					db.StreamCSVRows(context.Background(), "", "", nil, nil)
 				}, ShouldPanic)
 
 				So(func() {
-					db.InsertDimension(context.Background(), nil, nil, nil)
+					db.InsertDimension(context.Background(), nil, "", nil)
 				}, ShouldPanic)
 
 				So(func() {
@@ -142,11 +142,11 @@ func Test_NewInstanceStore(t *testing.T) {
 				}, ShouldPanic)
 
 				So(func() {
-					db.StreamCSVRows(context.Background(), nil, nil)
+					db.StreamCSVRows(context.Background(), "", "", nil, nil)
 				}, ShouldPanic)
 
 				So(func() {
-					db.InsertDimension(context.Background(), nil, nil, nil)
+					db.InsertDimension(context.Background(), nil, "", nil)
 				}, ShouldPanic)
 
 				So(func() {
@@ -181,11 +181,11 @@ func Test_NewObservationStore(t *testing.T) {
 				}, ShouldPanic)
 
 				So(func() {
-					db.InsertDimension(context.Background(), nil, nil, nil)
+					db.InsertDimension(context.Background(), nil, "", nil)
 				}, ShouldPanic)
 
 				So(func() {
-					db.StreamCSVRows(context.Background(), nil, nil)
+					db.StreamCSVRows(context.Background(), "", "", nil, nil)
 				}, ShouldNotPanic)
 			})
 		})
@@ -216,11 +216,11 @@ func Test_NewDimensionStore(t *testing.T) {
 				}, ShouldPanic)
 
 				So(func() {
-					db.StreamCSVRows(context.Background(), nil, nil)
+					db.StreamCSVRows(context.Background(), "", "", nil, nil)
 				}, ShouldPanic)
 
 				So(func() {
-					db.InsertDimension(context.Background(), nil, nil, nil)
+					db.InsertDimension(context.Background(), nil, "", nil)
 				}, ShouldNotPanic)
 			})
 		})

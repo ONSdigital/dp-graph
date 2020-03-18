@@ -351,7 +351,7 @@ func TestGetCodes(t *testing.T) {
 						So(len(codesResponse.Items), ShouldEqual, 3)
 						Convey("Then set right", func() {
 							sampleCode := codesResponse.Items[1]
-							So(sampleCode.Links.Self.ID, ShouldEqual, "code_1")
+							So(sampleCode.Code, ShouldEqual, "code_1")
 						})
 					})
 				})

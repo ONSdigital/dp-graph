@@ -48,23 +48,23 @@ type Observation interface {
 	// StreamCSVRows returns a reader which the caller is ultimately responsible for closing
 	// This allows for large volumes of data to be read from a stream without significant
 	// memory overhead.
-	StreamCSVRows(ctx context.Context, filter *observation.Filter, limit *int) (observation.StreamRowReader, error)
+	StreamCSVRows(ctx context.Context, instanceID, filterID string, filters *observation.DimensionFilters, limit *int) (observation.StreamRowReader, error)
 	InsertObservationBatch(ctx context.Context, attempt int, instanceID string, observations []*models.Observation, dimensionIDs map[string]string) error
 }
 
 // Instance defines functions to create, update and retrieve details about instances
 type Instance interface {
-	CreateInstanceConstraint(ctx context.Context, i *models.Instance) error
-	CreateInstance(ctx context.Context, i *models.Instance) error
-	AddDimensions(ctx context.Context, i *models.Instance) error
-	CreateCodeRelationship(ctx context.Context, i *models.Instance, codeListID, code string) error
-	InstanceExists(ctx context.Context, i *models.Instance) (bool, error)
+	CreateInstanceConstraint(ctx context.Context, instanceID string) error
+	CreateInstance(ctx context.Context, instanceID string, csvHeaders []string) error
+	AddDimensions(ctx context.Context, instanceID string, dimensions []interface{}) error
+	CreateCodeRelationship(ctx context.Context, instanceID, codeListID, code string) error
+	InstanceExists(ctx context.Context, instanceID string) (bool, error)
 	CountInsertedObservations(ctx context.Context, instanceID string) (count int64, err error)
-	AddVersionDetailsToInstance(ctx context.Context, instanceID string, datasetID string, edition string, version int) error
+	AddVersionDetailsToInstance(ctx context.Context, instanceID, datasetID, edition string, version int) error
 	SetInstanceIsPublished(ctx context.Context, instanceID string) error
 }
 
 // Dimension defines functions to create dimension nodes
 type Dimension interface {
-	InsertDimension(ctx context.Context, cache map[string]string, i *models.Instance, d *models.Dimension) (*models.Dimension, error)
+	InsertDimension(ctx context.Context, cache map[string]string, instanceID string, d *models.Dimension) (*models.Dimension, error)
 }

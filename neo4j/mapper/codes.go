@@ -66,10 +66,5 @@ func code(r *Result) (*models.Code, error) {
 		ID:    strconv.FormatInt(id, 10),
 		Code:  codeVal,
 		Label: codeLabel,
-		Links: &models.CodeLinks{
-			Self: &models.Link{
-				ID: codeVal,
-			},
-		},
 	}, nil
 }

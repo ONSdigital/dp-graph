@@ -126,6 +126,9 @@ func (n *Neo4j) GetCodeDatasets(ctx context.Context, codeListID, edition string,
 		return nil, err
 	}
 
+	// TODO I think we should return map[string]DatasetData at this point and it is up
+	// to the service/application to manipulate the data to match the expected response
+
 	response := &models.Datasets{
 		Items: []models.Dataset{},
 	}
