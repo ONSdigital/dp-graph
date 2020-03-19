@@ -7,10 +7,7 @@ import (
 )
 
 var filter = DimensionFilters{
-	// InstanceID:       "1234567890",
-	// FilterID:         "0987654321",
 	Dimensions: nil,
-	// Published:        &Published,
 }
 
 func TestFilter_IsEmpty(t *testing.T) {

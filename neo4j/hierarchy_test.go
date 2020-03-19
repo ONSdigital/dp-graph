@@ -56,7 +56,7 @@ func Test_CreateInstanceHierarchyConstraints(t *testing.T) {
 	})
 }
 
-func Test_CreateInstanceHierarchyConstraints_NeoerrExec(t *testing.T) {
+func Test_CreateInstanceHierarchyConstraints_NeoErrExec(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
@@ -206,7 +206,7 @@ func TestStore_CloneRelationships(t *testing.T) {
 	})
 }
 
-func TestStore_CloneRelationships_NeoerrExec(t *testing.T) {
+func TestStore_CloneRelationships_NeoErrExec(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
@@ -267,7 +267,7 @@ func TestStore_SetNumberOfChildren(t *testing.T) {
 	})
 }
 
-func TestStore_SetNumberOfChildren_NeoerrExec(t *testing.T) {
+func TestStore_SetNumberOfChildren_NeoErrExec(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
@@ -326,7 +326,7 @@ func TestStore_SetHasData(t *testing.T) {
 	})
 }
 
-func TestStore_SetHasData_NeoerrExec(t *testing.T) {
+func TestStore_SetHasData_NeoErrExec(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
@@ -385,7 +385,7 @@ func TestStore_MarkNodesToRemain(t *testing.T) {
 	})
 }
 
-func TestStore_MarkNodesToRemain_NeoerrExec(t *testing.T) {
+func TestStore_MarkNodesToRemain_NeoErrExec(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
@@ -441,7 +441,7 @@ func TestStore_RemoveNodesNotMarkedToRemain(t *testing.T) {
 	})
 }
 
-func TestStore_RemoveNodesNotMarkedToRemain_NeoerrExec(t *testing.T) {
+func TestStore_RemoveNodesNotMarkedToRemain_NeoErrExec(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
@@ -497,7 +497,7 @@ func TestStore_RemoveRemainMarker(t *testing.T) {
 	})
 }
 
-func TestStore_RemoveRemainMarker_NeoerrExec(t *testing.T) {
+func TestStore_RemoveRemainMarker_NeoErrExec(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{

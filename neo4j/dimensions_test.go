@@ -15,7 +15,6 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-// var instance = &models.Instance{InstanceID: instanceID}
 var dimension = &models.Dimension{
 	DimensionID: "Sex",
 	Option:      "Male",

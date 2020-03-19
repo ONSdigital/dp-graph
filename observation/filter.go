@@ -17,20 +17,6 @@ type Dimension struct {
 	Options []string
 }
 
-// Downloads represent a list of download types
-// type Downloads struct {
-// 	CSV *DownloadItem `json:"csv,omitempty"`
-// 	XLS *DownloadItem `json:"xls,omitempty"`
-// }
-
-// DownloadItem represents an object containing download details
-// type DownloadItem struct {
-// 	HRef    string `json:"href,omitempty"`
-// 	Private string `json:"private,omitempty"`
-// 	Public  string `json:"public,omitempty"`
-// 	Size    string `json:"size,omitempty"`
-// }
-
 // IsEmpty return true if DimensionFilters is nil, empty or contains only empty values
 func (d DimensionFilters) IsEmpty() bool {
 	if len(d.Dimensions) == 0 {

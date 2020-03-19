@@ -186,11 +186,6 @@ func Test_AddDimensions(t *testing.T) {
 
 		db := &Neo4j{neo4jMock, 5, 30}
 
-		// instance := &models.Instance{
-		// 	InstanceID: instanceID,
-		// 	Dimensions: dimensionNames,
-		// }
-
 		Convey("When AddDimensions is called", func() {
 			err := db.AddDimensions(context.Background(), instanceID, dimensionNames)
 
@@ -222,11 +217,6 @@ func Test_AddDimensions(t *testing.T) {
 		}
 
 		db := &Neo4j{neo4jMock, 5, 30}
-
-		// instance := &models.Instance{
-		// 	InstanceID: instanceID,
-		// 	Dimensions: dimensionNames,
-		// }
 
 		Convey("When AddDimensions is called", func() {
 			err := db.AddDimensions(context.Background(), instanceID, dimensionNames)
