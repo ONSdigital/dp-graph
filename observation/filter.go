@@ -9,6 +9,7 @@ var (
 // DimensionFilters represents a list of dimension filters
 type DimensionFilters struct {
 	Dimensions []*Dimension
+	Published  *bool
 }
 
 // Dimension represents an object containing a list of dimension values and the dimension name

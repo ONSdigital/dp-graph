@@ -8,6 +8,7 @@ import (
 
 var filter = DimensionFilters{
 	Dimensions: nil,
+	Published:  &Published,
 }
 
 func TestFilter_IsEmpty(t *testing.T) {
