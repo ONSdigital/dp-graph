@@ -108,7 +108,6 @@ func TestBuildResponse(t *testing.T) {
 					codeListID := "testCodeListID"
 					response := buildResponse(did2Dim, codeValue, codeListID)
 					Convey("Then the response should be well formed", func() {
-						// So(response.Count, ShouldEqual, 2)
 						So(response.Items, ShouldHaveLength, 4)
 						dataset := response.Items[1]
 						// The order in which the responses come back is not

@@ -1,8 +1,5 @@
 package models
 
-// CodelistURL set by main() to make accessible to all models users
-var CodelistURL string
-
 // HierarchyResponse models a node in the hierarchy
 type HierarchyResponse struct {
 	ID           string
@@ -13,7 +10,7 @@ type HierarchyResponse struct {
 	Breadcrumbs  []*HierarchyElement
 }
 
-// HierarchyElement is a item in a list within a Response
+// HierarchyElement is a item in a list within a HierarchyResponse
 type HierarchyElement struct {
 	ID           string
 	Label        string

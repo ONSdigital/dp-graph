@@ -1,25 +1,18 @@
 package models
 
-const (
-	fmtEditions                   = "/datasets/%s/editions/%s"
-	fmtEditionsVersions           = "/datasets/%s/editions/%s/versions/%s"
-	fmtEditionsVersionsDimensions = "/datasets/%s/editions/%s/versions/%s/dimensions/%s"
-)
-
-// Datasets represents the model returned from the api datasets
-// endpoint
+// Datasets represents a list of dataset objects
 type Datasets struct {
 	Items []Dataset
 }
 
-// Dataset represents an individual model dataset
+// Dataset represents an individual dataset
 type Dataset struct {
 	ID             string
 	DimensionLabel string
 	Editions       []DatasetEdition
 }
 
-// DatasetEdition represents an object containing dataset edition links
+// DatasetEdition represents an object containing edition data
 type DatasetEdition struct {
 	ID            string
 	CodeListID    string

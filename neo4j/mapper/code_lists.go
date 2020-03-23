@@ -10,17 +10,18 @@ import (
 //CodeLists returns a dpbolt.ResultMapper which converts a dpbolt.Result to models.CodeLists
 func CodeLists(codeLists *models.CodeListResults) ResultMapper {
 	return func(r *Result) error {
-		var id string
+		var codeListID string
 		for _, v := range r.Data[0].([]interface{}) {
-			s := v.(string)
-			if strings.Contains(s, "_code_list_") {
-				id = strings.Replace(s, "_code_list_", "", -1)
+			label := v.(string)
+			if strings.Contains(label, "_code_list_") {
+				// retrieve the codelist id from label
+				codeListID = strings.Replace(label, "_code_list_", "", -1)
 				break
 			}
 		}
 
 		codeLists.Items = append(codeLists.Items, models.CodeList{
-			ID: id,
+			ID: codeListID,
 		})
 
 		return nil

@@ -1,11 +1,11 @@
 package models
 
-// Editions represents the editions response model
+// Editions represents a list of editions
 type Editions struct {
 	Items []Edition
 }
 
-// Edition represents a single edition response model
+// Edition represents a single edition object
 type Edition struct {
 	Edition string
 	Label   string
