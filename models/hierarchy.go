@@ -1,8 +1,5 @@
 package models
 
-const codelistFormat = "%s/code-lists/%s/codes"
-const rootFormat = "%s/hierarchies/%s/%s"
-
 // CodelistURL set by main() to make accessible to all models users
 var CodelistURL string
 

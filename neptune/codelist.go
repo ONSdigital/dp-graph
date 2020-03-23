@@ -37,18 +37,18 @@ func (n *NeptuneDB) GetCodeLists(ctx context.Context, filterBy string) (*models.
 	if err != nil {
 		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
 	}
-	results := &models.CodeListResults{
-		Count:      len(codeListVertices),
-		Limit:      len(codeListVertices),
-		TotalCount: len(codeListVertices),
-	}
+
+	results := &models.CodeListResults{}
+
 	for _, codeListVertex := range codeListVertices {
 		codeListID, err := codeListVertex.GetProperty("listID")
 		if err != nil {
 			return nil, errors.Wrapf(err, `Error reading "listID" property on Code List vertex`)
 		}
-		link := &models.CodeListLink{Self: &models.Link{ID: codeListID}}
-		codeListMdl := models.CodeList{codeListID, link}
+
+		codeListMdl := models.CodeList{
+			ID: codeListID,
+		}
 		results.Items = append(results.Items, codeListMdl)
 	}
 	return results, nil
@@ -76,11 +76,7 @@ func (n *NeptuneDB) GetCodeList(ctx context.Context, codeListID string) (
 	}
 
 	return &models.CodeList{
-		Links: &models.CodeListLink{
-			Self: &models.Link{
-				ID: codeListID,
-			},
-		},
+		ID: codeListID,
 	}, nil
 }
 
@@ -103,23 +99,16 @@ func (n *NeptuneDB) GetEditions(ctx context.Context, codeListID string) (*models
 		return nil, driver.ErrNotFound
 	}
 	editions := &models.Editions{
-		Count:      len(codeLists),
-		Offset:     0,
-		Limit:      len(codeLists),
-		TotalCount: len(codeLists),
-		Items:      []models.Edition{},
+		Items: []models.Edition{},
 	}
 	for _, codeList := range codeLists {
 		editionString, err := codeList.GetProperty("edition")
 		if err != nil {
 			return nil, errors.Wrapf(err, `Error reading "edition" property on Code List vertex`)
 		}
+
 		edition := models.Edition{
-			Links: &models.EditionLinks{
-				Self: &models.Link{
-					ID: editionString,
-				},
-			},
+			Edition: editionString,
 		}
 		editions.Items = append(editions.Items, edition)
 	}
@@ -152,7 +141,7 @@ func (n *NeptuneDB) GetEdition(ctx context.Context, codeListID, edition string) 
 	}
 	// What we return (having performed the checks above), is actually hard-coded, as a function of the
 	// method parameters.
-	return &models.Edition{Links: &models.EditionLinks{Self: &models.Link{ID: edition}}}, nil
+	return &models.Edition{Edition: edition}, nil
 }
 
 /*

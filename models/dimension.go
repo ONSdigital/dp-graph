@@ -30,9 +30,9 @@ func (d *Dimension) Validate() error {
 
 // Instance struct to hold instance information.
 type Instance struct {
-	InstanceID string        `json:"id,omitempty"`
-	CSVHeader  []string      `json:"headers"`
-	Dimensions []interface{} `json:"-"`
+	InstanceID string
+	CSVHeader  []string
+	Dimensions []interface{}
 }
 
 // Validate checks that the instance ID is not empty

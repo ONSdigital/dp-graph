@@ -55,10 +55,5 @@ func edition(r *Result) (*models.Edition, error) {
 	return &models.Edition{
 		Edition: edition,
 		Label:   label,
-		Links: &models.EditionLinks{
-			Self: &models.Link{
-				ID: edition,
-			},
-		},
 	}, nil
 }

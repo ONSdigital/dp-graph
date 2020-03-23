@@ -10,22 +10,19 @@ import (
 //CodeLists returns a dpbolt.ResultMapper which converts a dpbolt.Result to models.CodeLists
 func CodeLists(codeLists *models.CodeListResults) ResultMapper {
 	return func(r *Result) error {
-		var label string
+		var id string
 		for _, v := range r.Data[0].([]interface{}) {
 			s := v.(string)
 			if strings.Contains(s, "_code_list_") {
-				label = strings.Replace(s, "_code_list_", "", -1)
+				id = strings.Replace(s, "_code_list_", "", -1)
 				break
 			}
 		}
 
 		codeLists.Items = append(codeLists.Items, models.CodeList{
-			Links: &models.CodeListLink{
-				Self: &models.Link{
-					ID: label,
-				},
-			},
+			ID: id,
 		})
+
 		return nil
 	}
 }
@@ -37,11 +34,10 @@ func CodeList(codeList *models.CodeList, id string) ResultMapper {
 			return driver.ErrNotFound
 		}
 
-		codeList.Links = &models.CodeListLink{
-			Self: &models.Link{
-				ID: id,
-			},
+		codeList = &models.CodeList{
+			ID: id,
 		}
+
 		return nil
 	}
 }
