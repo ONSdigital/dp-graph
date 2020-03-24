@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ONSdigital/dp-graph/neptune/internal"
+	"github.com/ONSdigital/dp-graph/v2/neptune/internal"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

@@ -3,7 +3,7 @@ module github.com/ONSdigital/dp-graph/v2
 go 1.13
 
 require (
-	github.com/ONSdigital/dp-healthcheck v1.0.0
+	github.com/ONSdigital/dp-healthcheck v1.0.1
 	github.com/ONSdigital/golang-neo4j-bolt-driver v0.0.0-20190228153339-da534111531d
 	github.com/ONSdigital/graphson v0.0.0-20190718134034-c13ceacd109d
 	github.com/ONSdigital/gremgo-neptune v0.0.0-20190806135047-c3c614e5b650

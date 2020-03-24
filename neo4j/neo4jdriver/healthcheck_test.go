@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/ONSdigital/dp-graph/neo4j/internal"
-	"github.com/ONSdigital/dp-graph/neo4j/neo4jdriver"
-	driver "github.com/ONSdigital/dp-graph/neo4j/neo4jdriver"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/internal"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/neo4jdriver"
+	driver "github.com/ONSdigital/dp-graph/v2/neo4j/neo4jdriver"
 	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"github.com/pkg/errors"

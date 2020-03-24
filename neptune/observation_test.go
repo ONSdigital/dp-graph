@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ONSdigital/dp-graph/neptune/internal"
-	"github.com/ONSdigital/dp-graph/neptune/query"
-	"github.com/ONSdigital/dp-graph/observation"
+	"github.com/ONSdigital/dp-graph/v2/neptune/internal"
+	"github.com/ONSdigital/dp-graph/v2/neptune/query"
+	"github.com/ONSdigital/dp-graph/v2/observation"
 	"github.com/ONSdigital/gremgo-neptune"
 	. "github.com/smartystreets/goconvey/convey"
 )

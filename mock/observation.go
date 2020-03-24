@@ -3,8 +3,8 @@ package mock
 import (
 	"context"
 
-	"github.com/ONSdigital/dp-graph/models"
-	"github.com/ONSdigital/dp-graph/observation"
+	"github.com/ONSdigital/dp-graph/v2/models"
+	"github.com/ONSdigital/dp-graph/v2/observation"
 )
 
 func (m *Mock) StreamCSVRows(ctx context.Context, instanceID, filterID string, filters *observation.DimensionFilters, limit *int) (observation.StreamRowReader, error) {

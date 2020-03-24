@@ -5,11 +5,12 @@ package internal
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-graph/neo4j/mapper"
-	"github.com/ONSdigital/dp-graph/neo4j/neo4jdriver"
-	"github.com/ONSdigital/dp-healthcheck/healthcheck"
-	"github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"sync"
+
+	"github.com/ONSdigital/dp-graph/v2/neo4j/mapper"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/neo4jdriver"
+	"github.com/ONSdigital/dp-healthcheck/healthcheck"
+	golangNeo4jBoltDriver "github.com/ONSdigital/golang-neo4j-bolt-driver"
 )
 
 var (

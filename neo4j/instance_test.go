@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ONSdigital/dp-graph/neo4j/internal"
-	"github.com/ONSdigital/dp-graph/neo4j/query"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/internal"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/query"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"

@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"testing"
 
-	graph "github.com/ONSdigital/dp-graph/graph/driver"
-	"github.com/ONSdigital/dp-graph/neo4j/internal"
+	graph "github.com/ONSdigital/dp-graph/v2/graph/driver"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/internal"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	neoErrors "github.com/ONSdigital/golang-neo4j-bolt-driver/errors"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/messages"

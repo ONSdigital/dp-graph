@@ -5,8 +5,9 @@ package observationtest
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-graph/observation"
 	"sync"
+
+	"github.com/ONSdigital/dp-graph/v2/observation"
 )
 
 var (

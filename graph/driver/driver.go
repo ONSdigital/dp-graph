@@ -3,8 +3,8 @@ package driver
 import (
 	"context"
 
-	"github.com/ONSdigital/dp-graph/models"
-	"github.com/ONSdigital/dp-graph/observation"
+	"github.com/ONSdigital/dp-graph/v2/models"
+	"github.com/ONSdigital/dp-graph/v2/observation"
 	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
 )
 

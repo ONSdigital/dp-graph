@@ -3,7 +3,7 @@ package mapper
 import (
 	"errors"
 
-	"github.com/ONSdigital/dp-graph/models"
+	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/graph"
 )
 

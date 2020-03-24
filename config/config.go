@@ -3,10 +3,10 @@ package config
 import (
 	"errors"
 
-	"github.com/ONSdigital/dp-graph/graph/driver"
-	"github.com/ONSdigital/dp-graph/mock"
-	"github.com/ONSdigital/dp-graph/neo4j"
-	"github.com/ONSdigital/dp-graph/neptune"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
+	"github.com/ONSdigital/dp-graph/v2/mock"
+	"github.com/ONSdigital/dp-graph/v2/neo4j"
+	"github.com/ONSdigital/dp-graph/v2/neptune"
 	"github.com/kelseyhightower/envconfig"
 )
 

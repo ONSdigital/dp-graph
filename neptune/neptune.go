@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ONSdigital/dp-graph/neptune/driver"
+	"github.com/ONSdigital/dp-graph/v2/neptune/driver"
 	"github.com/ONSdigital/graphson"
 	gremgo "github.com/ONSdigital/gremgo-neptune"
 	"github.com/ONSdigital/log.go/log"

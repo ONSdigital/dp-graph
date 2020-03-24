@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"github.com/ONSdigital/dp-graph/config"
-	"github.com/ONSdigital/dp-graph/graph/driver"
-	"github.com/ONSdigital/dp-graph/mock"
+	"github.com/ONSdigital/dp-graph/v2/config"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
+	"github.com/ONSdigital/dp-graph/v2/mock"
 )
 
 // DB contains the widest possible selection of functionality provided by any

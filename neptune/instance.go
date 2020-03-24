@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ONSdigital/dp-graph/models"
-	"github.com/ONSdigital/dp-graph/neptune/query"
+	"github.com/ONSdigital/dp-graph/v2/models"
+	"github.com/ONSdigital/dp-graph/v2/neptune/query"
 	gremgo "github.com/ONSdigital/gremgo-neptune"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/pkg/errors"
