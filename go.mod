@@ -1,4 +1,4 @@
-module github.com/ONSdigital/dp-graph
+module github.com/ONSdigital/dp-graph/v2
 
 go 1.13
 
