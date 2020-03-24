@@ -7,7 +7,7 @@ import (
 // Datasets maps datasetIDs to dataset data
 type Datasets map[string]DatasetData
 
-// DatasetEditinos maps edition labels to lists of version IDs
+// DatasetEditions maps edition labels to lists of version IDs
 type DatasetEditions map[string]Versions
 
 // Versions contains a list of version IDs

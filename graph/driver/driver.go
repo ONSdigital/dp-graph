@@ -3,12 +3,9 @@ package driver
 import (
 	"context"
 
-	codelistModels "github.com/ONSdigital/dp-code-list-api/models"
-	importModels "github.com/ONSdigital/dp-dimension-importer/model"
+	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/dp-graph/observation"
 	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
-	hierarchyModels "github.com/ONSdigital/dp-hierarchy-api/models"
-	obsModels "github.com/ONSdigital/dp-observation-importer/models"
 )
 
 // Driver is the base interface any driver implementation must satisfy
@@ -20,13 +17,13 @@ type Driver interface {
 
 // CodeList defines functions to retrieve code list and code nodes
 type CodeList interface {
-	GetCodeLists(ctx context.Context, filterBy string) (*codelistModels.CodeListResults, error)
-	GetCodeList(ctx context.Context, codeListID string) (*codelistModels.CodeList, error)
-	GetEditions(ctx context.Context, codeListID string) (*codelistModels.Editions, error)
-	GetEdition(ctx context.Context, codeListID, edition string) (*codelistModels.Edition, error)
-	GetCodes(ctx context.Context, codeListID, edition string) (*codelistModels.CodeResults, error)
-	GetCode(ctx context.Context, codeListID, edition string, code string) (*codelistModels.Code, error)
-	GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*codelistModels.Datasets, error)
+	GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error)
+	GetCodeList(ctx context.Context, codeListID string) (*models.CodeList, error)
+	GetEditions(ctx context.Context, codeListID string) (*models.Editions, error)
+	GetEdition(ctx context.Context, codeListID, edition string) (*models.Edition, error)
+	GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error)
+	GetCode(ctx context.Context, codeListID, edition string, code string) (*models.Code, error)
+	GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error)
 }
 
 // Hierarchy defines functions to create and retrieve generic and instance hierarchy nodes
@@ -42,32 +39,32 @@ type Hierarchy interface {
 	RemoveRemainMarker(ctx context.Context, attempt int, instanceID, dimensionName string) error
 
 	GetHierarchyCodelist(ctx context.Context, instanceID, dimension string) (string, error)
-	GetHierarchyRoot(ctx context.Context, instanceID, dimension string) (*hierarchyModels.Response, error)
-	GetHierarchyElement(ctx context.Context, instanceID, dimension, code string) (*hierarchyModels.Response, error)
+	GetHierarchyRoot(ctx context.Context, instanceID, dimension string) (*models.HierarchyResponse, error)
+	GetHierarchyElement(ctx context.Context, instanceID, dimension, code string) (*models.HierarchyResponse, error)
 }
 
 // Observation defines functions to create and retrieve observation nodes
 type Observation interface {
 	// StreamCSVRows returns a reader which the caller is ultimately responsible for closing
-	// This allows for large volumes of data to be read from a stream without signnificant
+	// This allows for large volumes of data to be read from a stream without significant
 	// memory overhead.
-	StreamCSVRows(ctx context.Context, filter *observation.Filter, limit *int) (observation.StreamRowReader, error)
-	InsertObservationBatch(ctx context.Context, attempt int, instanceID string, observations []*obsModels.Observation, dimensionIDs map[string]string) error
+	StreamCSVRows(ctx context.Context, instanceID, filterID string, filters *observation.DimensionFilters, limit *int) (observation.StreamRowReader, error)
+	InsertObservationBatch(ctx context.Context, attempt int, instanceID string, observations []*models.Observation, dimensionIDs map[string]string) error
 }
 
 // Instance defines functions to create, update and retrieve details about instances
 type Instance interface {
-	CreateInstanceConstraint(ctx context.Context, i *importModels.Instance) error
-	CreateInstance(ctx context.Context, i *importModels.Instance) error
-	AddDimensions(ctx context.Context, i *importModels.Instance) error
-	CreateCodeRelationship(ctx context.Context, i *importModels.Instance, codeListID, code string) error
-	InstanceExists(ctx context.Context, i *importModels.Instance) (bool, error)
+	CreateInstanceConstraint(ctx context.Context, instanceID string) error
+	CreateInstance(ctx context.Context, instanceID string, csvHeaders []string) error
+	AddDimensions(ctx context.Context, instanceID string, dimensions []interface{}) error
+	CreateCodeRelationship(ctx context.Context, instanceID, codeListID, code string) error
+	InstanceExists(ctx context.Context, instanceID string) (bool, error)
 	CountInsertedObservations(ctx context.Context, instanceID string) (count int64, err error)
-	AddVersionDetailsToInstance(ctx context.Context, instanceID string, datasetID string, edition string, version int) error
+	AddVersionDetailsToInstance(ctx context.Context, instanceID, datasetID, edition string, version int) error
 	SetInstanceIsPublished(ctx context.Context, instanceID string) error
 }
 
 // Dimension defines functions to create dimension nodes
 type Dimension interface {
-	InsertDimension(ctx context.Context, cache map[string]string, i *importModels.Instance, d *importModels.Dimension) (*importModels.Dimension, error)
+	InsertDimension(ctx context.Context, cache map[string]string, instanceID string, d *models.Dimension) (*models.Dimension, error)
 }

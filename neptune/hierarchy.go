@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/ONSdigital/dp-graph/graph/driver"
+	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/dp-graph/neptune/query"
-	"github.com/ONSdigital/dp-hierarchy-api/models"
 	"github.com/ONSdigital/graphson"
 	"github.com/ONSdigital/log.go/log"
 )
@@ -231,7 +231,7 @@ func (n *NeptuneDB) GetHierarchyCodelist(ctx context.Context, instanceID, dimens
 	return
 }
 
-func (n *NeptuneDB) GetHierarchyRoot(ctx context.Context, instanceID, dimension string) (node *models.Response, err error) {
+func (n *NeptuneDB) GetHierarchyRoot(ctx context.Context, instanceID, dimension string) (node *models.HierarchyResponse, err error) {
 	gremStmt := fmt.Sprintf(query.GetHierarchyRoot, instanceID, dimension)
 	logData := log.Data{
 		"fn":             "GetHierarchyRoot",
@@ -268,7 +268,7 @@ func (n *NeptuneDB) GetHierarchyRoot(ctx context.Context, instanceID, dimension 
 	return
 }
 
-func (n *NeptuneDB) GetHierarchyElement(ctx context.Context, instanceID, dimension, code string) (node *models.Response, err error) {
+func (n *NeptuneDB) GetHierarchyElement(ctx context.Context, instanceID, dimension, code string) (node *models.HierarchyResponse, err error) {
 	gremStmt := fmt.Sprintf(query.GetHierarchyElement, instanceID, dimension, code)
 	logData := log.Data{
 		"fn":             "GetHierarchyElement",

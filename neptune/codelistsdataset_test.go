@@ -108,7 +108,6 @@ func TestBuildResponse(t *testing.T) {
 					codeListID := "testCodeListID"
 					response := buildResponse(did2Dim, codeValue, codeListID)
 					Convey("Then the response should be well formed", func() {
-						So(response.Count, ShouldEqual, 2)
 						So(response.Items, ShouldHaveLength, 4)
 						dataset := response.Items[1]
 						// The order in which the responses come back is not
@@ -116,12 +115,12 @@ func TestBuildResponse(t *testing.T) {
 						// In repeat test runs if flips seemingly randomly.
 						// so we use the ShouldBeIn assertion.
 						So(dataset.DimensionLabel, ShouldBeIn, []string{"dim0", "dim1"})
-						So(dataset.Links.Self.ID, ShouldBeIn, []string{"dataset0", "dataset1"})
+						So(dataset.ID, ShouldBeIn, []string{"dataset0", "dataset1"})
 						editions := dataset.Editions
 						So(editions, ShouldHaveLength, 2)
 						datasetEdition := editions[1]
-						So(datasetEdition.Links.Self.ID, ShouldBeIn, []string{"edition0", "edition1"})
-						So(datasetEdition.Links.LatestVersion.ID, ShouldEqual, "1")
+						So(datasetEdition.ID, ShouldBeIn, []string{"edition0", "edition1"})
+						So(datasetEdition.LatestVersion, ShouldEqual, 1)
 					})
 				})
 			})
@@ -236,12 +235,12 @@ func TestGetCodeDatasetsAtAPILevel(t *testing.T) {
 				So(response, ShouldNotBeNil)
 				dataset := response.Items[0]
 				So(dataset.DimensionLabel, ShouldEqual, "exampleDimName")
-				So(dataset.Links.Self.ID, ShouldEqual, "exampleDatasetID")
+				So(dataset.ID, ShouldEqual, "exampleDatasetID")
 				editions := dataset.Editions
 				So(editions, ShouldHaveLength, 1)
 				datasetEdition := editions[0]
-				So(datasetEdition.Links.Self.ID, ShouldEqual, "exampleDatasetEdition")
-				So(datasetEdition.Links.LatestVersion.ID, ShouldEqual, "3")
+				So(datasetEdition.ID, ShouldEqual, "exampleDatasetEdition")
+				So(datasetEdition.LatestVersion, ShouldEqual, 3)
 			})
 		})
 	})

@@ -8,17 +8,17 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/dp-graph/neptune/query"
-	"github.com/ONSdigital/dp-hierarchy-api/models"
 	"github.com/ONSdigital/graphson"
 	"github.com/ONSdigital/log.go/log"
 )
 
-func (n *NeptuneDB) buildHierarchyNodeFromGraphsonVertex(v graphson.Vertex, instanceID, dimension string, wantBreadcrumbs bool) (res *models.Response, err error) {
+func (n *NeptuneDB) buildHierarchyNodeFromGraphsonVertex(v graphson.Vertex, instanceID, dimension string, wantBreadcrumbs bool) (res *models.HierarchyResponse, err error) {
 	ctx := context.Background()
 	logData := log.Data{"fn": "buildHierarchyNodeFromGraphsonVertex"}
 
-	res = &models.Response{}
+	res = &models.HierarchyResponse{}
 	// Note we are using the vertex' *code* property for the response model's
 	// ID field - because in the case of a hierarchy node, this is the ID
 	// used to format links.
@@ -61,7 +61,7 @@ func (n *NeptuneDB) buildHierarchyNodeFromGraphsonVertex(v graphson.Vertex, inst
 			logData["node_id"] = res.ID
 			log.Event(ctx, "child count mismatch", log.WARN, logData)
 		}
-		var childElement *models.Element
+		var childElement *models.HierarchyElement
 		for _, child := range childVertices {
 			if childElement, err = convertVertexToElement(child); err != nil {
 				log.Event(ctx, "converting child", log.ERROR, logData, log.Error(err))
@@ -82,11 +82,11 @@ func (n *NeptuneDB) buildHierarchyNodeFromGraphsonVertex(v graphson.Vertex, inst
 
 /*
 buildBreadcrumbs launches a new query to the database, to trace the (recursive)
-parentage of a hierarcy node. It converts the returned chain of parent
-graphson vertices into a chain of models.Element, and returns this list of
+parentage of a hierarchy node. It converts the returned chain of parent
+graphson vertices into a chain of models.HierarchyElement, and returns this list of
 elements.
 */
-func (n *NeptuneDB) buildBreadcrumbs(instanceID, dimension, code string) ([]*models.Element, error) {
+func (n *NeptuneDB) buildBreadcrumbs(instanceID, dimension, code string) ([]*models.HierarchyElement, error) {
 	ctx := context.Background()
 	logData := log.Data{"fn": "buildBreadcrumbs"}
 	gremStmt := fmt.Sprintf(query.GetAncestry, instanceID, dimension, code)
@@ -96,7 +96,7 @@ func (n *NeptuneDB) buildBreadcrumbs(instanceID, dimension, code string) ([]*mod
 		log.Event(ctx, "getVertices", log.ERROR, logData, log.Error(err))
 		return nil, err
 	}
-	elements := []*models.Element{}
+	elements := []*models.HierarchyElement{}
 	for _, ancestor := range ancestorVertices {
 		element, err := convertVertexToElement(ancestor)
 		if err != nil {
@@ -108,10 +108,10 @@ func (n *NeptuneDB) buildBreadcrumbs(instanceID, dimension, code string) ([]*mod
 	return elements, nil
 }
 
-func convertVertexToElement(v graphson.Vertex) (res *models.Element, err error) {
+func convertVertexToElement(v graphson.Vertex) (res *models.HierarchyElement, err error) {
 	ctx := context.Background()
 	logData := log.Data{"fn": "convertVertexToElement"}
-	res = &models.Element{}
+	res = &models.HierarchyElement{}
 	// Note we are using the vertex' *code* property for the response model's
 	// ID field - because in the case of a hierarchy node, this is the ID
 	// used to format links.

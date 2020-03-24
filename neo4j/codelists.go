@@ -3,10 +3,9 @@ package neo4j
 import (
 	"context"
 	"fmt"
-	"strconv"
 
-	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/dp-graph/graph/driver"
+	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/dp-graph/neo4j/mapper"
 	"github.com/ONSdigital/dp-graph/neo4j/query"
 	"github.com/ONSdigital/log.go/log"
@@ -132,27 +131,15 @@ func (n *Neo4j) GetCodeDatasets(ctx context.Context, codeListID, edition string,
 
 	for id, data := range datasets {
 		dataset := models.Dataset{
+			ID:             id,
 			DimensionLabel: data.DimensionLabel,
-			Links: &models.DatasetLinks{
-				Self: &models.Link{
-					ID: id,
-				},
-			},
 		}
 
-		for ed, versionList := range data.Editions {
+		for editionID, versionList := range data.Editions {
 			dataset.Editions = append(dataset.Editions, models.DatasetEdition{
-				Links: &models.DatasetEditionLinks{
-					Self: &models.Link{
-						ID: ed,
-					},
-					LatestVersion: &models.Link{
-						ID: strconv.Itoa(max(versionList)),
-					},
-					DatasetDimension: &models.Link{
-						ID: codeListID,
-					},
-				},
+				ID:            editionID,
+				CodeListID:    codeListID,
+				LatestVersion: max(versionList),
 			})
 		}
 

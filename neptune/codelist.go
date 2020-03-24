@@ -12,8 +12,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/ONSdigital/dp-code-list-api/models"
 	"github.com/ONSdigital/dp-graph/graph/driver"
+	"github.com/ONSdigital/dp-graph/models"
 	"github.com/ONSdigital/dp-graph/neptune/query"
 )
 
@@ -37,18 +37,18 @@ func (n *NeptuneDB) GetCodeLists(ctx context.Context, filterBy string) (*models.
 	if err != nil {
 		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
 	}
-	results := &models.CodeListResults{
-		Count:      len(codeListVertices),
-		Limit:      len(codeListVertices),
-		TotalCount: len(codeListVertices),
-	}
+
+	results := &models.CodeListResults{}
+
 	for _, codeListVertex := range codeListVertices {
 		codeListID, err := codeListVertex.GetProperty("listID")
 		if err != nil {
 			return nil, errors.Wrapf(err, `Error reading "listID" property on Code List vertex`)
 		}
-		link := &models.CodeListLink{Self: &models.Link{ID: codeListID}}
-		codeListMdl := models.CodeList{codeListID, link}
+
+		codeListMdl := models.CodeList{
+			ID: codeListID,
+		}
 		results.Items = append(results.Items, codeListMdl)
 	}
 	return results, nil
@@ -76,11 +76,7 @@ func (n *NeptuneDB) GetCodeList(ctx context.Context, codeListID string) (
 	}
 
 	return &models.CodeList{
-		Links: &models.CodeListLink{
-			Self: &models.Link{
-				ID: codeListID,
-			},
-		},
+		ID: codeListID,
 	}, nil
 }
 
@@ -103,23 +99,16 @@ func (n *NeptuneDB) GetEditions(ctx context.Context, codeListID string) (*models
 		return nil, driver.ErrNotFound
 	}
 	editions := &models.Editions{
-		Count:      len(codeLists),
-		Offset:     0,
-		Limit:      len(codeLists),
-		TotalCount: len(codeLists),
-		Items:      []models.Edition{},
+		Items: []models.Edition{},
 	}
 	for _, codeList := range codeLists {
 		editionString, err := codeList.GetProperty("edition")
 		if err != nil {
 			return nil, errors.Wrapf(err, `Error reading "edition" property on Code List vertex`)
 		}
+
 		edition := models.Edition{
-			Links: &models.EditionLinks{
-				Self: &models.Link{
-					ID: editionString,
-				},
-			},
+			Edition: editionString,
 		}
 		editions.Items = append(editions.Items, edition)
 	}
@@ -152,7 +141,7 @@ func (n *NeptuneDB) GetEdition(ctx context.Context, codeListID, edition string) 
 	}
 	// What we return (having performed the checks above), is actually hard-coded, as a function of the
 	// method parameters.
-	return &models.Edition{Links: &models.EditionLinks{Self: &models.Link{ID: edition}}}, nil
+	return &models.Edition{Edition: edition}, nil
 }
 
 /*
@@ -174,11 +163,7 @@ func (n *NeptuneDB) GetCodes(ctx context.Context, codeListID, edition string) (*
 		return nil, driver.ErrNotFound
 	}
 	codeResults := &models.CodeResults{
-		Count:      len(codeResponses),
-		Offset:     0,
-		Limit:      len(codeResponses),
-		TotalCount: len(codeResponses),
-		Items:      []models.Code{},
+		Items: []models.Code{},
 	}
 
 	for _, codeResponse := range codeResponses {
@@ -186,12 +171,9 @@ func (n *NeptuneDB) GetCodes(ctx context.Context, codeListID, edition string) (*
 		if err != nil {
 			return nil, errors.Wrapf(err, `Error reading "value" property on Code vertex`)
 		}
+		// Missing ID and label
 		codeItem := models.Code{
-			Links: &models.CodeLinks{
-				Self: &models.Link{
-					ID: codeValue,
-				},
-			},
+			Code: codeValue,
 		}
 		codeResults.Items = append(codeResults.Items, codeItem)
 	}
@@ -219,11 +201,9 @@ func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, cod
 	if nFound > 1 {
 		return nil, driver.ErrMultipleFound
 	}
+
+	// Missing ID and Label fields that exist in Neo4j response
 	return &models.Code{
-		Links: &models.CodeLinks{
-			Self: &models.Link{
-				ID: code,
-			},
-		},
+		Code: code,
 	}, nil
 }
