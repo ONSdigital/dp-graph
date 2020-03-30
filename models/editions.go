@@ -7,6 +7,6 @@ type Editions struct {
 
 // Edition represents a single edition object
 type Edition struct {
-	Edition string
-	Label   string
+	ID    string
+	Label string
 }
