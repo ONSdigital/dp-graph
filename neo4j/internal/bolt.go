@@ -4,9 +4,8 @@
 package internal
 
 import (
-	"sync"
-
 	"github.com/ONSdigital/dp-graph/v2/neo4j/neo4jdriver"
+	"sync"
 )
 
 var (

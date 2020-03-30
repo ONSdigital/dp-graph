@@ -4,10 +4,9 @@
 package internal
 
 import (
-	"sync"
-
 	"github.com/ONSdigital/dp-graph/v2/neo4j/neo4jdriver"
-	golangNeo4jBoltDriver "github.com/ONSdigital/golang-neo4j-bolt-driver"
+	"github.com/ONSdigital/golang-neo4j-bolt-driver"
+	"sync"
 )
 
 var (

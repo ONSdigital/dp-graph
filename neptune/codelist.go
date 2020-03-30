@@ -108,7 +108,7 @@ func (n *NeptuneDB) GetEditions(ctx context.Context, codeListID string) (*models
 		}
 
 		edition := models.Edition{
-			Edition: editionString,
+			ID: editionString,
 		}
 		editions.Items = append(editions.Items, edition)
 	}
@@ -141,7 +141,7 @@ func (n *NeptuneDB) GetEdition(ctx context.Context, codeListID, edition string) 
 	}
 	// What we return (having performed the checks above), is actually hard-coded, as a function of the
 	// method parameters.
-	return &models.Edition{Edition: edition}, nil
+	return &models.Edition{ID: edition}, nil
 }
 
 /*

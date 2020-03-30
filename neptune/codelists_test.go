@@ -219,7 +219,7 @@ func TestGetEdition(t *testing.T) {
 				So(editionResponse, ShouldNotBeNil)
 			})
 			Convey("Then the ID field should be set right", func() {
-				So(editionResponse.Edition, ShouldEqual, "my-test-edition")
+				So(editionResponse.ID, ShouldEqual, "my-test-edition")
 			})
 		})
 	})
@@ -273,7 +273,7 @@ func TestGetEditions(t *testing.T) {
 						So(len(editionsResponse.Items), ShouldEqual, 3)
 						Convey("Then set right", func() {
 							sampleEdition := editionsResponse.Items[1]
-							So(sampleEdition.Edition, ShouldEqual, "edition_1")
+							So(sampleEdition.ID, ShouldEqual, "edition_1")
 						})
 					})
 				})

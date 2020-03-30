@@ -53,7 +53,7 @@ func edition(r *Result) (*models.Edition, error) {
 	}
 
 	return &models.Edition{
-		Edition: edition,
-		Label:   label,
+		ID:    edition,
+		Label: label,
 	}, nil
 }

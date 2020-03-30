@@ -45,16 +45,16 @@ func (m *Mock) GetEditions(ctx context.Context, codeListID string) (*models.Edit
 	return &models.Editions{
 		Items: []models.Edition{
 			{
-				Edition: "edition-1",
-				Label:   "edition-label-1",
+				ID:    "edition-1",
+				Label: "edition-label-1",
 			},
 			{
-				Edition: "edition-2",
-				Label:   "edition-label-2",
+				ID:    "edition-2",
+				Label: "edition-label-2",
 			},
 			{
-				Edition: "edition-3",
-				Label:   "edition-label-3",
+				ID:    "edition-3",
+				Label: "edition-label-3",
 			},
 		},
 	}, nil
@@ -66,8 +66,8 @@ func (m *Mock) GetEdition(ctx context.Context, codeListID, edition string) (*mod
 	}
 
 	return &models.Edition{
-		Edition: edition,
-		Label:   "test-label",
+		ID:    edition,
+		Label: "test-label",
 	}, nil
 }
 
