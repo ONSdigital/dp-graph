@@ -35,9 +35,7 @@ func CodeList(codeList *models.CodeList, id string) ResultMapper {
 			return driver.ErrNotFound
 		}
 
-		codeList = &models.CodeList{
-			ID: id,
-		}
+		codeList.ID = id
 
 		return nil
 	}
