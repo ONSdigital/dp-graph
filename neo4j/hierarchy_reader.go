@@ -11,6 +11,9 @@ import (
 	"github.com/ONSdigital/log.go/log"
 )
 
+// Type check to ensure that Neo4j implements the driver.Hierarchy interface
+var _ driver.Hierarchy = (*Neo4j)(nil)
+
 type neoArgMap map[string]interface{}
 
 // GetHierarchyCodelist obtains the codelist id for this hierarchy (also, check that it exists)

@@ -3,14 +3,17 @@ package neptune
 import (
 	"context"
 	"fmt"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"strings"
 
-	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/dp-graph/v2/neptune/query"
 	gremgo "github.com/ONSdigital/gremgo-neptune"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/pkg/errors"
 )
+
+// Type check to ensure that NeptuneDB implements the driver.Instance interface
+var _ driver.Instance = (*NeptuneDB)(nil)
 
 const codeListNotFoundFmt = "VertexStep(OUT,[usedBy],vertex), HasStep([~label.eq(_code_list_%s)"
 
@@ -89,17 +92,14 @@ func (n *NeptuneDB) CreateInstance(ctx context.Context, instanceID string, csvHe
 }
 
 // AddDimensions list to the specified instance node
-func (n *NeptuneDB) AddDimensions(ctx context.Context, i *models.Instance) error {
-	if err := i.Validate(); err != nil {
-		return err
-	}
+func (n *NeptuneDB) AddDimensions(ctx context.Context, instanceID string, dimensions []interface{}) error {
 
 	data := log.Data{
-		"instance_id": i.InstanceID,
+		"instance_id": instanceID,
 	}
 
-	q := fmt.Sprintf(query.AddInstanceDimensionsPart, i.InstanceID)
-	for _, d := range i.Dimensions {
+	q := fmt.Sprintf(query.AddInstanceDimensionsPart, instanceID)
+	for _, d := range dimensions {
 		q += fmt.Sprintf(query.AddInstanceDimensionsPropertyPart, d.(string))
 	}
 

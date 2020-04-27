@@ -11,6 +11,9 @@ import (
 	"github.com/ONSdigital/log.go/log"
 )
 
+// Type check to ensure that Neo4j implements the driver.CodeList interface
+var _ driver.CodeList = (*Neo4j)(nil)
+
 // GetCodeLists returns a list of code lists
 func (n *Neo4j) GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error) {
 	logData := log.Data{}

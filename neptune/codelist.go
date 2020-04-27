@@ -17,6 +17,9 @@ import (
 	"github.com/ONSdigital/dp-graph/v2/neptune/query"
 )
 
+// Type check to ensure that NeptuneDB implements the driver.CodeList interface
+var _ driver.CodeList = (*NeptuneDB)(nil)
+
 /*
 GetCodeLists provides a list of either all Code Lists, or a list of only those
 having a boolean property with the name <filterBy> which is set to true. E.g.

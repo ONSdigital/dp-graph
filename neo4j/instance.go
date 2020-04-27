@@ -3,6 +3,7 @@ package neo4j
 import (
 	"context"
 	"fmt"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"strconv"
 	"strings"
 
@@ -11,6 +12,9 @@ import (
 	"github.com/ONSdigital/log.go/log"
 	"github.com/pkg/errors"
 )
+
+// Type check to ensure that Neo4j implements the driver.Instance interface
+var _ driver.Instance = (*Neo4j)(nil)
 
 // CreateInstanceConstraint creates a constraint on observations inserted for this instance.
 func (n *Neo4j) CreateInstanceConstraint(ctx context.Context, instanceID string) error {

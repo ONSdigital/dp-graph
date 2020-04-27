@@ -11,6 +11,9 @@ import (
 	"github.com/ONSdigital/log.go/log"
 )
 
+// Type check to ensure that NeptuneDB implements the driver.Hierarchy interface
+var _ driver.Hierarchy = (*NeptuneDB)(nil)
+
 func (n *NeptuneDB) CreateInstanceHierarchyConstraints(ctx context.Context, attempt int, instanceID, dimensionName string) error {
 	return nil
 }

@@ -3,6 +3,7 @@ package neo4j
 import (
 	"context"
 	"fmt"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 
 	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/mapper"
@@ -10,6 +11,9 @@ import (
 	"github.com/ONSdigital/log.go/log"
 	"github.com/pkg/errors"
 )
+
+// Type check to ensure that Neo4j implements the driver.Dimension interface
+var _ driver.Dimension = (*Neo4j)(nil)
 
 // InsertDimension node to neo4j and create a unique constraint on the dimension
 // label & value if one does not already exist, return dimension with new node ID

@@ -2,9 +2,13 @@ package driver
 
 import (
 	"context"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 
 	gremgo "github.com/ONSdigital/gremgo-neptune"
 )
+
+// Type check to ensure that NeptuneDriver implements the driver.Driver interface
+var _ driver.Driver = (*NeptuneDriver)(nil)
 
 type NeptuneDriver struct {
 	Pool NeptunePool // Defined with an interface to support mocking.

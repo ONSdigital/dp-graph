@@ -3,6 +3,7 @@ package neptune
 import (
 	"context"
 	"fmt"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"strings"
 	"time"
 
@@ -13,6 +14,9 @@ import (
 	"github.com/ONSdigital/dp-graph/v2/observation"
 	"github.com/ONSdigital/log.go/log"
 )
+
+// Type check to ensure that NeptuneDB implements the driver.Observation interface
+var _ driver.Observation = (*NeptuneDB)(nil)
 
 // ErrInvalidFilter is returned if the provided filter is nil.
 var ErrInvalidFilter = errors.New("nil filter cannot be processed")

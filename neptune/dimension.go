@@ -3,11 +3,15 @@ package neptune
 import (
 	"context"
 	"fmt"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 
 	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/dp-graph/v2/neptune/query"
 	"github.com/pkg/errors"
 )
+
+// Type check to ensure that NeptuneDB implements the driver.Dimension interface
+var _ driver.Dimension = (*NeptuneDB)(nil)
 
 // InsertDimension node to neptune and create relationships to the instance node.
 // Where nodes and relationships already exist, ensure they are upserted.

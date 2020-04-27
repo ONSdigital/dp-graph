@@ -14,6 +14,9 @@ import (
 //go:generate moq -out ../internal/bolt.go -pkg internal . Result
 //go:generate moq -out ../internal/bolt_closable.go -pkg internal . ClosableDriverPool
 
+// Type check to ensure that NeoDriver implements the driver.Driver interface
+var _ driver.Driver = (*NeoDriver)(nil)
+
 // Result of queries to neo4j - needed for mocking and tests
 type Result bolt.Result
 
