@@ -5,7 +5,7 @@ package observationtest
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-graph/observation"
+	"github.com/ONSdigital/dp-graph/v2/observation"
 	"sync"
 )
 
@@ -14,15 +14,15 @@ var (
 	lockStreamRowReaderMockRead  sync.RWMutex
 )
 
-// Ensure, that StreamRowReaderMock does implement StreamRowReader.
+// Ensure, that StreamRowReaderMock does implement observation.StreamRowReader.
 // If this is not the case, regenerate this file with moq.
 var _ observation.StreamRowReader = &StreamRowReaderMock{}
 
-// StreamRowReaderMock is a mock implementation of StreamRowReader.
+// StreamRowReaderMock is a mock implementation of observation.StreamRowReader.
 //
 //     func TestSomethingThatUsesStreamRowReader(t *testing.T) {
 //
-//         // make and configure a mocked StreamRowReader
+//         // make and configure a mocked observation.StreamRowReader
 //         mockedStreamRowReader := &StreamRowReaderMock{
 //             CloseFunc: func(in1 context.Context) error {
 // 	               panic("mock out the Close method")
@@ -32,7 +32,7 @@ var _ observation.StreamRowReader = &StreamRowReaderMock{}
 //             },
 //         }
 //
-//         // use mockedStreamRowReader in code that requires StreamRowReader
+//         // use mockedStreamRowReader in code that requires observation.StreamRowReader
 //         // and then make assertions.
 //
 //     }

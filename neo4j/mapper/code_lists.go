@@ -3,29 +3,27 @@ package mapper
 import (
 	"strings"
 
-	"github.com/ONSdigital/dp-code-list-api/models"
-	"github.com/ONSdigital/dp-graph/graph/driver"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
+	"github.com/ONSdigital/dp-graph/v2/models"
 )
 
 //CodeLists returns a dpbolt.ResultMapper which converts a dpbolt.Result to models.CodeLists
 func CodeLists(codeLists *models.CodeListResults) ResultMapper {
 	return func(r *Result) error {
-		var label string
+		var codeListID string
 		for _, v := range r.Data[0].([]interface{}) {
-			s := v.(string)
-			if strings.Contains(s, "_code_list_") {
-				label = strings.Replace(s, "_code_list_", "", -1)
+			label := v.(string)
+			if strings.Contains(label, "_code_list_") {
+				// retrieve the codelist id from label
+				codeListID = strings.Replace(label, "_code_list_", "", -1)
 				break
 			}
 		}
 
 		codeLists.Items = append(codeLists.Items, models.CodeList{
-			Links: &models.CodeListLink{
-				Self: &models.Link{
-					ID: label,
-				},
-			},
+			ID: codeListID,
 		})
+
 		return nil
 	}
 }
@@ -37,11 +35,8 @@ func CodeList(codeList *models.CodeList, id string) ResultMapper {
 			return driver.ErrNotFound
 		}
 
-		codeList.Links = &models.CodeListLink{
-			Self: &models.Link{
-				ID: id,
-			},
-		}
+		codeList.ID = id
+
 		return nil
 	}
 }

@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/ONSdigital/dp-graph/neo4j/query"
-	"github.com/ONSdigital/go-ns/log"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/query"
+	"github.com/ONSdigital/log.go/log"
 )
 
 // CreateInstanceHierarchyConstraints ensures constraints are in place so duplicate instance hierarchies are not created
@@ -22,7 +22,7 @@ func (n *Neo4j) CreateInstanceHierarchyConstraints(ctx context.Context, attempt 
 		"query":          q,
 	}
 
-	log.Debug("creating instance hierarchy code constraint", logData)
+	log.Event(ctx, "creating instance hierarchy code constraint", log.INFO, logData)
 
 	if _, err := n.Exec(q, nil); err != nil {
 		if finalErr := n.checkAttempts(err, q, attempt); finalErr != nil {
@@ -51,7 +51,7 @@ func (n *Neo4j) CloneNodes(ctx context.Context, attempt int, instanceID, codeLis
 		"query":          q,
 	}
 
-	log.Debug("cloning nodes from the generic hierarchy", logData)
+	log.Event(ctx, "cloning nodes from the generic hierarchy", log.INFO, logData)
 
 	if _, err := n.Exec(q, map[string]interface{}{"code_list": codeListID}); err != nil {
 		if finalErr := n.checkAttempts(err, q, attempt); finalErr != nil {
@@ -78,7 +78,7 @@ func (n *Neo4j) CountNodes(ctx context.Context, instanceID, dimensionName string
 		"query":          q,
 	}
 
-	log.Debug("counting nodes in the new instance hierarchy", logData)
+	log.Event(ctx, "counting nodes in the new instance hierarchy", log.INFO, logData)
 
 	return n.Count(q)
 }
@@ -102,7 +102,7 @@ func (n *Neo4j) CloneRelationships(ctx context.Context, attempt int, instanceID,
 		"query":          q,
 	}
 
-	log.Debug("cloning relationships from the generic hierarchy", logData)
+	log.Event(ctx, "cloning relationships from the generic hierarchy", log.INFO, logData)
 
 	if _, err := n.Exec(q, nil); err != nil {
 		if finalErr := n.checkAttempts(err, q, attempt); finalErr != nil {
@@ -132,7 +132,7 @@ func (n *Neo4j) SetNumberOfChildren(ctx context.Context, attempt int, instanceID
 		"query":          q,
 	}
 
-	log.Debug("setting number of children property value on the instance hierarchy nodes", logData)
+	log.Event(ctx, "setting number of children property value on the instance hierarchy nodes", log.INFO, logData)
 
 	if _, err := n.Exec(q, nil); err != nil {
 		if finalErr := n.checkAttempts(err, instanceID, attempt); finalErr != nil {
@@ -162,7 +162,7 @@ func (n *Neo4j) SetHasData(ctx context.Context, attempt int, instanceID, dimensi
 		"query":          q,
 	}
 
-	log.Debug("setting has data property on the instance hierarchy", logData)
+	log.Event(ctx, "setting has data property on the instance hierarchy", log.INFO, logData)
 
 	if _, err := n.Exec(q, nil); err != nil {
 		if finalErr := n.checkAttempts(err, q, attempt); finalErr != nil {
@@ -191,7 +191,7 @@ func (n *Neo4j) MarkNodesToRemain(ctx context.Context, attempt int, instanceID, 
 		"query":          q,
 	}
 
-	log.Debug("marking nodes to remain after trimming sparse branches", logData)
+	log.Event(ctx, "marking nodes to remain after trimming sparse branches", log.INFO, logData)
 
 	if _, err := n.Exec(q, nil); err != nil {
 		if finalErr := n.checkAttempts(err, q, attempt); finalErr != nil {
@@ -218,7 +218,7 @@ func (n *Neo4j) RemoveNodesNotMarkedToRemain(ctx context.Context, attempt int, i
 		"query":          q,
 	}
 
-	log.Debug("removing nodes not marked to remain after trimming sparse branches", logData)
+	log.Event(ctx, "removing nodes not marked to remain after trimming sparse branches", log.INFO, logData)
 
 	if _, err := n.Exec(q, nil); err != nil {
 		if finalErr := n.checkAttempts(err, q, attempt); finalErr != nil {
@@ -244,7 +244,7 @@ func (n *Neo4j) RemoveRemainMarker(ctx context.Context, attempt int, instanceID,
 		"query":          q,
 	}
 
-	log.Debug("removing the remain property from the nodes that remain", logData)
+	log.Event(ctx, "removing the remain property from the nodes that remain", log.INFO, logData)
 
 	if _, err := n.Exec(q, nil); err != nil {
 		if finalErr := n.checkAttempts(err, q, attempt); finalErr != nil {

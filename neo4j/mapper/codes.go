@@ -3,8 +3,8 @@ package mapper
 import (
 	"strconv"
 
-	"github.com/ONSdigital/dp-code-list-api/models"
-	"github.com/ONSdigital/dp-graph/graph/driver"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
+	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/graph"
 )
 
@@ -66,10 +66,5 @@ func code(r *Result) (*models.Code, error) {
 		ID:    strconv.FormatInt(id, 10),
 		Code:  codeVal,
 		Label: codeLabel,
-		Links: &models.CodeLinks{
-			Self: &models.Link{
-				ID: codeVal,
-			},
-		},
 	}, nil
 }

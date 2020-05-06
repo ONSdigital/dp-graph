@@ -3,6 +3,8 @@ package mock
 import (
 	"context"
 	"errors"
+
+	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
 )
 
 type Mock struct {
@@ -17,6 +19,10 @@ func (m *Mock) Close(ctx context.Context) error {
 
 func (m *Mock) Healthcheck() (string, error) {
 	return "mock", nil
+}
+
+func (m *Mock) Checker(ctx context.Context, check *health.CheckState) error {
+	return nil
 }
 
 func (m *Mock) checkForErrors() error {

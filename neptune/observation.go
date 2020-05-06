@@ -3,16 +3,20 @@ package neptune
 import (
 	"context"
 	"fmt"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"strings"
 	"time"
 
 	"github.com/pkg/errors"
 
-	"github.com/ONSdigital/dp-graph/neptune/query"
-	"github.com/ONSdigital/dp-graph/observation"
-	"github.com/ONSdigital/dp-observation-importer/models"
-	"github.com/ONSdigital/go-ns/log"
+	"github.com/ONSdigital/dp-graph/v2/models"
+	"github.com/ONSdigital/dp-graph/v2/neptune/query"
+	"github.com/ONSdigital/dp-graph/v2/observation"
+	"github.com/ONSdigital/log.go/log"
 )
+
+// Type check to ensure that NeptuneDB implements the driver.Observation interface
+var _ driver.Observation = (*NeptuneDB)(nil)
 
 // ErrInvalidFilter is returned if the provided filter is nil.
 var ErrInvalidFilter = errors.New("nil filter cannot be processed")
@@ -22,14 +26,17 @@ var ErrInvalidFilter = errors.New("nil filter cannot be processed")
 var batchCount = 0
 var totalTime time.Time
 
-func (n *NeptuneDB) StreamCSVRows(ctx context.Context, filter *observation.Filter, limit *int) (observation.StreamRowReader, error) {
+// StreamCSVRows returns a reader allowing individual CSV rows to be read.
+// Rows returned can be limited, to stop this pass in nil. If filter.DimensionFilters
+// is nil, empty or contains only empty values then a StreamRowReader for the entire dataset will be returned.
+func (n *NeptuneDB) StreamCSVRows(ctx context.Context, instanceID, filterID string, filter *observation.DimensionFilters, limit *int) (observation.StreamRowReader, error) {
 	if filter == nil {
 		return nil, ErrInvalidFilter
 	}
 
-	q := fmt.Sprintf(query.GetInstanceHeaderPart, filter.InstanceID)
+	q := fmt.Sprintf(query.GetInstanceHeaderPart, instanceID)
 
-	q += buildObservationsQuery(filter)
+	q += buildObservationsQuery(instanceID, filter)
 	q += query.GetObservationSelectRowPart
 
 	if limit != nil {
@@ -39,15 +46,15 @@ func (n *NeptuneDB) StreamCSVRows(ctx context.Context, filter *observation.Filte
 	return n.Pool.OpenStreamCursor(ctx, q, nil, nil)
 }
 
-func buildObservationsQuery(f *observation.Filter) string {
+func buildObservationsQuery(instanceID string, f *observation.DimensionFilters) string {
 	if f.IsEmpty() {
-		return fmt.Sprintf(query.GetAllObservationsPart, f.InstanceID)
+		return fmt.Sprintf(query.GetAllObservationsPart, instanceID)
 	}
 
-	q := fmt.Sprintf(query.GetObservationsPart, f.InstanceID)
+	q := fmt.Sprintf(query.GetObservationsPart, instanceID)
 	var selectOpts []string
 
-	for _, dim := range f.DimensionFilters {
+	for _, dim := range f.Dimensions {
 		if len(dim.Options) == 0 {
 			continue
 		}
@@ -56,7 +63,7 @@ func buildObservationsQuery(f *observation.Filter) string {
 			dim.Options[i] = fmt.Sprintf("'%s'", opt)
 		}
 
-		selectOpts = append(selectOpts, fmt.Sprintf(query.GetObservationDimensionPart, f.InstanceID, dim.Name, strings.Join(dim.Options, ",")))
+		selectOpts = append(selectOpts, fmt.Sprintf(query.GetObservationDimensionPart, instanceID, dim.Name, strings.Join(dim.Options, ",")))
 	}
 
 	//comma separate dimension option selections and close match statement
@@ -66,9 +73,11 @@ func buildObservationsQuery(f *observation.Filter) string {
 	return q
 }
 
+// InsertObservationBatch creates a batch query based on a provided list of
+// observations and attempts to insert them by bulk to the database
 func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, instanceID string, observations []*models.Observation, dimensionNodeIDs map[string]string) error {
 	if len(observations) == 0 {
-		log.Info("no observations in batch", log.Data{"instance_ID": instanceID})
+		log.Event(ctx, "no observations in batch", log.INFO, log.Data{"instance_ID": instanceID})
 		return nil
 	}
 
@@ -78,7 +87,7 @@ func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, ins
 	if totalTime.IsZero() {
 		totalTime = batchStart
 	} else {
-		log.Info("opening batch", log.Data{"size": len(observations), "batchID": bID})
+		log.Event(ctx, "opening batch", log.INFO, log.Data{"size": len(observations), "batchID": bID})
 	}
 
 	var create string
@@ -108,7 +117,7 @@ func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, ins
 		return err
 	}
 
-	log.Info("batch complete", log.Data{"batchID": bID, "elapsed": time.Since(totalTime), "batchTime": time.Since(batchStart)})
+	log.Event(ctx, "batch complete", log.INFO, log.Data{"batchID": bID, "elapsed": time.Since(totalTime), "batchTime": time.Since(batchStart)})
 	return nil
 }
 

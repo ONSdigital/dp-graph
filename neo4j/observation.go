@@ -6,50 +6,50 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ONSdigital/dp-graph/observation"
-	"github.com/ONSdigital/dp-observation-importer/models"
-	"github.com/ONSdigital/go-ns/log"
+	"github.com/ONSdigital/dp-graph/v2/models"
+	"github.com/ONSdigital/dp-graph/v2/observation"
+	"github.com/ONSdigital/log.go/log"
 	"github.com/pkg/errors"
 )
 
 // StreamCSVRows returns a reader allowing individual CSV rows to be read.
 // Rows returned can be limited, to stop this pass in nil. If filter.DimensionFilters
 // is nil, empty or contains only empty values then a StreamRowReader for the entire dataset will be returned.
-func (n *Neo4j) StreamCSVRows(ctx context.Context, filter *observation.Filter, limit *int) (observation.StreamRowReader, error) {
+func (n *Neo4j) StreamCSVRows(ctx context.Context, instanceID, filterID string, filters *observation.DimensionFilters, limit *int) (observation.StreamRowReader, error) {
 
-	headerRowQuery := fmt.Sprintf("MATCH (i:`_%s_Instance`) RETURN i.header as row", filter.InstanceID)
+	headerRowQuery := fmt.Sprintf("MATCH (i:`_%s_Instance`) RETURN i.header as row", instanceID)
 
-	unionQuery := headerRowQuery + " UNION ALL " + createObservationQuery(filter)
+	unionQuery := headerRowQuery + " UNION ALL " + createObservationQuery(ctx, instanceID, filterID, filters)
 
 	if limit != nil {
 		limitAsString := strconv.Itoa(*limit)
 		unionQuery += " LIMIT " + limitAsString
 	}
 
-	log.Info("neo4j query", log.Data{
-		"filterID":   filter.FilterID,
-		"instanceID": filter.InstanceID,
+	log.Event(ctx, "neo4j query", log.INFO, log.Data{
+		"filterID":   filterID,
+		"instanceID": instanceID,
 		"query":      unionQuery,
 	})
 
 	return n.StreamRows(unionQuery)
 }
 
-func createObservationQuery(filter *observation.Filter) string {
-	if filter.IsEmpty() {
+func createObservationQuery(ctx context.Context, instanceID, filterID string, filters *observation.DimensionFilters) string {
+	if filters.IsEmpty() {
 		// if no dimension filter are specified than match all observations
-		log.Info("no dimension filters supplied, generating entire dataset query", log.Data{
-			"filterID":   filter.FilterID,
-			"instanceID": filter.InstanceID,
+		log.Event(ctx, "no dimension filters supplied, generating entire dataset query", log.INFO, log.Data{
+			"filterID":   filterID,
+			"instanceID": instanceID,
 		})
-		return fmt.Sprintf("MATCH(o: `_%s_observation`) return o.value as row", filter.InstanceID)
+		return fmt.Sprintf("MATCH(o: `_%s_observation`) return o.value as row", instanceID)
 	}
 
 	matchDimensions := "MATCH "
 	where := " WHERE "
 
 	count := 0
-	for _, dimension := range filter.DimensionFilters {
+	for _, dimension := range filters.Dimensions {
 		// If the dimension options is empty then don't bother specifying in the query as this will exclude all matches.
 		if len(dimension.Options) > 0 {
 			if count > 0 {
@@ -57,7 +57,7 @@ func createObservationQuery(filter *observation.Filter) string {
 				where += " AND "
 			}
 
-			matchDimensions += fmt.Sprintf("(o)-[:isValueOf]->(`%s`:`_%s_%s`)", dimension.Name, filter.InstanceID, dimension.Name)
+			matchDimensions += fmt.Sprintf("(o)-[:isValueOf]->(`%s`:`_%s_%s`)", dimension.Name, instanceID, dimension.Name)
 			where += createOptionList(dimension.Name, dimension.Options)
 			count++
 		}
@@ -67,13 +67,13 @@ func createObservationQuery(filter *observation.Filter) string {
 }
 
 func createOptionList(name string, opts []string) string {
-	var q []string
+	q := make([]string, len(opts))
 
-	for _, o := range opts {
-		q = append(q, fmt.Sprintf("`%s`.value='%s'", name, o))
+	for idx, o := range opts {
+		q[idx] = fmt.Sprintf("'%s'", o)
 	}
 
-	return fmt.Sprintf("(%s)", strings.Join(q, " OR "))
+	return fmt.Sprintf("`%s`.value IN [%s]", name, strings.Join(q, ","))
 }
 
 // InsertObservationBatch creates a batch query based on a provided list of
@@ -95,7 +95,7 @@ func (n *Neo4j) InsertObservationBatch(ctx context.Context, attempt int, instanc
 			return errors.Wrap(err, "observation batch save failed")
 		}
 
-		log.Info("got an error when saving observations, attempting to retry", log.Data{
+		log.Event(ctx, "got an error when saving observations, attempting to retry", log.WARN, log.Data{
 			"instance_id":  instanceID,
 			"retry_number": attempt,
 			"max_attempts": n.maxRetries,
@@ -109,7 +109,7 @@ func (n *Neo4j) InsertObservationBatch(ctx context.Context, attempt int, instanc
 		return errors.Wrap(err, "error attempting to get number of rows affected in query result")
 	}
 
-	log.Info("successfully saved observation batch", log.Data{"rows_affected": rowsAffected, "instance_id": instanceID})
+	log.Event(ctx, "successfully saved observation batch", log.INFO, log.Data{"rows_affected": rowsAffected, "instance_id": instanceID})
 	return nil
 }
 

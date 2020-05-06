@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/graph"
 	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"
@@ -49,11 +49,6 @@ func TestCodeResultExtractor_Success(t *testing.T) {
 					ID:    strconv.FormatInt(testNodeIdentity, 10),
 					Code:  testNodeValue,
 					Label: testRelationshipLabel,
-					Links: &models.CodeLinks{
-						Self: &models.Link{
-							ID: testNodeValue,
-						},
-					},
 				}
 
 				So(actual, ShouldResemble, expected)
@@ -87,7 +82,6 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 				So(actual.ID, ShouldBeBlank)
 				So(actual.Code, ShouldBeBlank)
 				So(actual.Label, ShouldBeBlank)
-				So(actual.Links, ShouldBeNil)
 			})
 		})
 	})
@@ -110,7 +104,6 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 				So(actual.ID, ShouldBeBlank)
 				So(actual.Code, ShouldBeBlank)
 				So(actual.Label, ShouldBeBlank)
-				So(actual.Links, ShouldBeNil)
 			})
 		})
 	})
@@ -133,7 +126,6 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 				So(actual.ID, ShouldBeBlank)
 				So(actual.Code, ShouldBeBlank)
 				So(actual.Label, ShouldBeBlank)
-				So(actual.Links, ShouldBeNil)
 			})
 		})
 	})
@@ -156,7 +148,6 @@ func TestCodeResultExtractor_BadTypes(t *testing.T) {
 				So(actual.ID, ShouldBeBlank)
 				So(actual.Code, ShouldBeBlank)
 				So(actual.Label, ShouldBeBlank)
-				So(actual.Links, ShouldBeNil)
 			})
 		})
 	})

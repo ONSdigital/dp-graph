@@ -6,9 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ONSdigital/dp-dimension-importer/model"
-	"github.com/ONSdigital/dp-graph/neo4j/internal"
-	"github.com/ONSdigital/dp-graph/neo4j/query"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/internal"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/query"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"
@@ -187,13 +186,8 @@ func Test_AddDimensions(t *testing.T) {
 
 		db := &Neo4j{neo4jMock, 5, 30}
 
-		instance := &model.Instance{
-			InstanceID: instanceID,
-			Dimensions: dimensionNames,
-		}
-
 		Convey("When AddDimensions is called", func() {
-			err := db.AddDimensions(context.Background(), instance)
+			err := db.AddDimensions(context.Background(), instanceID, dimensionNames)
 
 			Convey("Then the expected error is returned", func() {
 				So(err, ShouldNotBeNil)
@@ -224,13 +218,8 @@ func Test_AddDimensions(t *testing.T) {
 
 		db := &Neo4j{neo4jMock, 5, 30}
 
-		instance := &model.Instance{
-			InstanceID: instanceID,
-			Dimensions: dimensionNames,
-		}
-
 		Convey("When AddDimensions is called", func() {
-			err := db.AddDimensions(context.Background(), instance)
+			err := db.AddDimensions(context.Background(), instanceID, dimensionNames)
 
 			Convey("Then no error is returned", func() {
 				So(err, ShouldEqual, nil)
@@ -252,10 +241,7 @@ func Test_AddDimensions(t *testing.T) {
 
 func Test_CreateInstance(t *testing.T) {
 	Convey("Given a Neo4j.Exec returns an error", t, func() {
-		instance := &model.Instance{
-			InstanceID: instanceID,
-			CSVHeader:  []string{"the", "csv", "header"},
-		}
+		csvHeaders := []string{"the", "csv", "header"}
 
 		neo4jMock := &internal.Neo4jDriverMock{
 			ExecFunc: func(query string, params map[string]interface{}) (bolt.Result, error) {
@@ -266,7 +252,7 @@ func Test_CreateInstance(t *testing.T) {
 		db := Neo4j{neo4jMock, 5, 30}
 
 		Convey("When CreateInstance is invoked", func() {
-			err := db.CreateInstance(context.Background(), instance)
+			err := db.CreateInstance(context.Background(), instanceID, csvHeaders)
 
 			Convey("Then the expected error is returned", func() {
 				So(err.Error(), ShouldEqual, errors.Wrap(errorMock, "neo4j.Exec returned an error").Error())
@@ -276,7 +262,7 @@ func Test_CreateInstance(t *testing.T) {
 				calls := neo4jMock.ExecCalls()
 				So(len(calls), ShouldEqual, 1)
 
-				expectedQuery := fmt.Sprintf(query.CreateInstance, instanceID, strings.Join(instance.CSVHeader, ","))
+				expectedQuery := fmt.Sprintf(query.CreateInstance, instanceID, strings.Join(csvHeaders, ","))
 				So(calls[0].Query, ShouldEqual, expectedQuery)
 				So(calls[0].Params, ShouldEqual, nil)
 			})
@@ -284,10 +270,7 @@ func Test_CreateInstance(t *testing.T) {
 	})
 
 	Convey("Given a Neo4j.Exec returns no error", t, func() {
-		instance := &model.Instance{
-			InstanceID: instanceID,
-			CSVHeader:  []string{"the", "csv", "header"},
-		}
+		csvHeaders := []string{"the", "csv", "header"}
 
 		neo4jMock := &internal.Neo4jDriverMock{
 			ExecFunc: func(query string, params map[string]interface{}) (bolt.Result, error) {
@@ -298,7 +281,7 @@ func Test_CreateInstance(t *testing.T) {
 		db := Neo4j{neo4jMock, 5, 30}
 
 		Convey("When CreateInstance is invoked", func() {
-			err := db.CreateInstance(context.Background(), instance)
+			err := db.CreateInstance(context.Background(), instanceID, csvHeaders)
 
 			Convey("Then no error is returned", func() {
 				So(err, ShouldResemble, nil)
@@ -308,7 +291,7 @@ func Test_CreateInstance(t *testing.T) {
 				calls := neo4jMock.ExecCalls()
 				So(len(calls), ShouldEqual, 1)
 
-				expectedQuery := fmt.Sprintf(query.CreateInstance, instanceID, strings.Join(instance.CSVHeader, ","))
+				expectedQuery := fmt.Sprintf(query.CreateInstance, instanceID, strings.Join(csvHeaders, ","))
 				So(calls[0].Query, ShouldEqual, expectedQuery)
 				So(calls[0].Params, ShouldEqual, nil)
 			})
@@ -319,12 +302,6 @@ func Test_CreateInstance(t *testing.T) {
 func Test_CreateInstanceConstraint_StatementError(t *testing.T) {
 
 	Convey("Given mock Neo4j client that returns an error", t, func() {
-
-		instance := &model.Instance{
-			InstanceID: instanceID,
-			CSVHeader:  []string{"the", "csv", "header"},
-		}
-
 		neo4jMock := &internal.Neo4jDriverMock{
 			ExecFunc: func(query string, params map[string]interface{}) (bolt.Result, error) {
 				return nil, errorMock
@@ -335,7 +312,7 @@ func Test_CreateInstanceConstraint_StatementError(t *testing.T) {
 
 		Convey("When CreateInstanceConstraint is invoked", func() {
 
-			err := db.CreateInstanceConstraint(context.Background(), instance)
+			err := db.CreateInstanceConstraint(context.Background(), instanceID)
 
 			Convey("Then the expected error is returned", func() {
 				So(err.Error(), ShouldEqual, errors.Wrap(errorMock, "neo4j.Exec returned an error when creating observation constraint").Error())
@@ -356,12 +333,6 @@ func Test_CreateInstanceConstraint_StatementError(t *testing.T) {
 func Test_CreateInstanceConstraint(t *testing.T) {
 
 	Convey("Given mock Neo4j client that returns no error", t, func() {
-
-		instance := &model.Instance{
-			InstanceID: instanceID,
-			CSVHeader:  []string{"the", "csv", "header"},
-		}
-
 		neo4jMock := &internal.Neo4jDriverMock{
 			ExecFunc: func(query string, params map[string]interface{}) (bolt.Result, error) {
 				return nil, nil
@@ -372,7 +343,7 @@ func Test_CreateInstanceConstraint(t *testing.T) {
 
 		Convey("When CreateInstanceConstraint is invoked", func() {
 
-			err := db.CreateInstanceConstraint(context.Background(), instance)
+			err := db.CreateInstanceConstraint(context.Background(), instanceID)
 
 			Convey("Then no error is returned", func() {
 				So(err, ShouldEqual, nil)
@@ -394,9 +365,6 @@ func Test_CreateCodeRelationship(t *testing.T) {
 
 	codeListID := "432"
 	code := "123"
-	instance := &model.Instance{
-		InstanceID: instanceID,
-	}
 
 	Convey("Given an empty code", t, func() {
 
@@ -406,7 +374,7 @@ func Test_CreateCodeRelationship(t *testing.T) {
 		db := Neo4j{neo4jMock, 5, 30}
 
 		Convey("When CreateCodeRelationship is invoked", func() {
-			err := db.CreateCodeRelationship(context.Background(), instance, codeListID, code)
+			err := db.CreateCodeRelationship(context.Background(), instanceID, codeListID, code)
 
 			Convey("Then the expected error is returned", func() {
 				So(err.Error(), ShouldEqual, errors.New("code is required but was empty").Error())
@@ -429,7 +397,7 @@ func Test_CreateCodeRelationship(t *testing.T) {
 		db := Neo4j{neo4jMock, 5, 30}
 
 		Convey("When CreateCodeRelationship is invoked", func() {
-			err := db.CreateCodeRelationship(context.Background(), instance, codeListID, code)
+			err := db.CreateCodeRelationship(context.Background(), instanceID, codeListID, code)
 
 			Convey("Then the expected error is returned", func() {
 				So(err.Error(), ShouldEqual, errors.Wrap(errorMock, "neo4j.Exec returned an error").Error())
@@ -439,7 +407,7 @@ func Test_CreateCodeRelationship(t *testing.T) {
 				calls := neo4jMock.ExecCalls()
 				So(len(calls), ShouldEqual, 1)
 
-				expectedQuery := fmt.Sprintf(query.CreateInstanceToCodeRelationship, instance.InstanceID, codeListID)
+				expectedQuery := fmt.Sprintf(query.CreateInstanceToCodeRelationship, instanceID, codeListID)
 				So(calls[0].Query, ShouldEqual, expectedQuery)
 				So(calls[0].Params, ShouldResemble, map[string]interface{}{
 					"code": code,
@@ -465,7 +433,7 @@ func Test_CreateCodeRelationship(t *testing.T) {
 		db := Neo4j{neo4jMock, 5, 30}
 
 		Convey("When CreateCodeRelationship is invoked", func() {
-			err := db.CreateCodeRelationship(context.Background(), instance, codeListID, code)
+			err := db.CreateCodeRelationship(context.Background(), instanceID, codeListID, code)
 
 			Convey("Then the expected error is returned", func() {
 				So(err.Error(), ShouldEqual, errors.Wrap(errorMock, "result.RowsAffected() returned an error").Error())
@@ -475,7 +443,7 @@ func Test_CreateCodeRelationship(t *testing.T) {
 				calls := neo4jMock.ExecCalls()
 				So(len(calls), ShouldEqual, 1)
 
-				expectedQuery := fmt.Sprintf(query.CreateInstanceToCodeRelationship, instance.InstanceID, codeListID)
+				expectedQuery := fmt.Sprintf(query.CreateInstanceToCodeRelationship, instanceID, codeListID)
 				So(calls[0].Query, ShouldEqual, expectedQuery)
 				So(calls[0].Params, ShouldResemble, map[string]interface{}{
 					"code": code,
@@ -501,7 +469,7 @@ func Test_CreateCodeRelationship(t *testing.T) {
 		db := Neo4j{neo4jMock, 5, 30}
 
 		Convey("When CreateCodeRelationship is invoked", func() {
-			err := db.CreateCodeRelationship(context.Background(), instance, codeListID, code)
+			err := db.CreateCodeRelationship(context.Background(), instanceID, codeListID, code)
 
 			Convey("Then the expected error is returned", func() {
 				So(err.Error(), ShouldEqual, "unexpected number of rows affected. expected 1 but was 0")
@@ -511,7 +479,7 @@ func Test_CreateCodeRelationship(t *testing.T) {
 				calls := neo4jMock.ExecCalls()
 				So(len(calls), ShouldEqual, 1)
 
-				expectedQuery := fmt.Sprintf(query.CreateInstanceToCodeRelationship, instance.InstanceID, codeListID)
+				expectedQuery := fmt.Sprintf(query.CreateInstanceToCodeRelationship, instanceID, codeListID)
 				So(calls[0].Query, ShouldEqual, expectedQuery)
 				So(calls[0].Params, ShouldResemble, map[string]interface{}{
 					"code": code,
@@ -536,7 +504,7 @@ func Test_CreateCodeRelationship(t *testing.T) {
 		db := Neo4j{neo4jMock, 5, 30}
 
 		Convey("When CreateCodeRelationship is invoked", func() {
-			err := db.CreateCodeRelationship(context.Background(), instance, codeListID, code)
+			err := db.CreateCodeRelationship(context.Background(), instanceID, codeListID, code)
 
 			Convey("Then no error is returned", func() {
 				So(err, ShouldResemble, nil)
@@ -546,7 +514,7 @@ func Test_CreateCodeRelationship(t *testing.T) {
 				calls := neo4jMock.ExecCalls()
 				So(len(calls), ShouldEqual, 1)
 
-				expectedQuery := fmt.Sprintf(query.CreateInstanceToCodeRelationship, instance.InstanceID, codeListID)
+				expectedQuery := fmt.Sprintf(query.CreateInstanceToCodeRelationship, instanceID, codeListID)
 				So(calls[0].Query, ShouldEqual, expectedQuery)
 				So(calls[0].Params, ShouldResemble, map[string]interface{}{
 					"code": code,
@@ -567,7 +535,7 @@ func Test_InstanceExists(t *testing.T) {
 		db := Neo4j{neoMock, 5, 30}
 
 		Convey("When InstanceExists is invoked for an existing instance", func() {
-			exists, err := db.InstanceExists(context.Background(), instance)
+			exists, err := db.InstanceExists(context.Background(), instanceID)
 
 			Convey("Then reposity returns the expected result", func() {
 				So(exists, ShouldBeTrue)
@@ -577,7 +545,7 @@ func Test_InstanceExists(t *testing.T) {
 			Convey("And neo4j.Count is called 1 time with the expected parameters", func() {
 				So(len(neoMock.CountCalls()), ShouldEqual, 1)
 
-				countStmt := fmt.Sprintf(query.CountInstance, instance.InstanceID)
+				countStmt := fmt.Sprintf(query.CountInstance, instanceID)
 				So(neoMock.CountCalls()[0].Query, ShouldEqual, countStmt)
 			})
 
@@ -597,7 +565,7 @@ func Test_InstanceExists(t *testing.T) {
 		db := Neo4j{neoMock, 5, 30}
 
 		Convey("When InstanceExists is invoked for an existing instance", func() {
-			exists, err := db.InstanceExists(context.Background(), instance)
+			exists, err := db.InstanceExists(context.Background(), instanceID)
 
 			Convey("Then the error is propegated back to the caller", func() {
 				So(exists, ShouldBeFalse)
@@ -607,7 +575,7 @@ func Test_InstanceExists(t *testing.T) {
 			Convey("And neo4j.Count is called 1 time with the expected parameters", func() {
 				So(len(neoMock.CountCalls()), ShouldEqual, 1)
 
-				countStmt := fmt.Sprintf(query.CountInstance, instance.InstanceID)
+				countStmt := fmt.Sprintf(query.CountInstance, instanceID)
 				So(neoMock.CountCalls()[0].Query, ShouldEqual, countStmt)
 			})
 

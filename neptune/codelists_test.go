@@ -6,8 +6,8 @@ import (
 
 	. "github.com/smartystreets/goconvey/convey"
 
-	"github.com/ONSdigital/dp-graph/graph/driver"
-	"github.com/ONSdigital/dp-graph/neptune/internal"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
+	"github.com/ONSdigital/dp-graph/v2/neptune/internal"
 )
 
 func TestGetCodeLists(t *testing.T) {
@@ -34,8 +34,6 @@ func TestGetCodeLists(t *testing.T) {
 				So(len(codeLists.Items), ShouldEqual, 3)
 				codeList := codeLists.Items[2]
 				So(codeList.ID, ShouldEqual, "listID_2")
-				links := codeList.Links
-				So(links.Self.ID, ShouldEqual, "listID_2")
 			})
 		})
 
@@ -221,7 +219,7 @@ func TestGetEdition(t *testing.T) {
 				So(editionResponse, ShouldNotBeNil)
 			})
 			Convey("Then the ID field should be set right", func() {
-				So(editionResponse.Links.Self.ID, ShouldEqual, "my-test-edition")
+				So(editionResponse.ID, ShouldEqual, "my-test-edition")
 			})
 		})
 	})
@@ -275,7 +273,7 @@ func TestGetEditions(t *testing.T) {
 						So(len(editionsResponse.Items), ShouldEqual, 3)
 						Convey("Then set right", func() {
 							sampleEdition := editionsResponse.Items[1]
-							So(sampleEdition.Links.Self.ID, ShouldEqual, "edition_1")
+							So(sampleEdition.ID, ShouldEqual, "edition_1")
 						})
 					})
 				})
@@ -351,7 +349,7 @@ func TestGetCodes(t *testing.T) {
 						So(len(codesResponse.Items), ShouldEqual, 3)
 						Convey("Then set right", func() {
 							sampleCode := codesResponse.Items[1]
-							So(sampleCode.Links.Self.ID, ShouldEqual, "code_1")
+							So(sampleCode.Code, ShouldEqual, "code_1")
 						})
 					})
 				})

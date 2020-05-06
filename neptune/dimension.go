@@ -3,36 +3,42 @@ package neptune
 import (
 	"context"
 	"fmt"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 
-	"github.com/ONSdigital/dp-dimension-importer/model"
-	"github.com/ONSdigital/dp-graph/neptune/query"
+	"github.com/ONSdigital/dp-graph/v2/models"
+	"github.com/ONSdigital/dp-graph/v2/neptune/query"
+	"github.com/pkg/errors"
 )
+
+// Type check to ensure that NeptuneDB implements the driver.Dimension interface
+var _ driver.Dimension = (*NeptuneDB)(nil)
 
 // InsertDimension node to neptune and create relationships to the instance node.
 // Where nodes and relationships already exist, ensure they are upserted.
-func (n *NeptuneDB) InsertDimension(ctx context.Context, uniqueDimensions map[string]string, i *model.Instance, d *model.Dimension) (*model.Dimension, error) {
-	if err := i.Validate(); err != nil {
-		return nil, err
+func (n *NeptuneDB) InsertDimension(ctx context.Context, uniqueDimensions map[string]string, instanceID string, d *models.Dimension) (*models.Dimension, error) {
+	if len(instanceID) == 0 {
+		return nil, errors.New("instance id is required but was empty")
 	}
 	if err := d.Validate(); err != nil {
 		return nil, err
 	}
 
-	createDimension := fmt.Sprintf(query.DropDimensionRelationships, i.InstanceID, d.DimensionID, d.Option)
-	createDimension += fmt.Sprintf(query.DropDimension, i.InstanceID, d.DimensionID, d.Option)
-	createDimension += fmt.Sprintf(query.CreateDimensionToInstanceRelationship, i.InstanceID, i.InstanceID, d.DimensionID, d.Option)
+	createDimension := fmt.Sprintf(query.DropDimensionRelationships, instanceID, d.DimensionID, d.Option)
+	createDimension += fmt.Sprintf(query.DropDimension, instanceID, d.DimensionID, d.Option)
+	createDimension += fmt.Sprintf(query.CreateDimensionToInstanceRelationship, instanceID, instanceID, d.DimensionID, d.Option)
 
 	res, err := n.getVertex(createDimension)
+
 	if err != nil {
 		return nil, err
 	}
 
 	d.NodeID = res.GetID()
-	dimensionLabel := fmt.Sprintf("_%s_%s", i.InstanceID, d.DimensionID)
+	dimensionLabel := fmt.Sprintf("_%s_%s", instanceID, d.DimensionID)
 
 	if _, ok := uniqueDimensions[dimensionLabel]; !ok {
 		uniqueDimensions[dimensionLabel] = dimensionLabel
-		i.AddDimension(d)
 	}
+
 	return d, nil
 }

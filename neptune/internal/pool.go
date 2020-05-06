@@ -5,7 +5,7 @@ package internal
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-graph/neptune/driver"
+	"github.com/ONSdigital/dp-graph/v2/neptune/driver"
 	"github.com/ONSdigital/graphson"
 	"github.com/ONSdigital/gremgo-neptune"
 	"sync"
@@ -21,15 +21,15 @@ var (
 	lockNeptunePoolMockOpenStreamCursor sync.RWMutex
 )
 
-// Ensure, that NeptunePoolMock does implement NeptunePool.
+// Ensure, that NeptunePoolMock does implement driver.NeptunePool.
 // If this is not the case, regenerate this file with moq.
 var _ driver.NeptunePool = &NeptunePoolMock{}
 
-// NeptunePoolMock is a mock implementation of NeptunePool.
+// NeptunePoolMock is a mock implementation of driver.NeptunePool.
 //
 //     func TestSomethingThatUsesNeptunePool(t *testing.T) {
 //
-//         // make and configure a mocked NeptunePool
+//         // make and configure a mocked driver.NeptunePool
 //         mockedNeptunePool := &NeptunePoolMock{
 //             CloseFunc: func()  {
 // 	               panic("mock out the Close method")
@@ -54,7 +54,7 @@ var _ driver.NeptunePool = &NeptunePoolMock{}
 //             },
 //         }
 //
-//         // use mockedNeptunePool in code that requires NeptunePool
+//         // use mockedNeptunePool in code that requires driver.NeptunePool
 //         // and then make assertions.
 //
 //     }

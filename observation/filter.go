@@ -6,42 +6,25 @@ var (
 	Unpublished = false
 )
 
-// Filter represents a structure for a filter job
-type Filter struct {
-	FilterID         string             `json:"filter_id,omitempty"`
-	InstanceID       string             `json:"instance_id"`
-	DimensionFilters []*DimensionFilter `json:"dimensions,omitempty"`
-	Published        *bool              `json:"published,omitempty"`
-	Downloads        *Downloads         `json:"downloads,omitempty"`
+// DimensionFilters represents a list of dimension filters
+type DimensionFilters struct {
+	Dimensions []*Dimension
+	Published  *bool
 }
 
-// DimensionFilter represents an object containing a list of dimension values and the dimension name
-type DimensionFilter struct {
-	Name    string   `json:"name,omitempty"`
-	Options []string `json:"options,omitempty"`
-}
-
-// Downloads represent a list of download types
-type Downloads struct {
-	CSV *DownloadItem `json:"csv,omitempty"`
-	XLS *DownloadItem `json:"xls,omitempty"`
-}
-
-// DownloadItem represents an object containing download details
-type DownloadItem struct {
-	HRef    string `json:"href,omitempty"`
-	Private string `json:"private,omitempty"`
-	Public  string `json:"public,omitempty"`
-	Size    string `json:"size,omitempty"`
+// Dimension represents an object containing a list of dimension values and the dimension name
+type Dimension struct {
+	Name    string
+	Options []string
 }
 
 // IsEmpty return true if DimensionFilters is nil, empty or contains only empty values
-func (f Filter) IsEmpty() bool {
-	if len(f.DimensionFilters) == 0 {
+func (d DimensionFilters) IsEmpty() bool {
+	if len(d.Dimensions) == 0 {
 		return true
 	}
 
-	for _, o := range f.DimensionFilters {
+	for _, o := range d.Dimensions {
 		if o.Name != "" && len(o.Options) > 0 {
 			// return at the first non empty option
 			return false

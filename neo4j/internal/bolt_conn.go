@@ -5,7 +5,7 @@ package internal
 
 import (
 	"database/sql/driver"
-	"github.com/ONSdigital/dp-graph/neo4j/neo4jdriver"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/neo4jdriver"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"sync"
 	"time"
@@ -26,15 +26,15 @@ var (
 	lockBoltConnMockSetTimeout      sync.RWMutex
 )
 
-// Ensure, that BoltConnMock does implement BoltConn.
+// Ensure, that BoltConnMock does implement neo4jdriver.BoltConn.
 // If this is not the case, regenerate this file with moq.
 var _ neo4jdriver.BoltConn = &BoltConnMock{}
 
-// BoltConnMock is a mock implementation of BoltConn.
+// BoltConnMock is a mock implementation of neo4jdriver.BoltConn.
 //
 //     func TestSomethingThatUsesBoltConn(t *testing.T) {
 //
-//         // make and configure a mocked BoltConn
+//         // make and configure a mocked neo4jdriver.BoltConn
 //         mockedBoltConn := &BoltConnMock{
 //             BeginFunc: func() (driver.Tx, error) {
 // 	               panic("mock out the Begin method")
@@ -74,7 +74,7 @@ var _ neo4jdriver.BoltConn = &BoltConnMock{}
 //             },
 //         }
 //
-//         // use mockedBoltConn in code that requires BoltConn
+//         // use mockedBoltConn in code that requires neo4jdriver.BoltConn
 //         // and then make assertions.
 //
 //     }

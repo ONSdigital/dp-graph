@@ -1,7 +1,7 @@
 package mapper
 
 import (
-	"github.com/ONSdigital/dp-code-list-api/models"
+	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/graph"
 )
 
@@ -53,12 +53,7 @@ func edition(r *Result) (*models.Edition, error) {
 	}
 
 	return &models.Edition{
-		Edition: edition,
-		Label:   label,
-		Links: &models.EditionLinks{
-			Self: &models.Link{
-				ID: edition,
-			},
-		},
+		ID:    edition,
+		Label: label,
 	}, nil
 }

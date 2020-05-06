@@ -15,8 +15,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/ONSdigital/dp-code-list-api/models"
-	"github.com/ONSdigital/dp-graph/neptune/query"
+	"github.com/ONSdigital/dp-graph/v2/models"
+	"github.com/ONSdigital/dp-graph/v2/neptune/query"
 )
 
 /*
@@ -135,27 +135,23 @@ structure model hierchy required by the GetCodeDatasets API method.
 */
 func buildResponse(did2Dim datasetID2Dim, code string, codeListID string) *models.Datasets {
 	datasets := &models.Datasets{
-		Items:      []models.Dataset{},
-		Count:      len(did2Dim),
-		Limit:      len(did2Dim),
-		TotalCount: len(did2Dim),
+		Items: []models.Dataset{},
 	}
 	for datasetID, dim2E := range did2Dim {
 		for dimensionName, e2v := range dim2E {
-			datasetLinks := &models.DatasetLinks{Self: &models.Link{ID: datasetID}}
 			dataset := models.Dataset{
-				Links:          datasetLinks,
+				ID:             datasetID,
 				DimensionLabel: dimensionName,
 				Editions:       []models.DatasetEdition{},
 			}
+
 			for datasetEdition, version := range e2v {
-				versionStr := fmt.Sprintf("%d", version)
-				edition := models.DatasetEdition{}
-				edition.Links = &models.DatasetEditionLinks{
-					Self:             &models.Link{ID: datasetEdition},
-					LatestVersion:    &models.Link{ID: versionStr},
-					DatasetDimension: &models.Link{ID: codeListID},
+				edition := models.DatasetEdition{
+					ID:            datasetEdition,
+					CodeListID:    codeListID,
+					LatestVersion: version,
 				}
+
 				dataset.Editions = append(dataset.Editions, edition)
 			}
 			datasets.Items = append(datasets.Items, dataset)

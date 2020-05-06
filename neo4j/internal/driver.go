@@ -5,13 +5,15 @@ package internal
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-graph/neo4j/mapper"
-	"github.com/ONSdigital/dp-graph/neo4j/neo4jdriver"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/mapper"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/neo4jdriver"
+	"github.com/ONSdigital/dp-healthcheck/healthcheck"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"sync"
 )
 
 var (
+	lockNeo4jDriverMockChecker        sync.RWMutex
 	lockNeo4jDriverMockClose          sync.RWMutex
 	lockNeo4jDriverMockCount          sync.RWMutex
 	lockNeo4jDriverMockExec           sync.RWMutex
@@ -21,16 +23,19 @@ var (
 	lockNeo4jDriverMockStreamRows     sync.RWMutex
 )
 
-// Ensure, that Neo4jDriverMock does implement Neo4jDriver.
+// Ensure, that Neo4jDriverMock does implement neo4jdriver.Neo4jDriver.
 // If this is not the case, regenerate this file with moq.
 var _ neo4jdriver.Neo4jDriver = &Neo4jDriverMock{}
 
-// Neo4jDriverMock is a mock implementation of Neo4jDriver.
+// Neo4jDriverMock is a mock implementation of neo4jdriver.Neo4jDriver.
 //
 //     func TestSomethingThatUsesNeo4jDriver(t *testing.T) {
 //
-//         // make and configure a mocked Neo4jDriver
+//         // make and configure a mocked neo4jdriver.Neo4jDriver
 //         mockedNeo4jDriver := &Neo4jDriverMock{
+//             CheckerFunc: func(ctx context.Context, state *healthcheck.CheckState) error {
+// 	               panic("mock out the Checker method")
+//             },
 //             CloseFunc: func(ctx context.Context) error {
 // 	               panic("mock out the Close method")
 //             },
@@ -54,11 +59,14 @@ var _ neo4jdriver.Neo4jDriver = &Neo4jDriverMock{}
 //             },
 //         }
 //
-//         // use mockedNeo4jDriver in code that requires Neo4jDriver
+//         // use mockedNeo4jDriver in code that requires neo4jdriver.Neo4jDriver
 //         // and then make assertions.
 //
 //     }
 type Neo4jDriverMock struct {
+	// CheckerFunc mocks the Checker method.
+	CheckerFunc func(ctx context.Context, state *healthcheck.CheckState) error
+
 	// CloseFunc mocks the Close method.
 	CloseFunc func(ctx context.Context) error
 
@@ -82,6 +90,13 @@ type Neo4jDriverMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// Checker holds details about calls to the Checker method.
+		Checker []struct {
+			// Ctx is the ctx argument value.
+			Ctx context.Context
+			// State is the state argument value.
+			State *healthcheck.CheckState
+		}
 		// Close holds details about calls to the Close method.
 		Close []struct {
 			// Ctx is the ctx argument value.
@@ -128,6 +143,41 @@ type Neo4jDriverMock struct {
 			Query string
 		}
 	}
+}
+
+// Checker calls CheckerFunc.
+func (mock *Neo4jDriverMock) Checker(ctx context.Context, state *healthcheck.CheckState) error {
+	if mock.CheckerFunc == nil {
+		panic("Neo4jDriverMock.CheckerFunc: method is nil but Neo4jDriver.Checker was just called")
+	}
+	callInfo := struct {
+		Ctx   context.Context
+		State *healthcheck.CheckState
+	}{
+		Ctx:   ctx,
+		State: state,
+	}
+	lockNeo4jDriverMockChecker.Lock()
+	mock.calls.Checker = append(mock.calls.Checker, callInfo)
+	lockNeo4jDriverMockChecker.Unlock()
+	return mock.CheckerFunc(ctx, state)
+}
+
+// CheckerCalls gets all the calls that were made to Checker.
+// Check the length with:
+//     len(mockedNeo4jDriver.CheckerCalls())
+func (mock *Neo4jDriverMock) CheckerCalls() []struct {
+	Ctx   context.Context
+	State *healthcheck.CheckState
+} {
+	var calls []struct {
+		Ctx   context.Context
+		State *healthcheck.CheckState
+	}
+	lockNeo4jDriverMockChecker.RLock()
+	calls = mock.calls.Checker
+	lockNeo4jDriverMockChecker.RUnlock()
+	return calls
 }
 
 // Close calls CloseFunc.

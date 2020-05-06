@@ -7,21 +7,20 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/ONSdigital/dp-dimension-importer/model"
-	"github.com/ONSdigital/dp-graph/neo4j/internal"
-	"github.com/ONSdigital/dp-graph/neo4j/mapper"
-	"github.com/ONSdigital/dp-graph/neo4j/query"
+	"github.com/ONSdigital/dp-graph/v2/models"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/internal"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/mapper"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/query"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-var instance = &model.Instance{InstanceID: instanceID}
-var dimension = &model.Dimension{
+var dimension = &models.Dimension{
 	DimensionID: "Sex",
 	Option:      "Male",
 }
 
-var expectedDimension = &model.Dimension{
+var expectedDimension = &models.Dimension{
 	DimensionID: "Sex",
 	Option:      "Male",
 	NodeID:      "1234",
@@ -42,7 +41,7 @@ func Test_InsertDimension(t *testing.T) {
 		constraintsCache := map[string]string{"_" + instanceID + "_" + dimension.DimensionID: ""}
 
 		Convey("When Insert is invoked", func() {
-			dim, err := db.InsertDimension(context.Background(), constraintsCache, instance, dimension)
+			dim, err := db.InsertDimension(context.Background(), constraintsCache, instanceID, dimension)
 			dim.NodeID = *nodeID
 
 			Convey("Then the expected error is returned with a nil dimension", func() {
@@ -85,7 +84,7 @@ func Test_InsertDimension(t *testing.T) {
 		constraintsCache := map[string]string{"_differentID_" + dimension.DimensionID: ""}
 
 		Convey("When Insert is invoked", func() {
-			dim, err := db.InsertDimension(context.Background(), constraintsCache, instance, dimension)
+			dim, err := db.InsertDimension(context.Background(), constraintsCache, instanceID, dimension)
 			dim.NodeID = *nodeID
 
 			Convey("Then the expected error is returned with a nil dimension", func() {
@@ -130,7 +129,7 @@ func Test_InsertDimension(t *testing.T) {
 		constraintsCache := map[string]string{}
 
 		Convey("When Insert is invoked", func() {
-			dim, err := db.InsertDimension(context.Background(), constraintsCache, instance, dimension)
+			dim, err := db.InsertDimension(context.Background(), constraintsCache, instanceID, dimension)
 
 			Convey("Then the expected error is returned with a nil dimension", func() {
 				So(dim, ShouldEqual, nil)
@@ -167,7 +166,7 @@ func Test_InsertDimension(t *testing.T) {
 		constraintsCache := map[string]string{"_" + instanceID + "_" + dimension.DimensionID: dimension.DimensionID}
 
 		Convey("When Insert is invoked", func() {
-			dim, err := db.InsertDimension(context.Background(), constraintsCache, instance, dimension)
+			dim, err := db.InsertDimension(context.Background(), constraintsCache, instanceID, dimension)
 
 			Convey("Then the expected error is returned with a nil dimension", func() {
 				So(dim, ShouldEqual, nil)

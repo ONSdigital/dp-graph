@@ -1,17 +1,8 @@
 package neptune
 
 import (
-	"github.com/ONSdigital/dp-graph/neptune/internal"
-)
-
-/*
-This module provides the MockDB factory function to make a NeptuneDB into
-which a mocked implementation of the gremgo driver's Pool may be injected
-to avoid real database access.
-*/
-
-import (
-	"github.com/ONSdigital/dp-graph/neptune/driver"
+	"github.com/ONSdigital/dp-graph/v2/neptune/driver"
+	"github.com/ONSdigital/dp-graph/v2/neptune/internal"
 )
 
 // mockDB provides a NeptuneDB, into which you can pass a mocked

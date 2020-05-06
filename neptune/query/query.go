@@ -88,9 +88,10 @@ const (
 		`V().hasLabel('_code').has('value',"%s").where(out('usedBy').hasLabel('_code_list').has('listID','%s')).as('c')` +
 		`.addE('inDataset').to('i')`
 	AddVersionDetailsToInstance = `g.V().hasLabel('_%s_Instance').property(single,'dataset_id','%s').` +
-		`property(single,'edition','%s').property(single,'version','%s')`
+		`property(single,'edition','%s').property(single,'version','%d')`
 	SetInstanceIsPublished = `g.V().hasLabel('_%s_Instance').property(single,'is_published',true)`
 	CountObservations      = `g.V().hasLabel('_%s_observation').count()`
+
 
 	//instance - parts
 	AddInstanceDimensionsPart         = `g.V().hasLabel('_%s_Instance')`

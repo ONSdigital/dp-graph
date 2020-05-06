@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"testing"
 
-	graph "github.com/ONSdigital/dp-graph/graph/driver"
-	"github.com/ONSdigital/dp-graph/neo4j/internal"
+	graph "github.com/ONSdigital/dp-graph/v2/graph/driver"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/internal"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	neoErrors "github.com/ONSdigital/golang-neo4j-bolt-driver/errors"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/messages"
@@ -15,12 +15,14 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-var q string
-var instanceID = "instanceID"
-var dimensionName = "dimensionName"
-var codeListID = "codeListID"
+var (
+	q             string
+	instanceID    = "instanceID"
+	dimensionName = "dimensionName"
+	codeListID    = "codeListID"
 
-var execErr = errors.New("error executing neo4j query")
+	errExec = errors.New("error executing neo4j query")
+)
 
 func Test_CreateInstanceHierarchyConstraints(t *testing.T) {
 
@@ -54,12 +56,12 @@ func Test_CreateInstanceHierarchyConstraints(t *testing.T) {
 	})
 }
 
-func Test_CreateInstanceHierarchyConstraints_NeoExecErr(t *testing.T) {
+func Test_CreateInstanceHierarchyConstraints_NeoErrExec(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
-				return nil, execErr
+				return nil, errExec
 			},
 		}
 
@@ -73,7 +75,7 @@ func Test_CreateInstanceHierarchyConstraints_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
+				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
 			})
 		})
 	})
@@ -139,12 +141,12 @@ func TestStore_CloneNodes(t *testing.T) {
 	})
 }
 
-func TestStore_CloneNodes_NeoExecErr(t *testing.T) {
+func TestStore_CloneNodes_NeoerrExec(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
-				return nil, execErr
+				return nil, errExec
 			},
 		}
 
@@ -158,7 +160,7 @@ func TestStore_CloneNodes_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
+				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
 			})
 		})
 	})
@@ -204,12 +206,12 @@ func TestStore_CloneRelationships(t *testing.T) {
 	})
 }
 
-func TestStore_CloneRelationships_NeoExecErr(t *testing.T) {
+func TestStore_CloneRelationships_NeoErrExec(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
-				return nil, execErr
+				return nil, errExec
 			},
 		}
 
@@ -224,7 +226,7 @@ func TestStore_CloneRelationships_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
+				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
 			})
 		})
 	})
@@ -265,12 +267,12 @@ func TestStore_SetNumberOfChildren(t *testing.T) {
 	})
 }
 
-func TestStore_SetNumberOfChildren_NeoExecErr(t *testing.T) {
+func TestStore_SetNumberOfChildren_NeoErrExec(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
-				return nil, execErr
+				return nil, errExec
 			},
 		}
 
@@ -284,7 +286,7 @@ func TestStore_SetNumberOfChildren_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
+				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
 			})
 		})
 	})
@@ -324,12 +326,12 @@ func TestStore_SetHasData(t *testing.T) {
 	})
 }
 
-func TestStore_SetHasData_NeoExecErr(t *testing.T) {
+func TestStore_SetHasData_NeoErrExec(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
-				return nil, execErr
+				return nil, errExec
 			},
 		}
 
@@ -343,7 +345,7 @@ func TestStore_SetHasData_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
+				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
 			})
 		})
 	})
@@ -383,12 +385,12 @@ func TestStore_MarkNodesToRemain(t *testing.T) {
 	})
 }
 
-func TestStore_MarkNodesToRemain_NeoExecErr(t *testing.T) {
+func TestStore_MarkNodesToRemain_NeoErrExec(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
-				return nil, execErr
+				return nil, errExec
 			},
 		}
 
@@ -402,7 +404,7 @@ func TestStore_MarkNodesToRemain_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
+				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
 			})
 		})
 	})
@@ -439,12 +441,12 @@ func TestStore_RemoveNodesNotMarkedToRemain(t *testing.T) {
 	})
 }
 
-func TestStore_RemoveNodesNotMarkedToRemain_NeoExecErr(t *testing.T) {
+func TestStore_RemoveNodesNotMarkedToRemain_NeoErrExec(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
-				return nil, execErr
+				return nil, errExec
 			},
 		}
 
@@ -458,7 +460,7 @@ func TestStore_RemoveNodesNotMarkedToRemain_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
+				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
 			})
 		})
 	})
@@ -495,12 +497,12 @@ func TestStore_RemoveRemainMarker(t *testing.T) {
 	})
 }
 
-func TestStore_RemoveRemainMarker_NeoExecErr(t *testing.T) {
+func TestStore_RemoveRemainMarker_NeoErrExec(t *testing.T) {
 
 	Convey("Given a mock bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
-				return nil, execErr
+				return nil, errExec
 			},
 		}
 
@@ -514,7 +516,7 @@ func TestStore_RemoveRemainMarker_NeoExecErr(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{execErr})
+				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
 			})
 		})
 	})

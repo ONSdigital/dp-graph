@@ -4,17 +4,30 @@ import (
 	"context"
 	"io"
 
-	"github.com/ONSdigital/dp-graph/graph/driver"
-	"github.com/ONSdigital/dp-graph/neo4j/mapper"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/mapper"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"github.com/pkg/errors"
 )
 
 //go:generate moq -out ../internal/driver.go -pkg internal . Neo4jDriver
 //go:generate moq -out ../internal/bolt.go -pkg internal . Result
+//go:generate moq -out ../internal/bolt_closable.go -pkg internal . ClosableDriverPool
+
+// Type check to ensure that NeoDriver implements the driver.Driver interface
+var _ driver.Driver = (*NeoDriver)(nil)
 
 // Result of queries to neo4j - needed for mocking and tests
 type Result bolt.Result
+
+// ClosableDriverPool corresponds to the interface bolt.ClosableDriverPool with only the exported fields and methods
+// TODO we might want to modify bolt.ClosableDriverPool with exported fields/methods only and remove this interface
+// I.e. remove reclaim(*boltConn) from driverPool interface in bolt.driver.
+type ClosableDriverPool interface {
+	// OpenPool opens a Neo-specific connection.
+	OpenPool() (bolt.Conn, error)
+	Close() error
+}
 
 // Neo4jDriver is the interface that wraps basic neo4j driver functionality
 type Neo4jDriver interface {
@@ -29,7 +42,7 @@ type Neo4jDriver interface {
 
 // NeoDriver contains a connection pool and allows basic interaction with the database
 type NeoDriver struct {
-	pool bolt.ClosableDriverPool
+	pool ClosableDriverPool // TODO Use 'bolt.ClosableDriverPool' if it exports only public fields in the future
 }
 
 // New neo4j closeable connection pool configured with the provided address,
@@ -39,10 +52,14 @@ func New(dbAddr string, size, timeout int) (n *NeoDriver, err error) {
 	if err != nil {
 		return nil, err
 	}
+	return NewWithPool(pool), nil
+}
 
+// NewWithPool : New NeoDriver structure containing the pool passed as parameter and a new Check
+func NewWithPool(pool ClosableDriverPool) (n *NeoDriver) {
 	return &NeoDriver{
 		pool: pool,
-	}, nil
+	}
 }
 
 //Close the contained connection pool

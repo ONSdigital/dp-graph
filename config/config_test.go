@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ONSdigital/dp-graph/neo4j"
+	"github.com/ONSdigital/dp-graph/v2/neo4j"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

@@ -5,8 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/ONSdigital/dp-graph/observation"
-	"github.com/ONSdigital/dp-graph/observation/observationtest"
+	"github.com/ONSdigital/dp-graph/v2/observation"
+	"github.com/ONSdigital/dp-graph/v2/observation/observationtest"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
