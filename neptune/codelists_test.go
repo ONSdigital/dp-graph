@@ -375,7 +375,7 @@ func TestGetCode(t *testing.T) {
 				So(len(calls), ShouldEqual, 1)
 				Convey("With a well formed query string", func() {
 					expectedQry := `g.V().hasLabel('_code_list').has('listID', 'unused-code-list').has('edition', ` +
-						`'unused-edition').in('usedBy').has('value', 'unused-code').count()`
+						`'unused-edition').in('usedBy').has('value', "unused-code").count()`
 					actualQry := calls[0].Q
 					So(actualQry, ShouldEqual, expectedQry)
 				})
@@ -398,7 +398,7 @@ func TestGetCode(t *testing.T) {
 			_, err := db.GetCode(context.Background(), unusedCodeList, unusedEdition, unusedCode)
 			expectedErr := `Gremlin query failed: "g.V().hasLabel('_code_list').has('listID', ` +
 				`'unused-code-list').has('edition', 'unused-edition').in('usedBy').has('value', ` +
-				`'unused-code').count()":  MALFORMED REQUEST `
+				`\"unused-code\").count()":  MALFORMED REQUEST `
 			Convey("Then the returned error should wrap the underlying one", func() {
 				So(err.Error(), ShouldEqual, expectedErr)
 			})
