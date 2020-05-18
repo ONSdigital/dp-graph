@@ -50,7 +50,7 @@ func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition str
 
 	// Isolate the individual records from the flattened response.
 	// [['dim', 'edition', 'version', 'datasetID'], ['dim', 'edition', ...]]
-	responseRecords, err := createRecords(responses)
+	responseRecords, err := createCodeDatasetRecords(responses)
 	if err != nil {
 		return nil, errors.Wrap(err, "Cannot create records.")
 	}
@@ -67,22 +67,10 @@ func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition str
 }
 
 /*
-createRecords splits a list of strings into clumps of 4
+createCodeDatasetRecords splits a list of strings into clumps of 4
 */
-func createRecords(responses []string) ([][]string, error) {
-	var responseRecords = [][]string{}
-	const stride = 4 // I.e. dimesionName, edition, version, datasetID
-	if len(responses)%stride != 0 {
-		return nil, errors.New("List length is not divisible by 4")
-	}
-	for i := 0; i < len(responses); i += stride {
-		dimensionName := responses[i+0]
-		datasetEdition := responses[i+1]
-		versionStr := responses[i+2]
-		datasetID := responses[i+3]
-		responseRecords = append(responseRecords, []string{dimensionName, datasetEdition, versionStr, datasetID})
-	}
-	return responseRecords, nil
+func createCodeDatasetRecords(responses []string) ([][]string, error) {
+	return createRecords(responses, 4)
 }
 
 // These (nested) maps track the latest version cited by any combination

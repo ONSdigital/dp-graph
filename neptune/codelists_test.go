@@ -285,22 +285,23 @@ func TestGetEditions(t *testing.T) {
 func TestGetCodes(t *testing.T) {
 	Convey("Given a database that raises a non-transient error", t, func() {
 		poolMock := &internal.NeptunePoolMock{
-			GetFunc: internal.ReturnMalformedNilInterfaceRequestErr,
+			GetStringListFunc: internal.ReturnMalformedStringListRequestErr,
 		}
 		db := mockDB(poolMock)
 		Convey("When GetCodes() is called", func() {
 			unusedCodeListID := "unused-id"
 			unusedEdition := "unused-edition"
 			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
-			expectedErr := `Gremlin query failed: "g.V().hasLabel('_code_list').has('listID', 'unused-id').` +
-				`has('edition', 'unused-edition').in('usedBy').hasLabel('_code')":  MALFORMED REQUEST `
+			expectedErr := `Gremlin query failed: "g.V().has('_code_list','listID', 'unused-id').has('edition', 'unused-edition').` +
+				`inE(\"usedBy\").as('usedBy').outV().as('code').select('usedBy', 'code').by('label').by('value').` +
+				`unfold().select(values)":  MALFORMED REQUEST `
 			Convey("Then the returned error should wrap the underlying one", func() {
 				So(err.Error(), ShouldEqual, expectedErr)
 			})
 		})
 	})
-	Convey("Given a database that returns zero code vertices", t, func() {
-		poolMock := &internal.NeptunePoolMock{GetFunc: internal.ReturnZeroVertices}
+	Convey("Given a database that returns no code values", t, func() {
+		poolMock := &internal.NeptunePoolMock{GetStringListFunc: internal.ReturnEmptyCodesList}
 		db := mockDB(poolMock)
 		Convey("When GetCodes() is called", func() {
 			unusedCodeListID := "unused-id"
@@ -311,23 +312,23 @@ func TestGetCodes(t *testing.T) {
 			})
 		})
 	})
-	Convey("Given a database that provides malformed code vertices", t, func() {
+	Convey("Given a database that provides invalid code values", t, func() {
 		poolMock := &internal.NeptunePoolMock{
-			GetFunc: internal.ReturnThreeUselessVertices,
+			GetStringListFunc: internal.ReturnInvalidCodeData,
 		}
 		db := mockDB(poolMock)
 		Convey("When GetCodes() is called", func() {
 			unusedCodeListID := "unused-id"
 			unusedEdition := "unused-edition"
 			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
-			expectedErr := `Error reading "value" property on Code vertex: property not found`
+			expectedErr := `List length is not divisible by 2`
 			Convey("Then the returned error should wrap the underlying one", func() {
 				So(err.Error(), ShouldEqual, expectedErr)
 			})
 		})
 	})
 	Convey("Given a database that returns three code vertices", t, func() {
-		poolMock := &internal.NeptunePoolMock{GetFunc: internal.ReturnThreeCodeVertices}
+		poolMock := &internal.NeptunePoolMock{GetStringListFunc: internal.ReturnThreeCodes}
 		db := mockDB(poolMock)
 		Convey("When GetCodes() is called", func() {
 			unusedCodeListID := "unused-id"
@@ -337,11 +338,14 @@ func TestGetCodes(t *testing.T) {
 				So(err, ShouldBeNil)
 			})
 			Convey("Then the driver Get function should be called once", func() {
-				calls := poolMock.GetCalls()
+				calls := poolMock.GetStringListCalls()
 				So(len(calls), ShouldEqual, 1)
 				Convey("With a well formed query string", func() {
-					expectedQry := `g.V().hasLabel('_code_list').has('listID', 'unused-id').has('edition', ` +
-						`'unused-edition').in('usedBy').hasLabel('_code')`
+					expectedQry := `g.V().has('_code_list','listID', 'unused-id').has('edition', 'unused-edition').` +
+						`inE("usedBy").as('usedBy').` +
+						`outV().as('code').` +
+						`select('usedBy', 'code').by('label').by('value').` +
+						`unfold().select(values)`
 					actualQry := calls[0].Query
 					So(actualQry, ShouldEqual, expectedQry)
 					Convey("Then a non nil structure returned", func() {

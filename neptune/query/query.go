@@ -6,15 +6,17 @@ package query
 // 1) .property() function must contain 'single' where not a list, as the Neptune default is 'set'
 
 const (
-	// codelists
+	// code lists
 	GetCodeLists          = `g.V().hasLabel('_code_list')`
 	GetCodeListsFiltered  = `g.V().hasLabel('_code_list').has('%s', true)`
 	GetCodeList           = `g.V().hasLabel('_code_list').has('listID', '%s')`
 	CodeListExists        = `g.V().hasLabel('_code_list').has('listID', '%s').count()`
 	CodeListEditionExists = `g.V().hasLabel('_code_list').has('listID', '%s').has('edition', '%s').count()`
-	GetCodes              = `g.V().hasLabel('_code_list')` +
-		`.has('listID', '%s').has('edition', '%s')` +
-		`.in('usedBy').hasLabel('_code')`
+	GetCodes              = `g.V().has('_code_list','listID', '%s').has('edition', '%s')` +
+		`.inE("usedBy").as('usedBy')` +
+		`.outV().as('code')` +
+		`.select('usedBy', 'code').by('label').by('value')` +
+		`.unfold().select(values)`
 	CodeExists = `g.V().hasLabel('_code_list')` +
 		`.has('listID', '%s').has('edition', '%s')` +
 		`.in('usedBy').has('value', "%s").count()`
@@ -91,7 +93,6 @@ const (
 		`property(single,'edition','%s').property(single,'version','%d')`
 	SetInstanceIsPublished = `g.V().hasLabel('_%s_Instance').property(single,'is_published',true)`
 	CountObservations      = `g.V().hasLabel('_%s_observation').count()`
-
 
 	//instance - parts
 	AddInstanceDimensionsPart         = `g.V().hasLabel('_%s_Instance')`

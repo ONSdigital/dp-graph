@@ -113,6 +113,27 @@ var ReturnZeroVertices = func(query string, bindings map[string]string, rebindin
 	return []graphson.Vertex{}, nil
 }
 
+var ReturnEmptyCodesList = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+	return []string{}, nil
+}
+
+var ReturnInvalidCodeData = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+	var codes []string
+	codes = append(codes, "Not")
+	codes = append(codes, "Enough")
+	codes = append(codes, "Values")
+	return codes, nil
+}
+
+var ReturnThreeCodes = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+	var codes []string
+	for i := 0; i < 3; i++ {
+		codes = append(codes, fmt.Sprintf("label_%d", i))
+		codes = append(codes, fmt.Sprintf("code_%d", i))
+	}
+	return codes, nil
+}
+
 /*
 makeVertex makes a graphson.Vertex of a given type (e.g. "_code_list").
 */

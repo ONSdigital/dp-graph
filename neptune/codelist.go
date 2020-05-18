@@ -158,29 +158,39 @@ list exists. It returns a wrapped error if a Code is found that does not have a 
 */
 func (n *NeptuneDB) GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error) {
 	qry := fmt.Sprintf(query.GetCodes, codeListID, edition)
-	codeResponses, err := n.getVertices(qry)
+	values, err := n.getStringList(qry)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
 	}
-	if len(codeResponses) == 0 {
+	if len(values) == 0 {
 		return nil, driver.ErrNotFound
 	}
-	codeResults := &models.CodeResults{
+
+	records, err := createRecords(values, 2)
+	if err != nil {
+		return nil, err
+	}
+
+	codes := createCodes(records)
+
+	return codes, nil
+}
+
+func createCodes(records [][]string) *models.CodeResults {
+	codes := &models.CodeResults{
 		Items: []models.Code{},
 	}
 
-	for _, codeResponse := range codeResponses {
-		codeValue, err := codeResponse.GetProperty("value")
-		if err != nil {
-			return nil, errors.Wrapf(err, `Error reading "value" property on Code vertex`)
+	for _, record := range records {
+		code := models.Code{
+			Label: record[0],
+			Code:  record[1],
 		}
-		// Missing ID and label
-		codeItem := models.Code{
-			Code: codeValue,
-		}
-		codeResults.Items = append(codeResults.Items, codeItem)
+
+		codes.Items = append(codes.Items, code)
 	}
-	return codeResults, nil
+
+	return codes
 }
 
 /*
@@ -209,4 +219,24 @@ func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, cod
 	return &models.Code{
 		Code: code,
 	}, nil
+}
+
+// convert a flat array of record values into  a 2d array of records
+func createRecords(values []string, stride int) ([][]string, error) {
+	var records = [][]string{}
+	if len(values)%stride != 0 {
+		return nil, errors.New(fmt.Sprintf("List length is not divisible by %d", stride))
+	}
+	for i := 0; i < len(values); i += stride {
+
+		var record []string
+
+		for j := 0; j < stride; j++ {
+			value := values[i+j]
+			record = append(record, value)
+		}
+
+		records = append(records, record)
+	}
+	return records, nil
 }

@@ -16,8 +16,8 @@ TestCreateTriples validates a helper utility function used by the API method.
 func TestCreateTriples(t *testing.T) {
 	Convey("Given an input list of 8 strings", t, func() {
 		input := []string{"a", "b", "c", "d", "e", "f", "g", "h"}
-		Convey("When createRecords() is called", func() {
-			triples, err := createRecords(input)
+		Convey("When createCodeDatasetRecords() is called", func() {
+			triples, err := createCodeDatasetRecords(input)
 			Convey("Then no error should be returned", func() {
 				So(err, ShouldBeNil)
 			})
@@ -29,8 +29,8 @@ func TestCreateTriples(t *testing.T) {
 	})
 	Convey("Given an empty input list", t, func() {
 		input := []string{}
-		Convey("When createRecords() is called", func() {
-			triples, err := createRecords(input)
+		Convey("When createCodeDatasetRecords() is called", func() {
+			triples, err := createCodeDatasetRecords(input)
 			Convey("Then no error should be returned", func() {
 				So(err, ShouldBeNil)
 			})
@@ -41,8 +41,8 @@ func TestCreateTriples(t *testing.T) {
 	})
 	Convey("Given a list with length that is not divisible by 4", t, func() {
 		input := []string{"a"}
-		Convey("When createRecords() is called", func() {
-			_, err := createRecords(input)
+		Convey("When createCodeDatasetRecords() is called", func() {
+			_, err := createCodeDatasetRecords(input)
 			Convey("Then an appropriate error should be returned", func() {
 				expectedErr := "List length is not divisible by 4"
 				So(err.Error(), ShouldEqual, expectedErr)
