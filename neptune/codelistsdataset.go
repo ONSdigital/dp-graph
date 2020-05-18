@@ -70,7 +70,8 @@ func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition str
 createCodeDatasetRecords splits a list of strings into clumps of 4
 */
 func createCodeDatasetRecords(responses []string) ([][]string, error) {
-	return createRecords(responses, 4)
+	const valuesPerRecord = 4
+	return createRecords(responses, valuesPerRecord)
 }
 
 // These (nested) maps track the latest version cited by any combination

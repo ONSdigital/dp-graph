@@ -44,7 +44,7 @@ func TestCreateTriples(t *testing.T) {
 		Convey("When createCodeDatasetRecords() is called", func() {
 			_, err := createCodeDatasetRecords(input)
 			Convey("Then an appropriate error should be returned", func() {
-				expectedErr := "List length is not divisible by 4"
+				expectedErr := "list length is not divisible by 4"
 				So(err.Error(), ShouldEqual, expectedErr)
 			})
 		})

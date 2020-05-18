@@ -321,7 +321,7 @@ func TestGetCodes(t *testing.T) {
 			unusedCodeListID := "unused-id"
 			unusedEdition := "unused-edition"
 			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
-			expectedErr := `List length is not divisible by 2`
+			expectedErr := `list length is not divisible by 2`
 			Convey("Then the returned error should wrap the underlying one", func() {
 				So(err.Error(), ShouldEqual, expectedErr)
 			})

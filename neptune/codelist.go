@@ -166,7 +166,8 @@ func (n *NeptuneDB) GetCodes(ctx context.Context, codeListID, edition string) (*
 		return nil, driver.ErrNotFound
 	}
 
-	records, err := createRecords(values, 2)
+	const valuesPerRecord = 2
+	records, err := createRecords(values, valuesPerRecord)
 	if err != nil {
 		return nil, err
 	}
@@ -222,16 +223,16 @@ func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, cod
 }
 
 // convert a flat array of record values into  a 2d array of records
-func createRecords(values []string, stride int) ([][]string, error) {
-	var records = [][]string{}
-	if len(values)%stride != 0 {
-		return nil, errors.New(fmt.Sprintf("List length is not divisible by %d", stride))
+func createRecords(values []string, valuesPerRecord int) ([][]string, error) {
+	var records [][]string
+	if len(values)%valuesPerRecord != 0 {
+		return nil, fmt.Errorf("list length is not divisible by %d", valuesPerRecord)
 	}
-	for i := 0; i < len(values); i += stride {
+	for i := 0; i < len(values); i += valuesPerRecord {
 
 		var record []string
 
-		for j := 0; j < stride; j++ {
+		for j := 0; j < valuesPerRecord; j++ {
 			value := values[i+j]
 			record = append(record, value)
 		}
