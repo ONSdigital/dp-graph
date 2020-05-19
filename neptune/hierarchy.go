@@ -261,11 +261,11 @@ func (n *NeptuneDB) GetHierarchyRoot(ctx context.Context, instanceID, dimension 
 	}
 	var vertex graphson.Vertex
 	vertex = vertices[0]
-	// Note the call to buildHierarchyNodeFromGraphsonVertex below does much more than meets the eye,
+	// Note the call to buildHierarchyNode below does much more than meets the eye,
 	// including launching new queries in of itself to fetch child nodes, and
 	// breadcrumb nodes.
 	wantBreadcrumbs := false // Because meaningless for a root node
-	if node, err = n.buildHierarchyNodeFromGraphsonVertex(vertex, instanceID, dimension, wantBreadcrumbs); err != nil {
+	if node, err = n.buildHierarchyNode(vertex, instanceID, dimension, wantBreadcrumbs); err != nil {
 		log.Event(ctx, "Cannot extract related information needed from hierarchy node", log.ERROR, logData, log.Error(err))
 		return
 	}
@@ -287,11 +287,11 @@ func (n *NeptuneDB) GetHierarchyElement(ctx context.Context, instanceID, dimensi
 		log.Event(ctx, "Cannot find vertex when looking for specific hierarchy node", log.ERROR, logData, log.Error(err))
 		return
 	}
-	// Note the call to buildHierarchyNodeFromGraphsonVertex below does much more than meets the eye,
+	// Note the call to buildHierarchyNode below does much more than meets the eye,
 	// including launching new queries in of itself to fetch child nodes, and
 	// breadcrumb nodes.
 	wantBreadcrumbs := true // Because we are at depth in the hierarchy
-	if node, err = n.buildHierarchyNodeFromGraphsonVertex(vertex, instanceID, dimension, wantBreadcrumbs); err != nil {
+	if node, err = n.buildHierarchyNode(vertex, instanceID, dimension, wantBreadcrumbs); err != nil {
 		log.Event(ctx, "Cannot extract related information needed from hierarchy node", log.ERROR, logData, log.Error(err))
 		return
 	}

@@ -14,9 +14,9 @@ import (
 	"github.com/ONSdigital/log.go/log"
 )
 
-func (n *NeptuneDB) buildHierarchyNodeFromGraphsonVertex(v graphson.Vertex, instanceID, dimension string, wantBreadcrumbs bool) (res *models.HierarchyResponse, err error) {
+func (n *NeptuneDB) buildHierarchyNode(v graphson.Vertex, instanceID, dimension string, wantBreadcrumbs bool) (res *models.HierarchyResponse, err error) {
 	ctx := context.Background()
-	logData := log.Data{"fn": "buildHierarchyNodeFromGraphsonVertex"}
+	logData := log.Data{"fn": "buildHierarchyNode"}
 
 	res = &models.HierarchyResponse{}
 	// Note we are using the vertex' *code* property for the response model's
@@ -27,7 +27,7 @@ func (n *NeptuneDB) buildHierarchyNodeFromGraphsonVertex(v graphson.Vertex, inst
 		return
 	}
 
-	if res.Label, err = v.GetLabel(); err != nil {
+	if res.Label, err = v.GetProperty("label"); err != nil {
 		log.Event(ctx, "bad label", log.ERROR, logData, log.Error(err))
 		return
 	}
