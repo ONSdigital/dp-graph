@@ -9,20 +9,17 @@ import (
 
 func Test_buildHierarchyNode(t *testing.T) {
 
-	poolMock := &internal.NeptunePoolMock{GetFunc: internal.ReturnThreeCodeLists}
-	db := mockDB(poolMock)
+	Convey("Given an example hierarchy node vertex returned from neptune", t, func() {
 
-	Convey("Given an example vertex returned from neptune", t, func() {
+		poolMock := &internal.NeptunePoolMock{}
+		db := mockDB(poolMock)
 
 		expectedLabel := "code-label"
 		expectedCode := "code"
-		vertex := makeDummyVertex("test-id", "vertex-label",
-			map[string]interface{}{
-				"code":             expectedCode,
-				"label":            expectedLabel,
-				"numberOfChildren": map[string]interface{}{"@type": "g:Int64", "@value": float64(0)},
-				"hasData":          true,
-			})
+		expectedHasData := true
+		expectedNumberOfChildren := 0
+		vertex := internal.MakeHierarchyVertex("vertex-label", expectedCode, expectedLabel, expectedNumberOfChildren, expectedHasData)
+
 		wantBreadcrumbs := false
 		dimension := "dimension"
 		instanceID := "instance-id"
@@ -35,50 +32,44 @@ func Test_buildHierarchyNode(t *testing.T) {
 				So(err, ShouldBeNil)
 				So(hierarchyNode.ID, ShouldEqual, expectedCode)
 				So(hierarchyNode.Label, ShouldEqual, expectedLabel)
-				So(hierarchyNode.NoOfChildren, ShouldEqual, 0)
-				So(hierarchyNode.HasData, ShouldEqual, true)
+				So(hierarchyNode.NoOfChildren, ShouldEqual, expectedNumberOfChildren)
+				So(hierarchyNode.HasData, ShouldEqual, expectedHasData)
 			})
 		})
 	})
-}
 
-func makeDummyVertex(vertexID, vertexLabel string, params map[string]interface{}) graphson.Vertex {
-	properties := make(map[string][]graphson.VertexProperty)
-	for label, value := range params {
-		var vp []graphson.VertexProperty
-		vSlice, ok := value.([]interface{})
-		if ok {
-			for _, p := range vSlice {
-				vertexProperty := makeDummyVertexProperty(label, p)
-				vp = append(vp, vertexProperty)
-			}
-		} else {
-			vertexProperty := makeDummyVertexProperty(label, value)
-			vp = append(vp, vertexProperty)
-		}
-		properties[label] = vp
-	}
-	vertexValue := graphson.VertexValue{
-		ID:         vertexID,
-		Label:      vertexLabel,
-		Properties: properties,
-	}
-	return graphson.Vertex{
-		Type:  "g:Vertex",
-		Value: vertexValue,
-	}
-}
+	Convey("Given a hierarchy node with child nodes", t, func() {
+		expectedLabel := "child-label"
+		expectedCode := "child-code"
+		expectedHasData := true
+		expectedNumberOfChildren := 1
 
-func makeDummyVertexProperty(label string, value interface{}) graphson.VertexProperty {
-	return graphson.VertexProperty{
-		Type: "g:VertexProperty",
-		Value: graphson.VertexPropertyValue{
-			ID: graphson.GenericValue{
-				Type:  "Type",
-				Value: 1,
-			},
-			Value: value,
-			Label: label,
-		},
-	}
+		// mock the database to return a single child node
+		poolMock := &internal.NeptunePoolMock{GetFunc: func(query string, bindings map[string]string, rebindings map[string]string) (vertices []graphson.Vertex, err error) {
+			return []graphson.Vertex{
+				internal.MakeHierarchyVertex("vertex-label", expectedCode, expectedLabel, expectedNumberOfChildren, expectedHasData),
+			}, nil
+		}}
+		db := mockDB(poolMock)
+
+		vertex := internal.MakeHierarchyVertex("vertex-label", "code", "label", 1, true)
+
+		wantBreadcrumbs := true
+		dimension := "dimension"
+		instanceID := "instance-id"
+
+		Convey("When buildHierarchyNode is called", func() {
+
+			hierarchyNode, err := db.buildHierarchyNode(vertex, instanceID, dimension, wantBreadcrumbs)
+
+			Convey("Then the expected values are mapped onto the returned child nodes", func() {
+				So(err, ShouldBeNil)
+				So(len(hierarchyNode.Children), ShouldEqual, 1)
+				So(hierarchyNode.Children[0].NoOfChildren, ShouldEqual, expectedNumberOfChildren)
+				So(hierarchyNode.Children[0].ID, ShouldEqual, expectedCode)
+				So(hierarchyNode.Children[0].Label, ShouldEqual, expectedLabel)
+				So(hierarchyNode.Children[0].HasData, ShouldEqual, expectedHasData)
+			})
+		})
+	})
 }

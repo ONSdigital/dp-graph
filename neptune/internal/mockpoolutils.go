@@ -134,6 +134,15 @@ var ReturnThreeCodes = func(query string, bindings map[string]string, rebindings
 	return codes, nil
 }
 
+func MakeHierarchyVertex(vertexLabel, code, codeLabel string, numberOfChildren int, hasData bool) graphson.Vertex {
+	vertex := makeVertex(vertexLabel)
+	setVertexStringProperty(&vertex, "code", code)
+	setVertexStringProperty(&vertex, "label", codeLabel)
+	setVertexTypedProperty("g:Int64", &vertex, "numberOfChildren", map[string]interface{}{"@type": "g:Int64", "@value": float64(numberOfChildren)})
+	setVertexTypedProperty("bool", &vertex, "hasData", hasData)
+	return vertex
+}
+
 /*
 makeVertex makes a graphson.Vertex of a given type (e.g. "_code_list").
 */

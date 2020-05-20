@@ -41,13 +41,7 @@ func (n *NeptuneDB) buildHierarchyNode(v graphson.Vertex, instanceID, dimension 
 	}
 	// Fetch new data from the database concerned with the node's children.
 	if res.NoOfChildren > 0 && instanceID != "" {
-		var code string
-		if code, err = v.GetProperty("code"); err != nil {
-			log.Event(ctx, "bad GetProp code", log.ERROR, logData, log.Error(err))
-			return
-		}
-
-		gremStmt := fmt.Sprintf(query.GetChildren, instanceID, dimension, code)
+		gremStmt := fmt.Sprintf(query.GetChildren, instanceID, dimension, res.ID)
 		logData["statement"] = gremStmt
 
 		var childVertices []graphson.Vertex
@@ -120,7 +114,7 @@ func convertVertexToElement(v graphson.Vertex) (res *models.HierarchyElement, er
 		return
 	}
 
-	if res.Label, err = v.GetLabel(); err != nil {
+	if res.Label, err = v.GetProperty("label"); err != nil {
 		log.Event(ctx, "bad label", log.ERROR, logData, log.Error(err))
 		return
 	}
