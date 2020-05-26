@@ -115,7 +115,7 @@ const (
 	GetAllObservationsPart = `.V().hasLabel('_%s_observation').values('row')`
 
 	GetObservationsPart         = `.V().hasLabel('_%s_observation').match(`
-	GetObservationDimensionPart = `__.as('row').out('isValueOf').hasLabel('_%s_%s').where(values('value').is(within('%s')))`
-	GetObservationSelectRowPart = `.select('instance', 'row').by('header').by('row').unfold().dedup().select(values)`
+	GetObservationDimensionPart = `__.as('row').out('isValueOf').hasLabel('_%s_%s').where(values('value').is(within(%s)))`
+	GetObservationSelectRowPart = `.select('instance', 'row').by('header').by('value').unfold().dedup().select(values)`
 	LimitPart                   = `.limit(%d)`
 )
