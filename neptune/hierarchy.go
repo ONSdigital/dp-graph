@@ -2,7 +2,9 @@ package neptune
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/dp-graph/v2/models"
@@ -132,10 +134,9 @@ func (n *NeptuneDB) SetNumberOfChildren(ctx context.Context, attempt int, instan
 }
 
 func (n *NeptuneDB) SetHasData(ctx context.Context, attempt int, instanceID, dimensionName string) (err error) {
-	gremStmt := fmt.Sprintf(
-		query.SetHasData,
-		instanceID,
-		dimensionName,
+
+	codesWithDataStmt := fmt.Sprintf(
+		query.GetCodesWithData,
 		instanceID,
 		dimensionName,
 	)
@@ -143,8 +144,26 @@ func (n *NeptuneDB) SetHasData(ctx context.Context, attempt int, instanceID, dim
 	logData := log.Data{
 		"instance_id":    instanceID,
 		"dimension_name": dimensionName,
-		"gremlin":        gremStmt,
 	}
+
+	log.Event(ctx, "getting instance dimension codes that have data", log.INFO, logData)
+
+	codes, err := n.getStringList(codesWithDataStmt)
+	if err != nil {
+		return errors.Wrapf(err, "Gremlin query failed: %q", codesWithDataStmt)
+	}
+
+	jsonCodes, err := json.Marshal(codes)
+	if err != nil {
+		return errors.Wrapf(err, "failed to marshal code list array into json")
+	}
+
+	gremStmt := fmt.Sprintf(
+		query.SetHasData,
+		instanceID,
+		dimensionName,
+		string(jsonCodes),
+	)
 
 	log.Event(ctx, "setting has-data property on the instance hierarchy", log.INFO, logData)
 
@@ -160,8 +179,6 @@ func (n *NeptuneDB) MarkNodesToRemain(ctx context.Context, attempt int, instance
 	gremStmt := fmt.Sprintf(query.MarkNodesToRemain,
 		instanceID,
 		dimensionName,
-		// instanceID,
-		// dimensionName,
 	)
 
 	logData := log.Data{
