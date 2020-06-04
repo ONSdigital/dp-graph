@@ -117,6 +117,14 @@ var ReturnEmptyCodesList = func(query string, bindings map[string]string, rebind
 	return []string{}, nil
 }
 
+var ReturnCodesList = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+	var codes []string
+	codes = append(codes, "123")
+	codes = append(codes, "456")
+	codes = append(codes, "789")
+	return codes, nil
+}
+
 var ReturnInvalidCodeData = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
 	var codes []string
 	codes = append(codes, "Not")

@@ -2,9 +2,9 @@ package neptune
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
+	"strings"
 
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/dp-graph/v2/models"
@@ -153,16 +153,13 @@ func (n *NeptuneDB) SetHasData(ctx context.Context, attempt int, instanceID, dim
 		return errors.Wrapf(err, "Gremlin query failed: %q", codesWithDataStmt)
 	}
 
-	jsonCodes, err := json.Marshal(codes)
-	if err != nil {
-		return errors.Wrapf(err, "failed to marshal code list array into json")
-	}
+	codesString := `["` + strings.Join(codes, `","`) + `"]`
 
 	gremStmt := fmt.Sprintf(
 		query.SetHasData,
 		instanceID,
 		dimensionName,
-		string(jsonCodes),
+		codesString,
 	)
 
 	log.Event(ctx, "setting has-data property on the instance hierarchy", log.INFO, logData)
