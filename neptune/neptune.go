@@ -4,19 +4,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"math"
 	"math/rand"
 	"strings"
 	"time"
 
-	"github.com/ONSdigital/dp-graph/v2/neptune/driver"
+	neptune "github.com/ONSdigital/dp-graph/v2/neptune/driver"
 	"github.com/ONSdigital/graphson"
 	gremgo "github.com/ONSdigital/gremgo-neptune"
 	"github.com/ONSdigital/log.go/log"
 )
 
 type NeptuneDB struct {
-	driver.NeptuneDriver
+	neptune.NeptuneDriver
 
 	maxAttempts int
 	timeout     int
@@ -34,8 +35,8 @@ func New(dbAddr string, size, timeout, retries int, errs chan error) (n *Neptune
 		retries = 5
 	}
 
-	var d *driver.NeptuneDriver
-	if d, err = driver.New(context.Background(), dbAddr, errs); err != nil {
+	var d *neptune.NeptuneDriver
+	if d, err = neptune.New(context.Background(), dbAddr, errs); err != nil {
 		return
 	}
 
@@ -117,9 +118,14 @@ func (n *NeptuneDB) getVertex(gremStmt string) (vertex graphson.Vertex, err erro
 		log.Event(ctx, "get", log.ERROR, logData, log.Error(err))
 		return
 	}
+	if len(vertices) == 0 {
+		err = driver.ErrNotFound
+		log.Event(ctx, "vertex not found", log.ERROR, logData, log.Error(err))
+		return
+	}
 	if len(vertices) != 1 {
-		err = errors.New("expected one vertex")
-		log.Event(ctx, "not one", log.ERROR, logData, log.Error(err))
+		err = errors.New("expected only one vertex")
+		log.Event(ctx, "more than one vertex found when only 1 is expected", log.ERROR, logData, log.Error(err))
 		return
 	}
 	return vertices[0], nil
