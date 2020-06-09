@@ -51,24 +51,39 @@ func buildObservationsQuery(instanceID string, f *observation.DimensionFilters) 
 		return fmt.Sprintf(query.GetAllObservationsPart, instanceID)
 	}
 
-	q := fmt.Sprintf(query.GetObservationsPart, instanceID)
+	var q string
 	var selectOpts []string
 
-	for _, dim := range f.Dimensions {
+	for i, dim := range f.Dimensions {
 		if len(dim.Options) == 0 {
 			continue
 		}
 
-		for i, opt := range dim.Options {
-			dim.Options[i] = fmt.Sprintf("'%s'", opt)
+		for j, opt := range dim.Options {
+			dim.Options[j] = fmt.Sprintf("'%s'", opt)
+		}
+
+		// the first dimension filtered first, outside of the match statement
+		if i == 0 {
+			q = fmt.Sprintf(query.GetFirstDimensionPart, instanceID, dim.Name, strings.Join(dim.Options, ","))
+			continue
+		}
+
+		// only add the match statement if there is a second dimension to match on
+		if i == 1 {
+			q += ".match("
 		}
 
 		selectOpts = append(selectOpts, fmt.Sprintf(query.GetObservationDimensionPart, instanceID, dim.Name, strings.Join(dim.Options, ",")))
+
 	}
 
-	//comma separate dimension option selections and close match statement
-	q += strings.Join(selectOpts, ",")
-	q += ")"
+	// only close the match statement if there are additional dimensions that have been matched
+	if len(f.Dimensions) > 1 {
+		//comma separate dimension option selections and close match statement
+		q += strings.Join(selectOpts, ",")
+		q += ")"
+	}
 
 	return q
 }

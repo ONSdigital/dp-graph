@@ -3,7 +3,6 @@ package neptune
 import (
 	"context"
 	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/ONSdigital/dp-graph/v2/neptune/internal"
@@ -23,8 +22,7 @@ func Test_buildObservationsQuery(t *testing.T) {
 			result := buildObservationsQuery(instanceID, filter)
 
 			Convey("Then the resulting query portion should return all observations", func() {
-				So(result, ShouldContainSubstring, fmt.Sprintf(query.GetAllObservationsPart, instanceID))
-				So(result, ShouldNotContainSubstring, fmt.Sprintf(query.GetObservationsPart, instanceID))
+				So(result, ShouldEqual, fmt.Sprintf(query.GetAllObservationsPart, instanceID))
 			})
 		})
 	})
@@ -41,15 +39,7 @@ func Test_buildObservationsQuery(t *testing.T) {
 			result := buildObservationsQuery(instanceID, filter)
 
 			Convey("Then the resulting query portion should filter to relevant observations", func() {
-				So(result, ShouldNotContainSubstring, fmt.Sprintf(query.GetAllObservationsPart, instanceID))
-				So(result, ShouldContainSubstring, fmt.Sprintf(query.GetObservationsPart, instanceID))
-				So(result, ShouldContainSubstring, fmt.Sprintf(
-					query.GetObservationDimensionPart,
-					instanceID,
-					filter.Dimensions[0].Name,
-					filter.Dimensions[0].Options[0]),
-				)
-				So(strings.Count(result, "__.as('row').out("), ShouldEqual, 1)
+				So(result, ShouldEqual, ".V().has('_888_age','value',within('30')).in('isValueOf')")
 			})
 		})
 	})
@@ -60,6 +50,7 @@ func Test_buildObservationsQuery(t *testing.T) {
 			Dimensions: []*observation.Dimension{
 				{Name: "age", Options: []string{"29", "30", "31"}},
 				{Name: "sex", Options: []string{"male", "female", "all"}},
+				{Name: "geography", Options: []string{"K0001", "K0002", "K0003"}},
 			},
 		}
 
@@ -67,9 +58,11 @@ func Test_buildObservationsQuery(t *testing.T) {
 			result := buildObservationsQuery(instanceID, filter)
 
 			Convey("Then the resulting query portion should filter to relevant observations", func() {
-				So(result, ShouldNotContainSubstring, fmt.Sprintf(query.GetAllObservationsPart, instanceID))
-				So(result, ShouldContainSubstring, fmt.Sprintf(query.GetObservationsPart, instanceID))
-				So(strings.Count(result, "__.as('row').out("), ShouldEqual, 2)
+				expectedQuery := `.V().has('_888_age','value',within('29','30','31')).in('isValueOf').` +
+					`match(` +
+					`__.as('row').out('isValueOf').has('_888_sex','value',within('male','female','all')),` +
+					`__.as('row').out('isValueOf').has('_888_geography','value',within('K0001','K0002','K0003')))`
+				So(result, ShouldEqual, expectedQuery)
 			})
 		})
 	})
