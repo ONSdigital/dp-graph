@@ -71,7 +71,7 @@ const (
 	GetCodesWithData = `g.V().hasLabel('_%s_%s').values('value')`
 	SetHasData       = `g.V().hasLabel('_hierarchy_node_%s_%s').as('v').has('code',within(%s)).property(single,'hasData',true)`
 
-	MarkNodesToRemain = `g.V().hasLabel('_hierarchy_node_%s_%s').has('hasData').property(single,'remain',true)` +
+	MarkNodesToRemain = `g.V().hasLabel('_hierarchy_node_%s_%s').has('hasData', true).property(single,'remain',true)` +
 		`.repeat(out('hasParent')).emit().property(single,'remain',true)`
 	RemoveNodesNotMarkedToRemain = `g.V().hasLabel('_hierarchy_node_%s_%s').not(has('remain',true)).drop()`
 	RemoveRemainMarker           = `g.V().hasLabel('_hierarchy_node_%s_%s').has('remain').properties('remain').drop()`
