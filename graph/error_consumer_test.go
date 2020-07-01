@@ -35,10 +35,8 @@ func TestChannelConsumer_CloseContext(t *testing.T) {
 	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*10)
 	errorChan := make(chan error, 1)
 
-	consumeFinished := false
 	consume := func(error) {
 		time.Sleep(time.Second)
-		consumeFinished = true
 	}
 
 	Convey("Given a channel consumer on a long running function", t, func() {
@@ -53,22 +51,16 @@ func TestChannelConsumer_CloseContext(t *testing.T) {
 			Convey("Then a context timeout error is returned", func() {
 				So(errors.Is(err, ErrContextDone), ShouldBeTrue)
 			})
-
-			Convey("Then the consume function did not finish", func() {
-				So(consumeFinished, ShouldBeFalse)
-			})
 		})
 	})
 }
 
 func TestNewChannelConsumer(t *testing.T) {
 
-	consumeCalled := false
 	consumeFinished := make(chan interface{})
 
 	errorChan := make(chan error, 1)
 	consume := func(error) {
-		consumeCalled = true
 		consumeFinished <- nil
 	}
 
@@ -83,13 +75,12 @@ func TestNewChannelConsumer(t *testing.T) {
 
 			errorChan <- errors.New("")
 
-			select {
-			case <-consumeFinished:
-			case <-ctx.Done():
-			}
-
-			Convey("Then the consumer function is called", func() {
-				So(consumeCalled, ShouldBeTrue)
+			Convey("Then the consumer function completes", func() {
+				select {
+				case <-consumeFinished:
+				case <-ctx.Done():
+					t.Error("context time out waiting for error to be consumed")
+				}
 			})
 		})
 	})
