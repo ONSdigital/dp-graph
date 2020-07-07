@@ -112,11 +112,11 @@ const (
 	CreateObservationPart          = `g.addV('_%s_observation').as('o').property(single, 'value', '%s').property(single, 'rowIndex', '%d')`
 	AddObservationRelationshipPart = `.V().hasId('%s').hasLabel('_%s_%s').where(values('value').is("%s")).addE('isValueOf').from('o')`
 
-	GetInstanceHeaderPart  = `g.V().hasLabel('_%s_Instance').as('instance')`
+	GetInstanceHeaderPart  = `g.V().hasLabel('_%s_Instance').values('header').aggregate('results')`
 	GetAllObservationsPart = `.V().hasLabel('_%s_observation').values('row')`
 
 	GetFirstDimensionPart       = `.V().has('_%s_%s','value',within(%s)).in('isValueOf')`
 	GetObservationDimensionPart = `__.as('row').out('isValueOf').has('_%s_%s','value',within(%s))`
-	GetObservationSelectRowPart = `.select('instance','row').by('header').by('value').unfold().select(values)`
+	GetObservationSelectRowPart = `.select('row').by('value').aggregate('results').cap('results').unfold()`
 	LimitPart                   = `.limit(%d)`
 )
