@@ -25,7 +25,12 @@ func (n *NeptuneDB) InsertDimension(ctx context.Context, uniqueDimensions map[st
 
 	createDimension := fmt.Sprintf(query.DropDimensionRelationships, instanceID, d.DimensionID, d.Option)
 	createDimension += fmt.Sprintf(query.DropDimension, instanceID, d.DimensionID, d.Option)
-	createDimension += fmt.Sprintf(query.CreateDimensionToInstanceRelationship, instanceID, instanceID, d.DimensionID, d.Option)
+	createDimension += fmt.Sprintf(query.CreateDimensionToInstanceRelationship,
+		instanceID,                // instance node
+		instanceID, d.DimensionID, // label
+		instanceID, d.DimensionID, d.Option, // option specific ID
+		d.Option, // value property
+	)
 
 	res, err := n.getVertex(createDimension)
 

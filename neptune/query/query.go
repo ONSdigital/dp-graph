@@ -103,7 +103,7 @@ const (
 	DropDimensionRelationships            = `g.V().hasLabel('_%s_%s').has('value', "%s").bothE().drop().iterate();`
 	DropDimension                         = `g.V().hasLabel('_%s_%s').has('value', "%s").drop().iterate();`
 	CreateDimensionToInstanceRelationship = `g.V().hasLabel('_%s_Instance').as('inst')` +
-		`.addV('_%s_%s').as('d').property('value',"%s")` +
+		`.addV('_%s_%s').as('d').property(id, '_%s_%s_%s').property('value',"%s")` +
 		`.addE('HAS_DIMENSION').to('inst').select('d')`
 
 	// observation
