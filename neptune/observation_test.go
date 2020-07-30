@@ -39,7 +39,7 @@ func Test_buildObservationsQuery(t *testing.T) {
 			result := buildObservationsQuery(instanceID, filter)
 
 			Convey("Then the resulting query portion should filter to relevant observations", func() {
-				So(result, ShouldEqual, ".V().has('_888_age','value',within('30')).in('isValueOf')")
+				So(result, ShouldEqual, ".V().hasId('_888_age_30').in('isValueOf')")
 			})
 		})
 	})
@@ -58,10 +58,9 @@ func Test_buildObservationsQuery(t *testing.T) {
 			result := buildObservationsQuery(instanceID, filter)
 
 			Convey("Then the resulting query portion should filter to relevant observations", func() {
-				expectedQuery := `.V().has('_888_age','value',within('29','30','31')).in('isValueOf').` +
-					`match(` +
-					`__.as('row').out('isValueOf').has('_888_sex','value',within('male','female','all')),` +
-					`__.as('row').out('isValueOf').has('_888_geography','value',within('K0001','K0002','K0003')))`
+				expectedQuery := `.V().hasId('_888_age_29','_888_age_30','_888_age_31').in('isValueOf')` +
+					`.where(out('isValueOf').hasId('_888_sex_male','_888_sex_female','_888_sex_all','_888_geography_K0001','_888_geography_K0002','_888_geography_K0003')` +
+					`.fold().count(local).is_(2))`
 				So(result, ShouldEqual, expectedQuery)
 			})
 		})

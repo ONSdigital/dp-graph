@@ -35,9 +35,8 @@ func (n *NeptuneDB) StreamCSVRows(ctx context.Context, instanceID, filterID stri
 	}
 
 	q := fmt.Sprintf(query.GetInstanceHeaderPart, instanceID)
-
 	q += buildObservationsQuery(instanceID, filter)
-	q += query.GetObservationSelectRowPart
+	q += query.GetObservationSelectPart
 
 	if limit != nil {
 		q += fmt.Sprintf(query.LimitPart, *limit)
@@ -52,37 +51,35 @@ func buildObservationsQuery(instanceID string, f *observation.DimensionFilters) 
 	}
 
 	var q string
-	var selectOpts []string
+	additionalDimensions := 0
+	var additionalDimensionOptions []string
 
 	for i, dim := range f.Dimensions {
 		if len(dim.Options) == 0 {
 			continue
 		}
 
-		for j, opt := range dim.Options {
-			dim.Options[j] = fmt.Sprintf("'%s'", opt)
+		optionIdPrefix := fmt.Sprintf("_%s_%s_", instanceID, dim.Name)
+		var optionIdList []string
+
+		for _, opt := range dim.Options {
+			optionId := optionIdPrefix + opt
+			optionIdList = append(optionIdList, fmt.Sprintf("'%s'", optionId))
 		}
 
-		// the first dimension filtered first, outside of the match statement
+		// the first dimension filtered independently of the rest to reduce the set of observations to filter, improving performance
 		if i == 0 {
-			q = fmt.Sprintf(query.GetFirstDimensionPart, instanceID, dim.Name, strings.Join(dim.Options, ","))
+			q = fmt.Sprintf(query.GetFirstDimensionPart, strings.Join(optionIdList, ","))
 			continue
 		}
 
-		// only add the match statement if there is a second dimension to match on
-		if i == 1 {
-			q += ".match("
-		}
-
-		selectOpts = append(selectOpts, fmt.Sprintf(query.GetObservationDimensionPart, instanceID, dim.Name, strings.Join(dim.Options, ",")))
-
+		additionalDimensions++
+		additionalDimensionOptions = append(additionalDimensionOptions, optionIdList...)
 	}
 
-	// only close the match statement if there are additional dimensions that have been matched
-	if len(f.Dimensions) > 1 {
-		//comma separate dimension option selections and close match statement
-		q += strings.Join(selectOpts, ",")
-		q += ")"
+	// only filter on additional dimensions if they are defined.
+	if additionalDimensions > 0 {
+		q += fmt.Sprintf(query.GetAdditionalDimensionsPart, strings.Join(additionalDimensionOptions, ","), additionalDimensions)
 	}
 
 	return q
