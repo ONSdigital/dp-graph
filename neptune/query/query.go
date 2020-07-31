@@ -116,6 +116,6 @@ const (
 	GetAllObservationsPart      = `.V().hasLabel('_%s_observation').values('row')`
 	GetFirstDimensionPart       = `.V().hasId(%s).in('isValueOf')`
 	GetAdditionalDimensionsPart = `.where(out('isValueOf').hasId(%s).fold().count(local).is_(%d))`
-	GetObservationSelectPart    = `.values('value').aggregate('results').cap('results').unfold()`
+	GetObservationValuesPart    = `.values('value').aggregate('results').cap('results').unfold()`
 	LimitPart                   = `.limit(%d)`
 )

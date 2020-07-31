@@ -36,7 +36,7 @@ func (n *NeptuneDB) StreamCSVRows(ctx context.Context, instanceID, filterID stri
 
 	q := fmt.Sprintf(query.GetInstanceHeaderPart, instanceID)
 	q += buildObservationsQuery(instanceID, filter)
-	q += query.GetObservationSelectPart
+	q += query.GetObservationValuesPart
 
 	if limit != nil {
 		q += fmt.Sprintf(query.LimitPart, *limit)
