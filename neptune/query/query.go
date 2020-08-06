@@ -113,7 +113,7 @@ const (
 	AddObservationRelationshipPart = `.V().hasId('%s').hasLabel('_%s_%s').where(values('value').is("%s")).addE('isValueOf').from('o')`
 
 	GetInstanceHeaderPart       = `g.V().hasLabel('_%s_Instance').values('header').aggregate('results')`
-	GetAllObservationsPart      = `.V().hasLabel('_%s_observation').values('row')`
+	GetAllObservationsPart      = `.V().hasLabel('_%s_observation')`
 	GetFirstDimensionPart       = `.V().hasId(%s).in('isValueOf')`
 	GetAdditionalDimensionsPart = `.where(out('isValueOf').hasId(%s).fold().count(local).is_(%d))`
 	GetObservationValuesPart    = `.values('value').aggregate('results').cap('results').unfold()`
