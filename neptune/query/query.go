@@ -85,24 +85,24 @@ const (
 	GetAncestry = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code', '%s').repeat(out('hasParent')).emit()`
 
 	// instance - import process
-	CreateInstance                   = `g.addV('_%s_Instance').property(single,'header',"%s")`
-	CheckInstance                    = `g.V().hasLabel('_%s_Instance').count()`
-	CreateInstanceToCodeRelationship = `g.V().hasLabel('_%s_Instance').as('i').` +
+	CreateInstance                   = `g.addV('_Instance').property(id, '_%s_Instance').property(single,'header',"%s")`
+	CheckInstance                    = `g.V().hasId('_%s_Instance').count()`
+	CreateInstanceToCodeRelationship = `g.V().hasId('_%s_Instance').as('i').` +
 		`V().hasLabel('_code').has('value',"%s").where(out('usedBy').hasLabel('_code_list').has('listID','%s')).as('c')` +
 		`.addE('inDataset').to('i')`
-	AddVersionDetailsToInstance = `g.V().hasLabel('_%s_Instance').property(single,'dataset_id','%s').` +
+	AddVersionDetailsToInstance = `g.V().hasId('_%s_Instance').property(single,'dataset_id','%s').` +
 		`property(single,'edition','%s').property(single,'version','%d')`
-	SetInstanceIsPublished = `g.V().hasLabel('_%s_Instance').property(single,'is_published',true)`
+	SetInstanceIsPublished = `g.V().hasId('_%s_Instance').property(single,'is_published',true)`
 	CountObservations      = `g.V().hasLabel('_%s_observation').count()`
 
 	//instance - parts
-	AddInstanceDimensionsPart         = `g.V().hasLabel('_%s_Instance')`
+	AddInstanceDimensionsPart         = `g.V().hasId('_%s_Instance')`
 	AddInstanceDimensionsPropertyPart = `.property('dimensions', "%s")`
 
 	// dimension
 	DropDimensionRelationships            = `g.V().hasLabel('_%s_%s').has('value', "%s").bothE().drop().iterate();`
 	DropDimension                         = `g.V().hasLabel('_%s_%s').has('value', "%s").drop().iterate();`
-	CreateDimensionToInstanceRelationship = `g.V().hasLabel('_%s_Instance').as('inst')` +
+	CreateDimensionToInstanceRelationship = `g.V().hasId('_%s_Instance').as('inst')` +
 		`.addV('_%s_%s').as('d').property(id, '_%s_%s_%s').property('value',"%s")` +
 		`.addE('HAS_DIMENSION').to('inst').select('d')`
 
@@ -112,7 +112,7 @@ const (
 	CreateObservationPart          = `g.addV('_%s_observation').as('o').property(single, 'value', '%s').property(single, 'rowIndex', '%d')`
 	AddObservationRelationshipPart = `.V().hasId('%s').hasLabel('_%s_%s').where(values('value').is("%s")).addE('isValueOf').from('o')`
 
-	GetInstanceHeaderPart       = `g.V().hasLabel('_%s_Instance').values('header').aggregate('results')`
+	GetInstanceHeaderPart       = `g.V().hasId('_%s_Instance').values('header').aggregate('results')`
 	GetAllObservationsPart      = `.V().hasLabel('_%s_observation')`
 	GetFirstDimensionPart       = `.V().hasId(%s).in('isValueOf')`
 	GetAdditionalDimensionsPart = `.where(out('isValueOf').hasId(%s).fold().count(local).is_(%d))`
