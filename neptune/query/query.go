@@ -100,8 +100,8 @@ const (
 	AddInstanceDimensionsPropertyPart = `.property('dimensions', "%s")`
 
 	// dimension
-	DropDimensionRelationships            = `g.V().hasLabel('_%s_%s').has('value', "%s").bothE().drop().iterate();`
-	DropDimension                         = `g.V().hasLabel('_%s_%s').has('value', "%s").drop().iterate();`
+	DropDimensionRelationships            = `g.V().hasId('_%s_%s_%s').bothE().drop().iterate();`
+	DropDimension                         = `g.V().hasId('_%s_%s_%s').drop().iterate();`
 	CreateDimensionToInstanceRelationship = `g.V().hasId('_%s_Instance').as('inst')` +
 		`.addV('_%s_%s').as('d').property(id, '_%s_%s_%s').property('value',"%s")` +
 		`.addE('HAS_DIMENSION').to('inst').select('d')`
@@ -110,7 +110,7 @@ const (
 	DropObservationRelationships   = `g.V().hasLabel('_%s_observation').has('value', '%s').bothE().drop().iterate();`
 	DropObservation                = `g.V().hasLabel('_%s_observation').has('value', '%s').drop().iterate();`
 	CreateObservationPart          = `g.addV('_%s_observation').as('o').property(single, 'value', '%s').property(single, 'rowIndex', '%d')`
-	AddObservationRelationshipPart = `.V().hasId('%s').hasLabel('_%s_%s').where(values('value').is("%s")).addE('isValueOf').from('o')`
+	AddObservationRelationshipPart = `.V().hasId('%s').addE('isValueOf').from('o')`
 
 	GetInstanceHeaderPart       = `g.V().hasId('_%s_Instance').values('header').aggregate('results')`
 	GetAllObservationsPart      = `.V().hasLabel('_%s_observation')`

@@ -117,7 +117,7 @@ func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, ins
 				return fmt.Errorf("no nodeID [%s] found in dimension map", dimensionLookup)
 			}
 
-			create += fmt.Sprintf(query.AddObservationRelationshipPart, nodeID, instanceID, d.DimensionName, d.Name)
+			create += fmt.Sprintf(query.AddObservationRelationshipPart, nodeID)
 		}
 
 		create = strings.TrimSuffix(create, ".outV()")
