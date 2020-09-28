@@ -85,7 +85,7 @@ const (
 	GetAncestry = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code', '%s').repeat(out('hasParent')).emit()`
 
 	// instance - import process
-	CreateInstance                   = `g.addV('_Instance').property(id, '_%s_Instance').property(single,'header',"%s")`
+	CreateInstance                   = `g.addV('_%s_Instance').property(id, '_%s_Instance').property(single,'header',"%s")`
 	CheckInstance                    = `g.V().hasId('_%s_Instance').count()`
 	CreateInstanceToCodeRelationship = `g.V().hasId('_%s_Instance').as('i').` +
 		`V().hasLabel('_code').has('value',"%s").where(out('usedBy').hasLabel('_code_list').has('listID','%s')).as('c')` +

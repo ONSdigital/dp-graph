@@ -83,7 +83,7 @@ func (n *NeptuneDB) CreateInstance(ctx context.Context, instanceID string, csvHe
 		return nil
 	}
 
-	create := fmt.Sprintf(query.CreateInstance, instanceID, strings.Join(csvHeaders, ","))
+	create := fmt.Sprintf(query.CreateInstance, instanceID, instanceID, strings.Join(csvHeaders, ","))
 	if _, err := n.exec(create); err != nil {
 		log.Event(ctx, "neptune exec failed on CreateInstance", log.ERROR, data, log.Error(err))
 		return err
