@@ -35,6 +35,11 @@ func (n *NeptuneDB) StreamCSVRows(ctx context.Context, instanceID, filterID stri
 	}
 
 	q := fmt.Sprintf(query.GetInstanceHeaderPart, instanceID)
+	headerReader, err := n.Pool.OpenStreamCursor(ctx, q, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	q += buildObservationsQuery(instanceID, filter)
 	q += query.GetObservationValuesPart
 
@@ -42,7 +47,12 @@ func (n *NeptuneDB) StreamCSVRows(ctx context.Context, instanceID, filterID stri
 		q += fmt.Sprintf(query.LimitPart, *limit)
 	}
 
-	return n.Pool.OpenStreamCursor(ctx, q, nil, nil)
+	observationReader, err := n.Pool.OpenStreamCursor(ctx, q, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return observation.NewCompositeRowReader(headerReader, observationReader), nil
 }
 
 func buildObservationsQuery(instanceID string, f *observation.DimensionFilters) string {
