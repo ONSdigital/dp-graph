@@ -144,10 +144,5 @@ func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, ins
 }
 
 func escapeSingleQuotes(input string) string {
-	for i, c := range input {
-		if string(c) == "'" {
-			input = input[:i] + "\\" + input[i:]
-		}
-	}
-	return input
+	return strings.Replace(input, "'", "\\'", -1)
 }

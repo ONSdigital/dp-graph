@@ -113,5 +113,35 @@ func Test_StreamCSVRows(t *testing.T) {
 			})
 		})
 	})
+}
 
+func Test_escapeSingleQuotes(t *testing.T) {
+
+	Convey("Given a value with a single quote", t, func() {
+
+		value := "carl's"
+		expected := "carl\\'s"
+
+		Convey("When escapeSingleQuotes is called", func() {
+			actual := escapeSingleQuotes(value)
+
+			Convey("Then single quote is escaped", func() {
+				So(actual, ShouldEqual, expected)
+			})
+		})
+	})
+
+	Convey("Given a value with multiple single quotes", t, func() {
+
+		value := "83.8,,1999,1999,E07000146,King's Lynn and West Norfolk,68IMP,68IMP : Owner-occupiers' imputed rental,chained-volume-measures-index,Chained volume measures index"
+		expected := "83.8,,1999,1999,E07000146,King\\'s Lynn and West Norfolk,68IMP,68IMP : Owner-occupiers\\' imputed rental,chained-volume-measures-index,Chained volume measures index"
+
+		Convey("When escapeSingleQuotes is called", func() {
+			actual := escapeSingleQuotes(value)
+
+			Convey("Then each single quote is correctly escaped", func() {
+				So(actual, ShouldEqual, expected)
+			})
+		})
+	})
 }
