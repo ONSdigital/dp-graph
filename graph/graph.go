@@ -24,6 +24,11 @@ type DB struct {
 	Errors chan error
 }
 
+// ErrorChan returns the error channel associated with this DB
+func (db DB) ErrorChan() chan error {
+	return db.Errors
+}
+
 // Subsets allows a clear and concise way of requesting any combination of
 // functionality by groups of node types
 type Subsets struct {
