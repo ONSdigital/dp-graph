@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/query"
 	"github.com/ONSdigital/log.go/log"
 )
@@ -36,7 +37,13 @@ func (n *Neo4j) CreateInstanceHierarchyConstraints(ctx context.Context, attempt 
 }
 
 // CloneNodes copies nodes from a generic hierarchy and identifies them as instance specific hierarchy nodes
-func (n *Neo4j) CloneNodes(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error {
+func (n *Neo4j) CloneNodes(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids []string, hasData bool) error {
+
+	// array of IDs are provided by the new hierarchy build algorithm, which is not implemented by Neo4j
+	if len(ids) > 0 {
+		return driver.ErrNotImplemented
+	}
+
 	q := fmt.Sprintf(
 		query.CloneHierarchyNodes,
 		codeListID,
@@ -58,7 +65,7 @@ func (n *Neo4j) CloneNodes(ctx context.Context, attempt int, instanceID, codeLis
 			return finalErr
 		}
 
-		return n.CloneNodes(ctx, attempt+1, instanceID, codeListID, dimensionName)
+		return n.CloneNodes(ctx, attempt+1, instanceID, codeListID, dimensionName, ids, hasData)
 	}
 
 	return nil
@@ -84,7 +91,13 @@ func (n *Neo4j) CountNodes(ctx context.Context, instanceID, dimensionName string
 }
 
 // CloneRelationships copies relationships from a generic hierarchy and uses them to join instance specific hierarchy nodes
-func (n *Neo4j) CloneRelationships(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error {
+func (n *Neo4j) CloneRelationships(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids []string) error {
+
+	// array of IDs are provided by the new hierarchy build algorithm, which is not implemented by Neo4j
+	if len(ids) > 0 {
+		return driver.ErrNotImplemented
+	}
+
 	q := fmt.Sprintf(
 		query.CloneHierarchyRelationships,
 		codeListID,
@@ -109,7 +122,7 @@ func (n *Neo4j) CloneRelationships(ctx context.Context, attempt int, instanceID,
 			return finalErr
 		}
 
-		return n.CloneRelationships(ctx, attempt+1, instanceID, codeListID, dimensionName)
+		return n.CloneRelationships(ctx, attempt+1, instanceID, codeListID, dimensionName, ids)
 	}
 
 	return nil

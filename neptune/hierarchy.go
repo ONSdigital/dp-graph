@@ -3,8 +3,9 @@ package neptune
 import (
 	"context"
 	"fmt"
-	"github.com/pkg/errors"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/dp-graph/v2/models"
@@ -20,21 +21,93 @@ func (n *NeptuneDB) CreateInstanceHierarchyConstraints(ctx context.Context, atte
 	return nil
 }
 
-func (n *NeptuneDB) CloneNodes(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) (err error) {
-	gremStmt := fmt.Sprintf(
-		query.CloneHierarchyNodes,
-		codeListID,
+// GetCodesWithData returns a list of values that are present in nodes with label _{instanceID}_{dimensionName}
+func (n *NeptuneDB) GetCodesWithData(ctx context.Context, attempt int, instanceID, dimensionName string) (codes []string, err error) {
+	codesWithDataStmt := fmt.Sprintf(
+		query.GetCodesWithData,
 		instanceID,
 		dimensionName,
+	)
+
+	logData := log.Data{
+		"instance_id":    instanceID,
+		"dimension_name": dimensionName,
+	}
+
+	log.Event(ctx, "getting instance dimension codes that have data", log.INFO, logData)
+
+	codes, err = n.getStringList(codesWithDataStmt)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Gremlin query failed: %q", codesWithDataStmt)
+	}
+	return
+}
+
+// GetGenericHierarchyNodeIDs obtains a list of node IDs for generic hierarchy nodes for the provided codeListID, which have a code in the provided list.
+func (n *NeptuneDB) GetGenericHierarchyNodeIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs []string, err error) {
+	return n.doGetGenericHierarchyNodeIDs(ctx, attempt, codeListID, codes, false)
+}
+
+// GetGenericHierarchyAncestriesIDs obtains a list of node IDs for the parents of the hierarchy nodes that have a code in the provided list.
+func (n *NeptuneDB) GetGenericHierarchyAncestriesIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs []string, err error) {
+	return n.doGetGenericHierarchyNodeIDs(ctx, attempt, codeListID, codes, true)
+}
+
+func (n *NeptuneDB) doGetGenericHierarchyNodeIDs(ctx context.Context, attempt int, codeListID string, codes []string, ancestries bool) (nodeIDs []string, err error) {
+	logData := log.Data{
+		"code_list_id": codeListID,
+		"num_codes":    len(codes),
+	}
+
+	codes = unique(codes)
+	codesString := `["` + strings.Join(codes, `","`) + `"]`
+
+	var stmt string
+	if ancestries {
+		stmt = fmt.Sprintf(
+			query.GetHierarchyAncestryIDs,
+			codeListID,
+			codesString,
+		)
+		log.Event(ctx, "getting generic hierarchy node ancestry ids for the provided codes", log.INFO, logData)
+	} else {
+		stmt = fmt.Sprintf(
+			query.GetHierarchyNodeIDs,
+			codeListID,
+			codesString,
+		)
+		log.Event(ctx, "getting generic hierarchy node leaf ids for the provided codes", log.INFO, logData)
+	}
+
+	ids, err := n.getStringList(stmt)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Gremlin query failed: %q", stmt)
+	}
+	return unique(ids), nil
+}
+
+// CloneNodes clones the generic hierarchy nodes which have a code that is present in the provided codes array.
+func (n *NeptuneDB) CloneNodes(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids []string, hasData bool) (err error) {
+	// TODO make this should be idempotent by checking if the node already exists
+	ids = unique(ids)
+	idsStr := `'` + strings.Join(ids, `','`) + `'`
+	gremStmt := fmt.Sprintf(
+		query.CloneHierarchyNodes,
+		idsStr,
+		instanceID,
+		dimensionName,
+		hasData,
 		codeListID,
 	)
 	logData := log.Data{"fn": "CloneNodes",
 		"gremlin":        gremStmt,
 		"instance_id":    instanceID,
-		"code_list_id":   codeListID,
 		"dimension_name": dimensionName,
+		"code_list_id":   codeListID,
+		"has_data":       hasData,
+		"num_ids":        len(ids),
 	}
-	log.Event(ctx, "cloning nodes from the generic hierarchy", log.INFO, logData)
+	log.Event(ctx, "cloning necessary nodes from the generic hierarchy", log.INFO, logData)
 
 	if _, err = n.exec(gremStmt); err != nil {
 		log.Event(ctx, "cannot get vertices during cloning", log.ERROR, logData, log.Error(err))
@@ -44,6 +117,7 @@ func (n *NeptuneDB) CloneNodes(ctx context.Context, attempt int, instanceID, cod
 	return
 }
 
+// CountNodes returns the number of hierarchy nodes for the provided instanceID and dimensionName
 func (n *NeptuneDB) CountNodes(ctx context.Context, instanceID, dimensionName string) (count int64, err error) {
 	gremStmt := fmt.Sprintf(query.CountHierarchyNodes, instanceID, dimensionName)
 	logData := log.Data{
@@ -61,10 +135,14 @@ func (n *NeptuneDB) CountNodes(ctx context.Context, instanceID, dimensionName st
 	return
 }
 
-func (n *NeptuneDB) CloneRelationships(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) (err error) {
+// CloneRelationships clones the hs_parent edges between clones that have parent relationship according to the generic hierarchy nodes
+func (n *NeptuneDB) CloneRelationships(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids []string) error {
+	// TODO make idempotent
+	ids = unique(ids)
+	idsStr := `'` + strings.Join(ids, `','`) + `'`
 	gremStmt := fmt.Sprintf(
 		query.CloneHierarchyRelationships,
-		codeListID,
+		idsStr,
 		instanceID,
 		dimensionName,
 		instanceID,
@@ -74,15 +152,15 @@ func (n *NeptuneDB) CloneRelationships(ctx context.Context, attempt int, instanc
 	logData := log.Data{
 		"fn":             "CloneRelationships",
 		"instance_id":    instanceID,
-		"code_list_id":   codeListID,
 		"dimension_name": dimensionName,
+		"num_ids":        len(ids),
 		"gremlin":        gremStmt,
 	}
 	log.Event(ctx, "cloning relationships from the generic hierarchy", log.INFO, logData)
 
-	if _, err = n.getEdges(gremStmt); err != nil {
+	if _, err := n.getEdges(gremStmt); err != nil {
 		log.Event(ctx, "cannot find edges while cloning relationships", log.ERROR, logData, log.Error(err))
-		return
+		return err
 	}
 
 	return n.RemoveCloneEdges(ctx, attempt, instanceID, dimensionName)
@@ -310,4 +388,15 @@ func (n *NeptuneDB) GetHierarchyElement(ctx context.Context, instanceID, dimensi
 		return
 	}
 	return
+}
+
+func unique(duplicated []string) (unique []string) {
+	m := make(map[string]struct{})
+	for _, val := range duplicated {
+		m[val] = struct{}{}
+	}
+	for k := range m {
+		unique = append(unique, k)
+	}
+	return unique
 }

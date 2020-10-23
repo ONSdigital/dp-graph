@@ -50,17 +50,21 @@ const (
 		union(select('rl', 'de', 'dv', 'did')).unfold().select(values)
 	`
 
+	// Get ids for generic hierarchy nodes with provided codes and its ancestries. Note: the returned array will have duplicated values (one for each time a subtree is traversed)
+	// GetHierarchyNodeIDs = `g.V().hasLabel('_generic_hierarchy_node_%s).has('code',within(%s)).repeat(out('hasParent')).emit().id()`
+	GetHierarchyNodeIDs     = `g.V().hasLabel('_generic_hierarchy_node_%s').has('code',within(%s)).id()`
+	GetHierarchyAncestryIDs = `g.V().hasLabel('_generic_hierarchy_node_%s').has('code',within(%s)).repeat(out('hasParent')).emit().id()`
+
 	// hierarchy write
-	CloneHierarchyNodes = `g.V().hasLabel('_generic_hierarchy_node_%s').as('old')` +
+	CloneHierarchyNodes = `g.V(%s).as('old')` +
 		`.addV('_hierarchy_node_%s_%s')` +
 		`.property(single,'code',select('old').values('code'))` +
 		`.property(single,'label',select('old').values('label'))` +
-		`.property(single,'hasData', false)` +
+		`.property(single,'hasData', %t)` +
 		`.property('code_list','%s').as('new')` +
-		`.addE('clone_of').to('old')` +
-		`.select('new')`
+		`.addE('clone_of').to('old')`
 	CountHierarchyNodes         = `g.V().hasLabel('_hierarchy_node_%s_%s').count()`
-	CloneHierarchyRelationships = `g.V().hasLabel('_generic_hierarchy_node_%s').as('oc')` +
+	CloneHierarchyRelationships = `g.V(%s).as('oc')` +
 		`.out('hasParent')` +
 		`.in('clone_of').hasLabel('_hierarchy_node_%s_%s').as('p')` +
 		`.select('oc').in('clone_of').hasLabel('_hierarchy_node_%s_%s')` +

@@ -100,3 +100,18 @@ func (n *Neo4j) queryElements(ctx context.Context, instanceID, dimension, neoStm
 
 	return res.List, nil
 }
+
+// GetCodesWithData not implemented by Neo4j (new hierarchy build algorithm)
+func (n *Neo4j) GetCodesWithData(ctx context.Context, attempt int, instanceID, dimensionName string) (codes []string, err error) {
+	return []string{}, driver.ErrNotImplemented
+}
+
+// GetGenericHierarchyNodeIDs not implemented by Neo4j (new hierarchy build algorithm)
+func (n *Neo4j) GetGenericHierarchyNodeIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs []string, err error) {
+	return []string{}, driver.ErrNotImplemented
+}
+
+// GetGenericHierarchyAncestriesIDs not implemented by Neo4j (new hierarchy build algorithm)
+func (n *Neo4j) GetGenericHierarchyAncestriesIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs []string, err error) {
+	return []string{}, driver.ErrNotImplemented
+}

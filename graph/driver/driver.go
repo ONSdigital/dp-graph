@@ -29,9 +29,12 @@ type CodeList interface {
 // Hierarchy defines functions to create and retrieve generic and instance hierarchy nodes
 type Hierarchy interface {
 	CreateInstanceHierarchyConstraints(ctx context.Context, attempt int, instanceID, dimensionName string) error
-	CloneNodes(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error
+	GetCodesWithData(ctx context.Context, attempt int, instanceID, dimensionName string) (codes []string, err error)
+	GetGenericHierarchyNodeIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs []string, err error)
+	GetGenericHierarchyAncestriesIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs []string, err error)
+	CloneNodes(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids []string, hasData bool) (err error)
 	CountNodes(ctx context.Context, instanceID, dimensionName string) (count int64, err error)
-	CloneRelationships(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error
+	CloneRelationships(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids []string) error
 	SetNumberOfChildren(ctx context.Context, attempt int, instanceID, dimensionName string) error
 	SetHasData(ctx context.Context, attempt int, instanceID, dimensionName string) error
 	MarkNodesToRemain(ctx context.Context, attempt int, instanceID, dimensionName string) error

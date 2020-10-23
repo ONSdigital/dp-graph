@@ -127,7 +127,7 @@ func TestStore_CloneNodes(t *testing.T) {
 		db := &Neo4j{driver, 5, 30}
 
 		Convey("When CloneNodes is called", func() {
-			err := db.CloneNodes(context.Background(), 1, instanceID, codeListID, dimensionName)
+			err := db.CloneNodes(context.Background(), 1, instanceID, codeListID, dimensionName, []string{}, false)
 
 			Convey("Then the returned error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -136,6 +136,18 @@ func TestStore_CloneNodes(t *testing.T) {
 			Convey("Then db.Exec should be called once for the expected query", func() {
 				So(len(driver.ExecCalls()), ShouldEqual, 1)
 				So(driver.ExecCalls()[0].Query, ShouldEqual, expectedQuery)
+			})
+		})
+
+		Convey("When CloneNode is called with a list of IDs", func() {
+			err := db.CloneNodes(context.Background(), 1, instanceID, codeListID, dimensionName, []string{"someID"}, false)
+
+			Convey("Then the returned error should be ErrNotImplemented", func() {
+				So(err, ShouldEqual, graph.ErrNotImplemented)
+			})
+
+			Convey("Then db.Exec is not called", func() {
+				So(len(driver.ExecCalls()), ShouldEqual, 0)
 			})
 		})
 	})
@@ -153,7 +165,7 @@ func TestStore_CloneNodes_NeoerrExec(t *testing.T) {
 		db := &Neo4j{driver, 5, 30}
 
 		Convey("When CloneNodes is called", func() {
-			err := db.CloneNodes(context.Background(), 1, instanceID, codeListID, dimensionName)
+			err := db.CloneNodes(context.Background(), 1, instanceID, codeListID, dimensionName, []string{}, false)
 
 			Convey("Then db.Exec should be called once for the expected query", func() {
 				So(len(driver.ExecCalls()), ShouldEqual, 1)
@@ -192,7 +204,7 @@ func TestStore_CloneRelationships(t *testing.T) {
 		db := &Neo4j{driver, 5, 30}
 
 		Convey("When CloneRelationships is called", func() {
-			err := db.CloneRelationships(context.Background(), 1, instanceID, codeListID, dimensionName)
+			err := db.CloneRelationships(context.Background(), 1, instanceID, codeListID, dimensionName, []string{})
 
 			Convey("Then the returned error should be nil", func() {
 				So(err, ShouldBeNil)
@@ -201,6 +213,18 @@ func TestStore_CloneRelationships(t *testing.T) {
 			Convey("Then db.Exec should be called once for the expected query", func() {
 				So(len(driver.ExecCalls()), ShouldEqual, 1)
 				So(driver.ExecCalls()[0].Query, ShouldEqual, expectedQuery)
+			})
+		})
+
+		Convey("When CloneNode is called with a list of IDs", func() {
+			err := db.CloneRelationships(context.Background(), 1, instanceID, codeListID, dimensionName, []string{"someID"})
+
+			Convey("Then the returned error should be ErrNotImplemented", func() {
+				So(err, ShouldEqual, graph.ErrNotImplemented)
+			})
+
+			Convey("Then db.Exec is not called", func() {
+				So(len(driver.ExecCalls()), ShouldEqual, 0)
 			})
 		})
 	})
@@ -219,7 +243,7 @@ func TestStore_CloneRelationships_NeoErrExec(t *testing.T) {
 
 		Convey("When cloneRelationships is called", func() {
 
-			err := db.CloneRelationships(context.Background(), 1, instanceID, codeListID, dimensionName)
+			err := db.CloneRelationships(context.Background(), 1, instanceID, codeListID, dimensionName, []string{})
 
 			Convey("Then db.Exec should be called once for the expected query", func() {
 				So(len(driver.ExecCalls()), ShouldEqual, 1)
