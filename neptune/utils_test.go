@@ -153,3 +153,23 @@ func TestInConcurrentBatches(t *testing.T) {
 		})
 	})
 }
+
+func TestStatementSummary(t *testing.T) {
+
+	Convey("A statement without any list of IDs or codes is summarized to itself", t, func() {
+		original := "g.V().hasLabel('_hierarchy_node_instance_dim').id()"
+		So(statementSummary(original), ShouldResemble, original)
+	})
+
+	Convey("A statement that starts querying a list of vertices by ID is summarized to the same without showing the IDs", t, func() {
+		original := "g.V('node1','node2','node3').outE('clone_of').drop()"
+		expected := "g.V(...).outE('clone_of').drop()"
+		So(statementSummary(original), ShouldResemble, expected)
+	})
+
+	Convey("A statement that requests an element 'within' a list is summarized to the same without showing the list of elements", t, func() {
+		original := "g.V().hasLabel('_generic_hierarchy_node_output-area-geography').has('code',within(['code1','code2','code3'])).id()"
+		expected := "g.V().hasLabel('_generic_hierarchy_node_output-area-geography').has('code',within([...])).id()"
+		So(statementSummary(original), ShouldResemble, expected)
+	})
+}

@@ -65,7 +65,7 @@ func (n *NeptuneDB) doGetGenericHierarchyNodeIDs(ctx context.Context, attempt in
 	}
 
 	processBatch := func(chunkCodes []string) (ret []string, err error) {
-		codesString := `["` + strings.Join(chunkCodes, `","`) + `"]`
+		codesString := `['` + strings.Join(chunkCodes, `','`) + `']`
 		var stmt string
 		if ancestries {
 			stmt = fmt.Sprintf(
@@ -390,7 +390,7 @@ func (n *NeptuneDB) SetHasData(ctx context.Context, attempt int, instanceID, dim
 		return errors.Wrapf(err, "Gremlin query failed: %q", codesWithDataStmt)
 	}
 
-	codesString := `["` + strings.Join(codes, `","`) + `"]`
+	codesString := `['` + strings.Join(codes, `','`) + `']`
 
 	gremStmt := fmt.Sprintf(
 		query.SetHasData,

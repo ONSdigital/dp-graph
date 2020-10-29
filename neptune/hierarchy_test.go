@@ -80,8 +80,8 @@ func TestNeptuneDB_GetGenericHierarchyNodeIDs(t *testing.T) {
 				So(len(ids), ShouldEqual, 2)
 				So(ids, ShouldContain, "cpih1dim1aggid--cpih1dim1S90401")
 				So(ids, ShouldContain, "cpih1dim1aggid--cpih1dim1S90402")
-				expectedQueryOp1 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(["cpih1dim1S90401","cpih1dim1S90402"])).id()`
-				expectedQueryOp2 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(["cpih1dim1S90402","cpih1dim1S90401"])).id()`
+				expectedQueryOp1 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90401','cpih1dim1S90402'])).id()`
+				expectedQueryOp2 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90402','cpih1dim1S90401'])).id()`
 				So(len(poolMock.GetStringListCalls()), ShouldEqual, 1)
 				So(poolMock.GetStringListCalls()[0].Query, ShouldBeIn, []string{expectedQueryOp1, expectedQueryOp2})
 			})
@@ -109,8 +109,8 @@ func TestNeptuneDB_GetGenericHierarchyAncestriesIDs(t *testing.T) {
 				So(ids, ShouldContain, "cpih1dim1aggid--cpih1dim1G90400")
 				So(ids, ShouldContain, "cpih1dim1aggid--cpih1dim1T90000")
 				So(ids, ShouldContain, "cpih1dim1aggid--cpih1dim1A0")
-				expectedQueryOp1 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(["cpih1dim1S90401","cpih1dim1S90402"])).repeat(out('hasParent')).emit().id()`
-				expectedQueryOp2 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(["cpih1dim1S90402","cpih1dim1S90401"])).repeat(out('hasParent')).emit().id()`
+				expectedQueryOp1 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90401','cpih1dim1S90402'])).repeat(out('hasParent')).emit().id()`
+				expectedQueryOp2 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90402','cpih1dim1S90401'])).repeat(out('hasParent')).emit().id()`
 				So(len(poolMock.GetStringListCalls()), ShouldEqual, 1)
 				So(poolMock.GetStringListCalls()[0].Query, ShouldBeIn, []string{expectedQueryOp1, expectedQueryOp2})
 			})
@@ -384,7 +384,7 @@ func TestNeptuneDB_SetHasData(t *testing.T) {
 			})
 
 			Convey("Then the expected query is sent to Neptune to set the hasData property", func() {
-				expectedQuery := `g.V().hasLabel('_hierarchy_node_instanceID_dimensionName').as('v').has('code',within(["cpih1dim1S90401","cpih1dim1S90402"])).property(single,'hasData',true)`
+				expectedQuery := `g.V().hasLabel('_hierarchy_node_instanceID_dimensionName').as('v').has('code',within(['cpih1dim1S90401','cpih1dim1S90402'])).property(single,'hasData',true)`
 				So(poolMock.ExecuteCalls()[0].Query, ShouldEqual, expectedQuery)
 			})
 		})

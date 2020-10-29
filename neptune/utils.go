@@ -1,6 +1,7 @@
 package neptune
 
 import (
+	"strings"
 	"sync"
 )
 
@@ -103,4 +104,17 @@ func createMap(a ...[]string) (m map[string]struct{}) {
 		}
 	}
 	return m
+}
+
+// statementSummary returns a summarized statement for logging, removing long lists of IDs or codes
+func statementSummary(stmt string) string {
+	if strings.HasPrefix(stmt, "g.V('") {
+		i := strings.Index(stmt, "')")
+		return "g.V(...)" + stmt[i+2:]
+	}
+	if i := strings.Index(stmt, "within(["); i != -1 {
+		j := strings.Index(stmt[i:], "])")
+		return stmt[:i] + "within([...])" + stmt[i+j+2:]
+	}
+	return stmt
 }
