@@ -25,6 +25,13 @@ var (
 		"cpih1dim1aggid--cpih1dim1G90400", "cpih1dim1aggid--cpih1dim1G90400",
 		"cpih1dim1aggid--cpih1dim1T90000", "cpih1dim1aggid--cpih1dim1T90000",
 		"cpih1dim1aggid--cpih1dim1A0", "cpih1dim1aggid--cpih1dim1A0"}
+	testClonedIds = []string{
+		"62bab579-e923-7cb2-3be0-34d09dc0567b",
+		"acbab579-e923-87df-e59a-9daf2ffed388",
+		"b6bab57a-604d-8a7f-59f5-1d496c9b3ca5",
+		"08bab57a-604d-9cd9-492f-e879cee05502",
+		"6cbab57a-604d-f176-9370-c60c19369801",
+	}
 )
 
 func TestNeptuneDB_GetCodesWithData(t *testing.T) {
@@ -236,6 +243,65 @@ func TestNeptuneDB_RemoveCloneEdges(t *testing.T) {
 	})
 }
 
+func TestNeptuneDB_RemoveCloneEdgesFromSourceIDs(t *testing.T) {
+
+	Convey("Given a mocked neptune DB", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) (responses []gremgo.Response, err error) {
+				return []gremgo.Response{}, nil
+			},
+		}
+		db := mockDB(poolMock)
+
+		Convey("When RemoveCloneEdgesFromSourceIDs is called", func() {
+			err := db.RemoveCloneEdgesFromSourceIDs(ctx, testAttempt, testClonedIds)
+
+			Convey("Then no error is returned", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the clone relationships are removed", func() {
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 1)
+				expectedQPrefix := `g.V('`
+				expectedQSuffix := `').outE('clone_of').drop()`
+				So(strings.HasPrefix(poolMock.ExecuteCalls()[0].Query, expectedQPrefix), ShouldBeTrue)
+				for _, id := range testClonedIds {
+					So(strings.Count(poolMock.ExecuteCalls()[0].Query, id), ShouldEqual, 1)
+				}
+				So(strings.HasSuffix(poolMock.ExecuteCalls()[0].Query, expectedQSuffix), ShouldBeTrue)
+			})
+		})
+	})
+}
+
+func TestNeptuneDB_GetHierarchyNodeIDs(t *testing.T) {
+
+	Convey("Given a mocked neptune DB", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetStringListFunc: internal.ReturnHierarchyNodeIDs,
+		}
+		db := mockDB(poolMock)
+
+		Convey("When GetHierarchyNodeIDs is called", func() {
+			ids, err := db.GetHierarchyNodeIDs(ctx, testAttempt, testInstanceID, testDimensionName)
+
+			Convey("Then no error is returned", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the expected query is sent to Neptune to obtain the cloned hierarchy node IDs, and the expected IDs are returned", func() {
+				So(len(ids), ShouldEqual, 5)
+				for _, id := range testClonedIds {
+					So(ids, ShouldContain, id)
+				}
+				expectedQuery := `g.V().hasLabel('_hierarchy_node_f0a2f3f2-cc86-4bbb-a549-ffc99c89292c_aggregate').id()`
+				So(len(poolMock.GetStringListCalls()), ShouldEqual, 1)
+				So(poolMock.GetStringListCalls()[0].Query, ShouldResemble, expectedQuery)
+			})
+		})
+	})
+}
+
 func TestNeptuneDB_SetNumberOfChildren(t *testing.T) {
 
 	Convey("Given a mocked neptune DB", t, func() {
@@ -257,6 +323,37 @@ func TestNeptuneDB_SetNumberOfChildren(t *testing.T) {
 				expectedQuery := `g.V().hasLabel('_hierarchy_node_f0a2f3f2-cc86-4bbb-a549-ffc99c89292c_aggregate').property(single,'numberOfChildren',__.in('hasParent').count())`
 				So(len(poolMock.ExecuteCalls()), ShouldEqual, 1)
 				So(poolMock.ExecuteCalls()[0].Query, ShouldResemble, expectedQuery)
+			})
+		})
+	})
+}
+
+func TestNeptuneDB_SetNumberOfChildrenFromIDs(t *testing.T) {
+
+	Convey("Given a mocked neptune DB", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) (responses []gremgo.Response, err error) {
+				return []gremgo.Response{}, nil
+			},
+		}
+		db := mockDB(poolMock)
+
+		Convey("When SetNumberOfChildrenFromIDs is called", func() {
+			err := db.SetNumberOfChildrenFromIDs(ctx, testAttempt, testClonedIds)
+
+			Convey("Then no error is returned", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then the expected query is sent to Neptune to set the number of children for all provided nodeIDs", func() {
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 1)
+				expectedQPrefix := `g.V('`
+				expectedQSuffix := `').property(single,'numberOfChildren',__.in('hasParent').count())`
+				So(strings.HasPrefix(poolMock.ExecuteCalls()[0].Query, expectedQPrefix), ShouldBeTrue)
+				for _, id := range testClonedIds {
+					So(strings.Count(poolMock.ExecuteCalls()[0].Query, id), ShouldEqual, 1)
+				}
+				So(strings.HasSuffix(poolMock.ExecuteCalls()[0].Query, expectedQSuffix), ShouldBeTrue)
 			})
 		})
 	})

@@ -100,7 +100,6 @@ func (n *Neo4j) CloneRelationships(ctx context.Context, attempt int, instanceID,
 // SetNumberOfChildren traverses the instance hierarchy, counts the number of nodes
 // with incoming hasParent relationships and sets that number on the node as a property
 func (n *Neo4j) SetNumberOfChildren(ctx context.Context, attempt int, instanceID, dimensionName string) error {
-
 	q := fmt.Sprintf(
 		query.SetNumberOfChildren,
 		instanceID,

@@ -140,6 +140,16 @@ var ReturnGenericHierarchyAncestryIDs = func(query string, bindings map[string]s
 	return ids, nil
 }
 
+var ReturnHierarchyNodeIDs = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+	var ids []string
+	ids = append(ids, "62bab579-e923-7cb2-3be0-34d09dc0567b")
+	ids = append(ids, "acbab579-e923-87df-e59a-9daf2ffed388")
+	ids = append(ids, "b6bab57a-604d-8a7f-59f5-1d496c9b3ca5")
+	ids = append(ids, "08bab57a-604d-9cd9-492f-e879cee05502")
+	ids = append(ids, "6cbab57a-604d-f176-9370-c60c19369801")
+	return ids, nil
+}
+
 var ReturnInvalidCodeData = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
 	var codes []string
 	codes = append(codes, "Not")
