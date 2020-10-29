@@ -190,8 +190,8 @@ func TestNeptuneDB_CloneRelationshipsFromIDs(t *testing.T) {
 		}
 		db := mockDB(poolMock)
 
-		Convey("When CloneRelationShips is called with duplicated IDs", func() {
-			err := db.CloneRelationshipsFromIDs(ctx, testAttempt, testInstanceID, testDimensionName, testAllIds)
+		Convey("When CloneRelationShips is called with unique IDs", func() {
+			err := db.CloneRelationshipsFromIDs(ctx, testAttempt, testInstanceID, testDimensionName, unique(testAllIds))
 
 			Convey("Then no error is returned", func() {
 				So(err, ShouldBeNil)

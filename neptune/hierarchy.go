@@ -43,7 +43,7 @@ func (n *NeptuneDB) GetCodesWithData(ctx context.Context, attempt int, instanceI
 	if err != nil {
 		return nil, errors.Wrapf(err, "Gremlin query failed: %q", codesWithDataStmt)
 	}
-	return
+	return unique(codes), nil
 }
 
 // GetGenericHierarchyNodeIDs obtains a list of node IDs for generic hierarchy nodes for the provided codeListID, which have a code in the provided list.
@@ -56,9 +56,8 @@ func (n *NeptuneDB) GetGenericHierarchyAncestriesIDs(ctx context.Context, attemp
 	return n.doGetGenericHierarchyNodeIDs(ctx, attempt, codeListID, codes, true)
 }
 
+// clone generic hierarchy nodes in batches. This method assumes that provided codes are unique, and returns unique nodeIDs among all batches
 func (n *NeptuneDB) doGetGenericHierarchyNodeIDs(ctx context.Context, attempt int, codeListID string, codes []string, ancestries bool) (nodeIDs []string, err error) {
-	codes = unique(codes)
-
 	logData := log.Data{
 		"fn":           "GetGenericHierarchyNodeIDs",
 		"code_list_id": codeListID,
@@ -88,7 +87,7 @@ func (n *NeptuneDB) doGetGenericHierarchyNodeIDs(ctx context.Context, attempt in
 		if err != nil {
 			return nil, errors.Wrapf(err, "Gremlin query failed: %q", stmt)
 		}
-		return unique(ids), nil
+		return ids, nil
 	}
 
 	ids, _, errs := processInConcurrentBatches(codes, processBatch, batchSize)
@@ -123,8 +122,15 @@ func (n *NeptuneDB) CloneNodes(ctx context.Context, attempt int, instanceID, cod
 }
 
 // CloneNodesFromIDs clones the generic hierarchy nodes which have a code that is present in the provided codes array.
+// This method assumes that the provided generic hierarchy node IDs are unique.
 func (n *NeptuneDB) CloneNodesFromIDs(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids []string, hasData bool) (err error) {
-	ids = unique(ids)
+	logData := log.Data{"fn": "CloneNodesFromIDs",
+		"instance_id":    instanceID,
+		"dimension_name": dimensionName,
+		"code_list_id":   codeListID,
+		"has_data":       hasData,
+		"num_ids":        len(ids),
+	}
 
 	processBatch := func(chunkIDs []string) (ret []string, err error) {
 		idsStr := `'` + strings.Join(chunkIDs, `','`) + `'`
@@ -136,14 +142,7 @@ func (n *NeptuneDB) CloneNodesFromIDs(ctx context.Context, attempt int, instance
 			hasData,
 			codeListID,
 		)
-		logData := log.Data{"fn": "CloneNodes",
-			"gremlin":        gremStmt,
-			"instance_id":    instanceID,
-			"dimension_name": dimensionName,
-			"code_list_id":   codeListID,
-			"has_data":       hasData,
-			"num_ids":        len(chunkIDs),
-		}
+
 		log.Event(ctx, "cloning necessary nodes from the generic hierarchy", log.INFO, logData)
 
 		if _, err = n.exec(gremStmt); err != nil {
@@ -205,9 +204,15 @@ func (n *NeptuneDB) CloneRelationships(ctx context.Context, attempt int, instanc
 	return n.RemoveCloneEdges(ctx, attempt, instanceID, dimensionName)
 }
 
-// CloneRelationshipsFromIDs clones the hs_parent edges between clones that have parent relationship according to the generic hierarchy nodes
+// CloneRelationshipsFromIDs clones the hs_parent edges between clones that have parent relationship according to the generic hierarchy nodes.
+// This method assumes that the provided generic hierarchy node IDs are unique
 func (n *NeptuneDB) CloneRelationshipsFromIDs(ctx context.Context, attempt int, instanceID, dimensionName string, ids []string) error {
-	ids = unique(ids)
+	logData := log.Data{
+		"fn":             "CloneRelationshipsFromIDs",
+		"instance_id":    instanceID,
+		"dimension_name": dimensionName,
+		"num_ids":        len(ids),
+	}
 
 	processBatch := func(chunkIDs []string) (ret []string, err error) {
 		idsStr := `'` + strings.Join(chunkIDs, `','`) + `'`
@@ -220,13 +225,6 @@ func (n *NeptuneDB) CloneRelationshipsFromIDs(ctx context.Context, attempt int, 
 			dimensionName,
 		)
 
-		logData := log.Data{
-			"fn":             "CloneRelationships",
-			"instance_id":    instanceID,
-			"dimension_name": dimensionName,
-			"num_ids":        len(chunkIDs),
-			"gremlin":        gremStmt,
-		}
 		log.Event(ctx, "cloning relationships from the generic hierarchy", log.INFO, logData)
 
 		if _, err := n.getEdges(gremStmt); err != nil {
@@ -262,7 +260,7 @@ func (n *NeptuneDB) GetHierarchyNodeIDs(ctx context.Context, attempt int, instan
 	if err != nil {
 		return nil, errors.Wrapf(err, "Gremlin query failed: %q", stmt)
 	}
-	return unique(ids), nil
+	return ids, nil
 }
 
 func (n *NeptuneDB) RemoveCloneEdges(ctx context.Context, attempt int, instanceID, dimensionName string) (err error) {
@@ -286,9 +284,9 @@ func (n *NeptuneDB) RemoveCloneEdges(ctx context.Context, attempt int, instanceI
 	return
 }
 
-// RemoveCloneEdgesFromSourceIDs removes the 'clone-of' edges between a set of cloned nodes and their corresponding generic hierarchy nodes
+// RemoveCloneEdgesFromSourceIDs removes the 'clone-of' edges between a set of cloned nodes and their corresponding generic hierarchy nodes.
+// This method assumes that the provided IDs are unique.
 func (n *NeptuneDB) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt int, ids []string) (err error) {
-	ids = unique(ids)
 	logData := log.Data{
 		"fn":      "RemoveCloneEdges",
 		"num_ids": len(ids),
