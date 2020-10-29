@@ -101,6 +101,25 @@ func (n *Neo4j) queryElements(ctx context.Context, instanceID, dimension, neoStm
 	return res.List, nil
 }
 
+// CountNodes returns the number of nodes existing in the specified instance hierarchy
+func (n *Neo4j) CountNodes(ctx context.Context, instanceID, dimensionName string) (count int64, err error) {
+	q := fmt.Sprintf(
+		query.CountHierarchyNodes,
+		instanceID,
+		dimensionName,
+	)
+
+	logData := log.Data{
+		"instance_id":    instanceID,
+		"dimension_name": dimensionName,
+		"query":          q,
+	}
+
+	log.Event(ctx, "counting nodes in the new instance hierarchy", log.INFO, logData)
+
+	return n.Count(q)
+}
+
 // GetCodesWithData not implemented by Neo4j (new hierarchy build algorithm)
 func (n *Neo4j) GetCodesWithData(ctx context.Context, attempt int, instanceID, dimensionName string) (codes []string, err error) {
 	return []string{}, driver.ErrNotImplemented
@@ -113,5 +132,10 @@ func (n *Neo4j) GetGenericHierarchyNodeIDs(ctx context.Context, attempt int, cod
 
 // GetGenericHierarchyAncestriesIDs not implemented by Neo4j (new hierarchy build algorithm)
 func (n *Neo4j) GetGenericHierarchyAncestriesIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs []string, err error) {
+	return []string{}, driver.ErrNotImplemented
+}
+
+// GetHierarchyNodeIDs not implemented by Neo4j (new hierarchy build algorithm)
+func (n *Neo4j) GetHierarchyNodeIDs(ctx context.Context, attempt int, instanceID, dimensionName string) (ids []string, err error) {
 	return []string{}, driver.ErrNotImplemented
 }

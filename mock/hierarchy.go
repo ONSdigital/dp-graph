@@ -10,7 +10,23 @@ func (m *Mock) CreateInstanceHierarchyConstraints(ctx context.Context, attempt i
 	return m.checkForErrors()
 }
 
+func (m *Mock) GetCodesWithData(ctx context.Context, attempt int, instanceID, dimensionName string) (codes []string, err error) {
+	return []string{}, m.checkForErrors()
+}
+
+func (m *Mock) GetGenericHierarchyNodeIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs []string, err error) {
+	return []string{}, m.checkForErrors()
+}
+
+func (m *Mock) GetGenericHierarchyAncestriesIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs []string, err error) {
+	return []string{}, m.checkForErrors()
+}
+
 func (m *Mock) CloneNodes(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error {
+	return m.checkForErrors()
+}
+
+func (m *Mock) CloneNodesFromIDs(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids []string, hasData bool) (err error) {
 	return m.checkForErrors()
 }
 
@@ -18,11 +34,31 @@ func (m *Mock) CountNodes(ctx context.Context, instanceID, dimensionName string)
 	return 0, m.checkForErrors()
 }
 
+func (m *Mock) GetHierarchyNodeIDs(ctx context.Context, attempt int, instanceID, dimensionName string) (ids []string, err error) {
+	return []string{}, m.checkForErrors()
+}
+
 func (m *Mock) CloneRelationships(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error {
 	return m.checkForErrors()
 }
 
+func (m *Mock) CloneRelationshipsFromIDs(ctx context.Context, attempt int, instanceID, dimensionName string, ids []string) error {
+	return m.checkForErrors()
+}
+
 func (m *Mock) SetNumberOfChildren(ctx context.Context, attempt int, instanceID, dimensionName string) error {
+	return m.checkForErrors()
+}
+
+func (m *Mock) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int, ids []string) (err error) {
+	return m.checkForErrors()
+}
+
+func (m *Mock) RemoveCloneEdges(ctx context.Context, attempt int, instanceID, dimensionName string) (err error) {
+	return m.checkForErrors()
+}
+
+func (m *Mock) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt int, ids []string) (err error) {
 	return m.checkForErrors()
 }
 

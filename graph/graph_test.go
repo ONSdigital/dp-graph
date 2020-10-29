@@ -53,6 +53,8 @@ func Test_New(t *testing.T) {
 }
 
 func Test_NewCodeListStore(t *testing.T) {
+	os.Setenv("GRAPH_DRIVER_TYPE", "mock")
+
 	Convey("Given only code list subset is requested", t, func() {
 		Convey("When NewCodeListStore is called", func() {
 			db, err := NewCodeListStore(context.Background())
@@ -88,6 +90,8 @@ func Test_NewCodeListStore(t *testing.T) {
 }
 
 func Test_NewHierarchyStore(t *testing.T) {
+	os.Setenv("GRAPH_DRIVER_TYPE", "mock")
+
 	Convey("Given only hierarchy subset is requested", t, func() {
 		Convey("When NewHierarchyStore is called", func() {
 			db, err := NewHierarchyStore(context.Background())
@@ -123,6 +127,8 @@ func Test_NewHierarchyStore(t *testing.T) {
 }
 
 func Test_NewInstanceStore(t *testing.T) {
+	os.Setenv("GRAPH_DRIVER_TYPE", "mock")
+
 	Convey("Given only instance subset is requested", t, func() {
 		Convey("When NewInstanceStore is called", func() {
 			db, err := NewInstanceStore(context.Background())
@@ -158,6 +164,8 @@ func Test_NewInstanceStore(t *testing.T) {
 }
 
 func Test_NewObservationStore(t *testing.T) {
+	os.Setenv("GRAPH_DRIVER_TYPE", "mock")
+
 	Convey("Given only observation subset is requested", t, func() {
 		Convey("When NewObservationStore is called", func() {
 			db, err := NewObservationStore(context.Background())
@@ -193,6 +201,8 @@ func Test_NewObservationStore(t *testing.T) {
 }
 
 func Test_NewDimensionStore(t *testing.T) {
+	os.Setenv("GRAPH_DRIVER_TYPE", "mock")
+
 	Convey("Given only dimension subset is requested", t, func() {
 		Convey("When NewDimensionStore is called", func() {
 			db, err := NewDimensionStore(context.Background())

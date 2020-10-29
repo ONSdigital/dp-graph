@@ -37,13 +37,7 @@ func (n *Neo4j) CreateInstanceHierarchyConstraints(ctx context.Context, attempt 
 }
 
 // CloneNodes copies nodes from a generic hierarchy and identifies them as instance specific hierarchy nodes
-func (n *Neo4j) CloneNodes(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids []string, hasData bool) error {
-
-	// array of IDs are provided by the new hierarchy build algorithm, which is not implemented by Neo4j
-	if len(ids) > 0 {
-		return driver.ErrNotImplemented
-	}
-
+func (n *Neo4j) CloneNodes(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error {
 	q := fmt.Sprintf(
 		query.CloneHierarchyNodes,
 		codeListID,
@@ -65,39 +59,14 @@ func (n *Neo4j) CloneNodes(ctx context.Context, attempt int, instanceID, codeLis
 			return finalErr
 		}
 
-		return n.CloneNodes(ctx, attempt+1, instanceID, codeListID, dimensionName, ids, hasData)
+		return n.CloneNodes(ctx, attempt+1, instanceID, codeListID, dimensionName)
 	}
 
 	return nil
 }
 
-// CountNodes returns the number of nodes existing in the specified instance hierarchy
-func (n *Neo4j) CountNodes(ctx context.Context, instanceID, dimensionName string) (count int64, err error) {
-	q := fmt.Sprintf(
-		query.CountHierarchyNodes,
-		instanceID,
-		dimensionName,
-	)
-
-	logData := log.Data{
-		"instance_id":    instanceID,
-		"dimension_name": dimensionName,
-		"query":          q,
-	}
-
-	log.Event(ctx, "counting nodes in the new instance hierarchy", log.INFO, logData)
-
-	return n.Count(q)
-}
-
 // CloneRelationships copies relationships from a generic hierarchy and uses them to join instance specific hierarchy nodes
-func (n *Neo4j) CloneRelationships(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids []string) error {
-
-	// array of IDs are provided by the new hierarchy build algorithm, which is not implemented by Neo4j
-	if len(ids) > 0 {
-		return driver.ErrNotImplemented
-	}
-
+func (n *Neo4j) CloneRelationships(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error {
 	q := fmt.Sprintf(
 		query.CloneHierarchyRelationships,
 		codeListID,
@@ -122,7 +91,7 @@ func (n *Neo4j) CloneRelationships(ctx context.Context, attempt int, instanceID,
 			return finalErr
 		}
 
-		return n.CloneRelationships(ctx, attempt+1, instanceID, codeListID, dimensionName, ids)
+		return n.CloneRelationships(ctx, attempt+1, instanceID, codeListID, dimensionName)
 	}
 
 	return nil
@@ -131,6 +100,7 @@ func (n *Neo4j) CloneRelationships(ctx context.Context, attempt int, instanceID,
 // SetNumberOfChildren traverses the instance hierarchy, counts the number of nodes
 // with incoming hasParent relationships and sets that number on the node as a property
 func (n *Neo4j) SetNumberOfChildren(ctx context.Context, attempt int, instanceID, dimensionName string) error {
+
 	q := fmt.Sprintf(
 		query.SetNumberOfChildren,
 		instanceID,
@@ -268,4 +238,24 @@ func (n *Neo4j) RemoveRemainMarker(ctx context.Context, attempt int, instanceID,
 	}
 
 	return nil
+}
+
+func (n *Neo4j) CloneNodesFromIDs(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids []string, hasData bool) (err error) {
+	return driver.ErrNotImplemented
+}
+
+func (n *Neo4j) CloneRelationshipsFromIDs(ctx context.Context, attempt int, instanceID, dimensionName string, ids []string) error {
+	return driver.ErrNotImplemented
+}
+
+func (n *Neo4j) RemoveCloneEdges(ctx context.Context, attempt int, instanceID, dimensionName string) (err error) {
+	return driver.ErrNotImplemented
+}
+
+func (n *Neo4j) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt int, ids []string) (err error) {
+	return driver.ErrNotImplemented
+}
+
+func (n *Neo4j) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int, ids []string) (err error) {
+	return driver.ErrNotImplemented
 }
