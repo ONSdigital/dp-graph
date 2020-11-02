@@ -5,6 +5,15 @@ import (
 	"sync"
 )
 
+// batchSize is the size of each batch for queries that are run concurrently in batches
+const (
+	batchSizeReader = 25000
+	batchSizeWriter = 150
+)
+
+// maxWorkers is the maximum number of parallel go-routines that will trigger gremlin queries for a particular task
+const maxWorkers = 150
+
 // batchProcessor defines a generic function type to process a batch (array of strings) and may return a result (array of strings) and an error.
 type batchProcessor = func([]string) ([]string, error)
 
@@ -14,13 +23,26 @@ func processInConcurrentBatches(items []string, processBatch batchProcessor, bat
 	wg := sync.WaitGroup{}
 	chWait := make(chan struct{})
 	chErr := make(chan error)
+	chSemaphore := make(chan struct{}, maxWorkers)
 
 	result = make(map[string]struct{})
 	lockResult := sync.Mutex{}
 
+	// worker add delta to workgroup and acquire semaphore
+	acquire := func() {
+		wg.Add(1)
+		chSemaphore <- struct{}{}
+	}
+
+	// worker release semaphore and workgroup delta
+	release := func() {
+		<-chSemaphore
+		wg.Done()
+	}
+
 	// func executed in each go-routine to process the batch, aggregate results, and send errors to the error channel
 	doProcessBatch := func(chunk []string) {
-		defer wg.Done()
+		defer release()
 		res, err := processBatch(chunk)
 		if err != nil {
 			chErr <- err
@@ -35,7 +57,7 @@ func processInConcurrentBatches(items []string, processBatch batchProcessor, bat
 
 	// func that triggers the batch processing for a chunk, in a parallel go-routine
 	goProcessBatch := func(chunk []string) {
-		wg.Add(1)
+		acquire()
 		go doProcessBatch(chunk)
 	}
 

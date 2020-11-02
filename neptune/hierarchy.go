@@ -14,9 +14,6 @@ import (
 	"github.com/ONSdigital/log.go/log"
 )
 
-// batchSize is the size of each batch for queries that are run concurrently in batches
-const batchSize = 250
-
 // Type check to ensure that NeptuneDB implements the driver.Hierarchy interface
 var _ driver.Hierarchy = (*NeptuneDB)(nil)
 
@@ -64,6 +61,12 @@ func (n *NeptuneDB) doGetGenericHierarchyNodeIDs(ctx context.Context, attempt in
 		"num_codes":    len(codes),
 	}
 
+	if ancestries {
+		log.Event(ctx, "getting generic hierarchy node ancestry ids for the provided codes", log.INFO, logData)
+	} else {
+		log.Event(ctx, "getting generic hierarchy node leaf ids for the provided codes", log.INFO, logData)
+	}
+
 	processBatch := func(chunkCodes []string) (ret []string, err error) {
 		codesString := `['` + strings.Join(chunkCodes, `','`) + `']`
 		var stmt string
@@ -73,14 +76,12 @@ func (n *NeptuneDB) doGetGenericHierarchyNodeIDs(ctx context.Context, attempt in
 				codeListID,
 				codesString,
 			)
-			log.Event(ctx, "getting generic hierarchy node ancestry ids for the provided codes", log.INFO, logData)
 		} else {
 			stmt = fmt.Sprintf(
 				query.GetGenericHierarchyNodeIDs,
 				codeListID,
 				codesString,
 			)
-			log.Event(ctx, "getting generic hierarchy node leaf ids for the provided codes", log.INFO, logData)
 		}
 
 		ids, err := n.getStringList(stmt)
@@ -90,7 +91,7 @@ func (n *NeptuneDB) doGetGenericHierarchyNodeIDs(ctx context.Context, attempt in
 		return ids, nil
 	}
 
-	ids, _, errs := processInConcurrentBatches(codes, processBatch, batchSize)
+	ids, _, errs := processInConcurrentBatches(codes, processBatch, batchSizeReader)
 	if errs != nil && len(errs) > 0 {
 		return []string{}, errs[0]
 	}
@@ -129,8 +130,9 @@ func (n *NeptuneDB) CloneNodesFromIDs(ctx context.Context, attempt int, instance
 		"dimension_name": dimensionName,
 		"code_list_id":   codeListID,
 		"has_data":       hasData,
-		"num_ids":        len(ids),
+		"num_nodes":      len(ids),
 	}
+	log.Event(ctx, "cloning necessary nodes from the generic hierarchy", log.INFO, logData)
 
 	processBatch := func(chunkIDs []string) (ret []string, err error) {
 		idsStr := `'` + strings.Join(chunkIDs, `','`) + `'`
@@ -143,8 +145,6 @@ func (n *NeptuneDB) CloneNodesFromIDs(ctx context.Context, attempt int, instance
 			codeListID,
 		)
 
-		log.Event(ctx, "cloning necessary nodes from the generic hierarchy", log.INFO, logData)
-
 		if _, err = n.exec(gremStmt); err != nil {
 			log.Event(ctx, "cannot get vertices during cloning", log.ERROR, logData, log.Error(err))
 			return nil, err
@@ -152,7 +152,7 @@ func (n *NeptuneDB) CloneNodesFromIDs(ctx context.Context, attempt int, instance
 		return nil, nil
 	}
 
-	_, _, errs := processInConcurrentBatches(ids, processBatch, batchSize)
+	_, _, errs := processInConcurrentBatches(ids, processBatch, batchSizeWriter)
 	if errs != nil && len(errs) > 0 {
 		return errs[0]
 	}
@@ -213,6 +213,7 @@ func (n *NeptuneDB) CloneRelationshipsFromIDs(ctx context.Context, attempt int, 
 		"dimension_name": dimensionName,
 		"num_ids":        len(ids),
 	}
+	log.Event(ctx, "cloning relationships from the generic hierarchy", log.INFO, logData)
 
 	processBatch := func(chunkIDs []string) (ret []string, err error) {
 		idsStr := `'` + strings.Join(chunkIDs, `','`) + `'`
@@ -225,8 +226,6 @@ func (n *NeptuneDB) CloneRelationshipsFromIDs(ctx context.Context, attempt int, 
 			dimensionName,
 		)
 
-		log.Event(ctx, "cloning relationships from the generic hierarchy", log.INFO, logData)
-
 		if _, err := n.getEdges(gremStmt); err != nil {
 			log.Event(ctx, "cannot find edges while cloning relationships", log.ERROR, logData, log.Error(err))
 			return nil, err
@@ -234,7 +233,7 @@ func (n *NeptuneDB) CloneRelationshipsFromIDs(ctx context.Context, attempt int, 
 		return nil, nil
 	}
 
-	_, _, errs := processInConcurrentBatches(ids, processBatch, batchSize)
+	_, _, errs := processInConcurrentBatches(ids, processBatch, batchSizeWriter)
 	if errs != nil && len(errs) > 0 {
 		return errs[0]
 	}
@@ -291,6 +290,7 @@ func (n *NeptuneDB) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt i
 		"fn":      "RemoveCloneEdges",
 		"num_ids": len(ids),
 	}
+	log.Event(ctx, "removing edges to generic hierarchy", log.INFO, logData)
 
 	processBatch := func(chunkIDs []string) (ret []string, err error) {
 		idsStr := `'` + strings.Join(chunkIDs, `','`) + `'`
@@ -298,7 +298,6 @@ func (n *NeptuneDB) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt i
 			query.RemoveCloneMarkersFromSourceIDs,
 			idsStr,
 		)
-		log.Event(ctx, "removing edges to generic hierarchy", log.INFO, logData)
 
 		if _, err = n.exec(gremStmt); err != nil {
 			log.Event(ctx, "exec failed while removing edges during removal of unwanted cloned edges", log.ERROR, logData, log.Error(err))
@@ -307,7 +306,7 @@ func (n *NeptuneDB) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt i
 		return
 	}
 
-	_, _, errs := processInConcurrentBatches(ids, processBatch, batchSize)
+	_, _, errs := processInConcurrentBatches(ids, processBatch, batchSizeWriter)
 	if errs != nil && len(errs) > 0 {
 		return errs[0]
 	}
@@ -346,6 +345,7 @@ func (n *NeptuneDB) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int,
 		"fn":      "SetNumberOfChildren",
 		"num_ids": len(ids),
 	}
+	log.Event(ctx, "setting number-of-children property value on the instance hierarchy nodes", log.INFO, logData)
 
 	processBatch := func(chunkIDs []string) (ret []string, err error) {
 		idsStr := `'` + strings.Join(chunkIDs, `','`) + `'`
@@ -354,8 +354,6 @@ func (n *NeptuneDB) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int,
 			idsStr,
 		)
 
-		log.Event(ctx, "setting number-of-children property value on the instance hierarchy nodes", log.INFO, logData)
-
 		if _, err = n.exec(gremStmt); err != nil {
 			log.Event(ctx, "cannot find vertices while setting nChildren on hierarchy nodes", log.ERROR, logData, log.Error(err))
 			return
@@ -363,7 +361,7 @@ func (n *NeptuneDB) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int,
 		return
 	}
 
-	_, _, errs := processInConcurrentBatches(ids, processBatch, batchSize)
+	_, _, errs := processInConcurrentBatches(ids, processBatch, batchSizeWriter)
 	if errs != nil && len(errs) > 0 {
 		return errs[0]
 	}
