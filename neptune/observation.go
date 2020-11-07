@@ -112,34 +112,123 @@ func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, ins
 		log.Event(ctx, "opening batch", log.INFO, log.Data{"size": len(observations), "batchID": bID})
 	}
 
-	var create string
-	for _, o := range observations {
-		o.Row = escapeSingleQuotes(o.Row)
-		create += fmt.Sprintf(query.DropObservationRelationships, instanceID, o.Row)
-		create += fmt.Sprintf(query.DropObservation, instanceID, o.Row)
-		create += fmt.Sprintf(query.CreateObservationPart, instanceID, o.Row, o.RowIndex)
-		for _, d := range o.DimensionOptions {
-			dimensionName := strings.ToLower(d.DimensionName)
-			dimensionLookup := instanceID + "_" + dimensionName + "_" + d.Name
+	var obsIDs []string
+	var dimIDs []string
+	obsIDMap := map[string]*models.Observation{}
+	dimIDMap := map[string]struct{}{}
 
-			nodeID, ok := dimensionNodeIDs[dimensionLookup]
+	for _, obs := range observations {
+		obs.Row = escapeSingleQuotes(obs.Row)
+		obsID := fmt.Sprintf(`_%s_observation_%d`, instanceID, obs.RowIndex)
+		obsIDMap[obsID] = obs
+		obsIDs = append(obsIDs, obsID)
+
+		for _, dim := range obs.DimensionOptions {
+			dimID := createDimensionId(dim, instanceID)
+
+			_, ok := dimIDMap[dimID]
 			if !ok {
-				return fmt.Errorf("no nodeID [%s] found in dimension map", dimensionLookup)
+				dimIDs = append(dimIDs, dimID)
 			}
 
-			create += fmt.Sprintf(query.AddObservationRelationshipPart, nodeID)
+			dimIDMap[dimID] = struct{}{}
 		}
-
-		create = strings.TrimSuffix(create, ".outV()")
-		create += ".iterate();"
 	}
 
-	create = strings.TrimSuffix(create, ".iterate();")
-	if _, err := n.exec(create); err != nil {
-		return err
+	err := n.removeExistingObservations(obsIDs)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove existing observations")
+	}
+
+	err = n.addObservationNodes(obsIDs, obsIDMap, instanceID)
+	if err != nil {
+		return errors.Wrap(err, "failed to add observation nodes")
+	}
+
+	err = n.addObservationEdges(dimIDs, obsIDs, obsIDMap, instanceID)
+	if err != nil {
+		return errors.Wrap(err, "failed to add observation edges")
 	}
 
 	log.Event(ctx, "batch complete", log.INFO, log.Data{"batchID": bID, "elapsed": time.Since(totalTime), "batchTime": time.Since(batchStart)})
+	return nil
+}
+
+func (n *NeptuneDB) addObservationEdges(dimIDs []string, obsIDs []string, obsIDMap map[string]*models.Observation, instanceID string) error {
+	insertObsEdgesStmt := "g"
+
+	// add lookups for dimension nodes
+	for _, dimID := range dimIDs {
+		insertObsEdgesStmt += fmt.Sprintf(query.DimensionLookupPart, dimID, dimID)
+	}
+
+	for _, obsID := range obsIDs {
+		for _, dim := range obsIDMap[obsID].DimensionOptions {
+			dimID := createDimensionId(dim, instanceID)
+			insertObsEdgesStmt += fmt.Sprintf(query.AddObservationEdgePart, obsID, dimID)
+		}
+	}
+
+	if _, err := n.exec(insertObsEdgesStmt); err != nil {
+		return err
+	}
+	return nil
+}
+
+func createDimensionId(dim *models.DimensionOption, instanceID string) string {
+	dimName := strings.ToLower(dim.DimensionName)
+	dimID := instanceID + "_" + dimName + "_" + dim.Name
+	return dimID
+}
+
+// addObservationNodes creates graph DB nodes for the given observations and instance ID
+func (n *NeptuneDB) addObservationNodes(obsIDs []string, obsIDMap map[string]*models.Observation, instanceID string) error {
+
+	insertObsStmt := "g"
+	for _, obsID := range obsIDs {
+		obs := obsIDMap[obsID]
+		insertObsStmt += fmt.Sprintf(query.CreateObservationPart, instanceID, obsID, obs.Row)
+	}
+	if _, err := n.exec(insertObsStmt); err != nil {
+		return err
+	}
+	return nil
+}
+
+// removeExistingObservations removes existing observations for the given id's
+func (n *NeptuneDB) removeExistingObservations(obsIDs []string) error {
+
+	// query for existing observations to drop - most likely there will be none
+	queryExistingObservations := fmt.Sprintf(query.GetObservations, `'`+strings.Join(obsIDs, `','`)+`'`)
+	existingObsIDs, err := n.getStringList(queryExistingObservations)
+	if err != nil {
+		if err.Error() != "DeserializeStringListFromBytes: Expected `g:List` type, but got \\\"\\\"" {
+			return err
+		}
+	}
+
+	if len(existingObsIDs) > 0 {
+
+		existingObsIDsJoined := `'` + strings.Join(existingObsIDs, `','`) + `'`
+
+		queryExistingObservationEdges := fmt.Sprintf(query.GetObservationsEdges, existingObsIDsJoined)
+		existingObsEdgeIDs, err := n.getStringList(queryExistingObservationEdges)
+		if err != nil {
+			return err
+		}
+
+		var removeObsStmt string
+
+		if len(existingObsEdgeIDs) > 0 {
+			removeObsStmt += fmt.Sprintf(query.DropObservationEdges, `'`+strings.Join(existingObsEdgeIDs, `','`)+`'`)
+		}
+
+		removeObsStmt += fmt.Sprintf(query.DropObservations, existingObsIDsJoined)
+		_, err = n.exec(removeObsStmt)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

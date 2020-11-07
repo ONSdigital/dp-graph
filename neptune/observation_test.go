@@ -2,7 +2,10 @@ package neptune
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"github.com/ONSdigital/dp-graph/v2/models"
+	"strings"
 	"testing"
 
 	"github.com/ONSdigital/dp-graph/v2/neptune/internal"
@@ -141,6 +144,179 @@ func Test_escapeSingleQuotes(t *testing.T) {
 
 			Convey("Then each single quote is correctly escaped", func() {
 				So(actual, ShouldEqual, expected)
+			})
+		})
+	})
+}
+
+func Test_InsertObservationBatch(t *testing.T) {
+
+	ctx := context.Background()
+	instanceID := "instanceID"
+
+	observations := []*models.Observation{
+		{
+			Row:        "row,content,1",
+			RowIndex:   1,
+			InstanceID: instanceID,
+			DimensionOptions: []*models.DimensionOption{
+				{DimensionName: "age", Name: "29"},
+				{DimensionName: "sex", Name: "male"},
+			},
+		}, {
+			Row:        "row,content,2",
+			RowIndex:   2,
+			InstanceID: instanceID,
+			DimensionOptions: []*models.DimensionOption{
+				{DimensionName: "age", Name: "30"},
+				{DimensionName: "sex", Name: "male"},
+			},
+		},
+	}
+
+	expectedObsQuery := "g.V('_instanceID_observation_1','_instanceID_observation_2').id()"
+	expectedObsEdgeQuery := "g.V('_obs_1','_obs_2').bothE().id()"
+	expectedObsDeleteStmt := "g.E('_edge_1','_edge_2').drop().iterate();g.V('_obs_1','_obs_2').drop()"
+	expectedObsCreateStmt := "g.addV('_instanceID_observation').property(id, '_instanceID_observation_1').property(single, 'value', 'row,content,1').addV('_instanceID_observation').property(id, '_instanceID_observation_2').property(single, 'value', 'row,content,2')"
+	expectedObsEdgeCreateStmt := "g.V('instanceID_age_29').as('instanceID_age_29').V('instanceID_sex_male').as('instanceID_sex_male').V('instanceID_age_30').as('instanceID_age_30').V('_instanceID_observation_1').addE('isValueOf').to('instanceID_age_29').V('_instanceID_observation_1').addE('isValueOf').to('instanceID_sex_male').V('_instanceID_observation_2').addE('isValueOf').to('instanceID_age_30').V('_instanceID_observation_2').addE('isValueOf').to('instanceID_sex_male')"
+
+	Convey("Given an error is returned when attempting to get existing observations", t, func() {
+
+		expectedErr := errors.New(" INVALID REQUEST ARGUMENTS ")
+
+		poolMock := &internal.NeptunePoolMock{
+			GetStringListFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+				return nil, expectedErr
+			},
+		}
+		db := mockDB(poolMock)
+
+		Convey("When InsertObservationBatch is called", func() {
+			err := db.InsertObservationBatch(ctx, 0, instanceID, observations, nil)
+
+			Convey("Then the expected error is returned", func() {
+				So(err.Error(), ShouldEqual, "failed to remove existing observations: "+expectedErr.Error())
+			})
+		})
+	})
+
+	Convey("Given some observations already exist", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetStringListFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+				if strings.Contains(query, ".bothE().id()") {
+					return []string{"_edge_1", "_edge_2"}, nil
+				}
+				return []string{"_obs_1", "_obs_2"}, nil
+			},
+			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
+				return []gremgo.Response{}, nil
+			},
+		}
+		db := mockDB(poolMock)
+
+		Convey("When InsertObservationBatch is called", func() {
+			err := db.InsertObservationBatch(ctx, 0, instanceID, observations, nil)
+
+			Convey("Then the expected get / delete statements are executed", func() {
+				So(err, ShouldBeNil)
+				So(poolMock.GetStringListCalls()[0].Query, ShouldEqual, expectedObsQuery)
+				So(poolMock.GetStringListCalls()[1].Query, ShouldEqual, expectedObsEdgeQuery)
+				So(poolMock.ExecuteCalls()[0].Query, ShouldEqual, expectedObsDeleteStmt)
+			})
+		})
+	})
+
+	Convey("Given no observations already exist", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetStringListFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+				return []string{}, nil
+			},
+			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
+				return []gremgo.Response{}, nil
+			},
+		}
+		db := mockDB(poolMock)
+
+		Convey("When InsertObservationBatch is called", func() {
+			err := db.InsertObservationBatch(ctx, 0, instanceID, observations, nil)
+
+			Convey("Then the delete statements are not executed", func() {
+				So(err, ShouldBeNil)
+				So(len(poolMock.GetStringListCalls()), ShouldEqual, 1)
+				So(poolMock.GetStringListCalls()[0].Query, ShouldEqual, expectedObsQuery)
+				So(poolMock.ExecuteCalls()[0].Query, ShouldNotEqual, expectedObsDeleteStmt)
+			})
+		})
+	})
+
+	Convey("Given a new batch of observations to import", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetStringListFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+				return []string{}, nil
+			},
+			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
+				return []gremgo.Response{}, nil
+			},
+		}
+		db := mockDB(poolMock)
+
+		Convey("When InsertObservationBatch is called", func() {
+			err := db.InsertObservationBatch(ctx, 0, instanceID, observations, nil)
+
+			Convey("Then the expected observation insert queries are executed", func() {
+				So(err, ShouldBeNil)
+				So(len(poolMock.GetStringListCalls()), ShouldEqual, 1)
+				So(poolMock.ExecuteCalls()[0].Query, ShouldEqual, expectedObsCreateStmt)
+				So(poolMock.ExecuteCalls()[1].Query, ShouldEqual, expectedObsEdgeCreateStmt)
+			})
+		})
+	})
+
+	Convey("Given an error is returned from inserting observation nodes", t, func() {
+		expectedErr := errors.New(" INVALID REQUEST ARGUMENTS ")
+
+		poolMock := &internal.NeptunePoolMock{
+			GetStringListFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+				return []string{}, nil
+			},
+			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
+				return []gremgo.Response{}, expectedErr
+			},
+		}
+		db := mockDB(poolMock)
+
+		Convey("When InsertObservationBatch is called", func() {
+			err := db.InsertObservationBatch(ctx, 0, instanceID, observations, nil)
+
+			Convey("Then the expected error is returned", func() {
+				So(err.Error(), ShouldEqual, "failed to add observation nodes: "+expectedErr.Error())
+			})
+		})
+	})
+
+	Convey("Given an error is returned from inserting observation edges", t, func() {
+		expectedErr := errors.New(" INVALID REQUEST ARGUMENTS ")
+
+		poolMock := &internal.NeptunePoolMock{
+			GetStringListFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+				return []string{}, nil
+			},
+			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
+				if strings.Contains(query, ".addV(") {
+					// then it's the first query, to insert observation nodes
+					return []gremgo.Response{}, nil
+				}
+
+				return []gremgo.Response{}, expectedErr
+			},
+		}
+		db := mockDB(poolMock)
+
+		Convey("When InsertObservationBatch is called", func() {
+			err := db.InsertObservationBatch(ctx, 0, instanceID, observations, nil)
+
+			Convey("Then the expected error is returned", func() {
+				So(err.Error(), ShouldEqual, "failed to add observation edges: "+expectedErr.Error())
 			})
 		})
 	})

@@ -107,10 +107,14 @@ const (
 		`.addE('HAS_DIMENSION').to('inst').select('d')`
 
 	// observation
-	DropObservationRelationships   = `g.V().hasLabel('_%s_observation').has('value', '%s').bothE().drop().iterate();`
-	DropObservation                = `g.V().hasLabel('_%s_observation').has('value', '%s').drop().iterate();`
-	CreateObservationPart          = `g.addV('_%s_observation').as('o').property(single, 'value', '%s').property(single, 'rowIndex', '%d')`
-	AddObservationRelationshipPart = `.V().hasId('%s').addE('isValueOf').from('o')`
+	GetObservations      = `g.V(%s).id()`
+	GetObservationsEdges = `g.V(%s).bothE().id()`
+	DropObservationEdges = `g.E(%s).drop().iterate();`
+	DropObservations     = `g.V(%s).drop()`
+
+	CreateObservationPart  = `.addV('_%s_observation').property(id, '%s').property(single, 'value', '%s')`
+	DimensionLookupPart    = `.V('%s').as('%s')`
+	AddObservationEdgePart = `.V('%s').addE('isValueOf').to('%s')`
 
 	GetInstanceHeaderPart       = `g.V().hasId('_%s_Instance').values('header')`
 	GetAllObservationsPart      = `g.V().hasLabel('_%s_observation')`
