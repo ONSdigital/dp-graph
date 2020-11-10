@@ -20,17 +20,21 @@ var (
 	testDimensionName = "aggregate"
 	testAttempt       = 1
 	testCodes         = []string{"cpih1dim1S90401", "cpih1dim1S90402"}
-	testIds           = []string{"cpih1dim1aggid--cpih1dim1S90401", "cpih1dim1aggid--cpih1dim1S90402"}
-	testAllIds        = []string{"cpih1dim1aggid--cpih1dim1S90401", "cpih1dim1aggid--cpih1dim1S90402",
-		"cpih1dim1aggid--cpih1dim1G90400", "cpih1dim1aggid--cpih1dim1G90400",
-		"cpih1dim1aggid--cpih1dim1T90000", "cpih1dim1aggid--cpih1dim1T90000",
-		"cpih1dim1aggid--cpih1dim1A0", "cpih1dim1aggid--cpih1dim1A0"}
-	testClonedIds = []string{
-		"62bab579-e923-7cb2-3be0-34d09dc0567b",
-		"acbab579-e923-87df-e59a-9daf2ffed388",
-		"b6bab57a-604d-8a7f-59f5-1d496c9b3ca5",
-		"08bab57a-604d-9cd9-492f-e879cee05502",
-		"6cbab57a-604d-f176-9370-c60c19369801",
+	testIds           = map[string]struct{}{
+		"cpih1dim1aggid--cpih1dim1S90401": {},
+		"cpih1dim1aggid--cpih1dim1S90402": {}}
+	testAllIds = map[string]struct{}{
+		"cpih1dim1aggid--cpih1dim1S90401": {},
+		"cpih1dim1aggid--cpih1dim1S90402": {},
+		"cpih1dim1aggid--cpih1dim1G90400": {},
+		"cpih1dim1aggid--cpih1dim1T90000": {},
+		"cpih1dim1aggid--cpih1dim1A0":     {}}
+	testClonedIds = map[string]struct{}{
+		"62bab579-e923-7cb2-3be0-34d09dc0567b": {},
+		"acbab579-e923-87df-e59a-9daf2ffed388": {},
+		"b6bab57a-604d-8a7f-59f5-1d496c9b3ca5": {},
+		"08bab57a-604d-9cd9-492f-e879cee05502": {},
+		"6cbab57a-604d-f176-9370-c60c19369801": {},
 	}
 )
 
@@ -77,9 +81,9 @@ func TestNeptuneDB_GetGenericHierarchyNodeIDs(t *testing.T) {
 			})
 
 			Convey("Then the expected list of IDs is returned and the expected query is executed, in any order of IDs", func() {
-				So(len(ids), ShouldEqual, 2)
-				So(ids, ShouldContain, "cpih1dim1aggid--cpih1dim1S90401")
-				So(ids, ShouldContain, "cpih1dim1aggid--cpih1dim1S90402")
+				So(ids, ShouldResemble, map[string]struct{}{
+					"cpih1dim1aggid--cpih1dim1S90401": {},
+					"cpih1dim1aggid--cpih1dim1S90402": {}})
 				expectedQueryOp1 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90401','cpih1dim1S90402'])).id()`
 				expectedQueryOp2 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90402','cpih1dim1S90401'])).id()`
 				So(len(poolMock.GetStringListCalls()), ShouldEqual, 1)
@@ -105,10 +109,10 @@ func TestNeptuneDB_GetGenericHierarchyAncestriesIDs(t *testing.T) {
 			})
 
 			Convey("Then the expected list of unique IDs is returned and teh expected is executed, in any order of IDs", func() {
-				So(len(ids), ShouldEqual, 3)
-				So(ids, ShouldContain, "cpih1dim1aggid--cpih1dim1G90400")
-				So(ids, ShouldContain, "cpih1dim1aggid--cpih1dim1T90000")
-				So(ids, ShouldContain, "cpih1dim1aggid--cpih1dim1A0")
+				So(ids, ShouldResemble, map[string]struct{}{
+					"cpih1dim1aggid--cpih1dim1G90400": {},
+					"cpih1dim1aggid--cpih1dim1T90000": {},
+					"cpih1dim1aggid--cpih1dim1A0":     {}})
 				expectedQueryOp1 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90401','cpih1dim1S90402'])).repeat(out('hasParent')).emit().id()`
 				expectedQueryOp2 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90402','cpih1dim1S90401'])).repeat(out('hasParent')).emit().id()`
 				So(len(poolMock.GetStringListCalls()), ShouldEqual, 1)
@@ -191,7 +195,7 @@ func TestNeptuneDB_CloneRelationshipsFromIDs(t *testing.T) {
 		db := mockDB(poolMock)
 
 		Convey("When CloneRelationShips is called with unique IDs", func() {
-			err := db.CloneRelationshipsFromIDs(ctx, testAttempt, testInstanceID, testDimensionName, unique(testAllIds))
+			err := db.CloneRelationshipsFromIDs(ctx, testAttempt, testInstanceID, testDimensionName, testAllIds)
 
 			Convey("Then no error is returned", func() {
 				So(err, ShouldBeNil)
@@ -265,7 +269,7 @@ func TestNeptuneDB_RemoveCloneEdgesFromSourceIDs(t *testing.T) {
 				expectedQPrefix := `g.V('`
 				expectedQSuffix := `').outE('clone_of').drop()`
 				So(strings.HasPrefix(poolMock.ExecuteCalls()[0].Query, expectedQPrefix), ShouldBeTrue)
-				for _, id := range testClonedIds {
+				for id := range testClonedIds {
 					So(strings.Count(poolMock.ExecuteCalls()[0].Query, id), ShouldEqual, 1)
 				}
 				So(strings.HasSuffix(poolMock.ExecuteCalls()[0].Query, expectedQSuffix), ShouldBeTrue)
@@ -290,10 +294,7 @@ func TestNeptuneDB_GetHierarchyNodeIDs(t *testing.T) {
 			})
 
 			Convey("Then the expected query is sent to Neptune to obtain the cloned hierarchy node IDs, and the expected IDs are returned", func() {
-				So(len(ids), ShouldEqual, 5)
-				for _, id := range testClonedIds {
-					So(ids, ShouldContain, id)
-				}
+				So(ids, ShouldResemble, testClonedIds)
 				expectedQuery := `g.V().hasLabel('_hierarchy_node_f0a2f3f2-cc86-4bbb-a549-ffc99c89292c_aggregate').id()`
 				So(len(poolMock.GetStringListCalls()), ShouldEqual, 1)
 				So(poolMock.GetStringListCalls()[0].Query, ShouldResemble, expectedQuery)
@@ -350,7 +351,7 @@ func TestNeptuneDB_SetNumberOfChildrenFromIDs(t *testing.T) {
 				expectedQPrefix := `g.V('`
 				expectedQSuffix := `').property(single,'numberOfChildren',__.in('hasParent').count())`
 				So(strings.HasPrefix(poolMock.ExecuteCalls()[0].Query, expectedQPrefix), ShouldBeTrue)
-				for _, id := range testClonedIds {
+				for id := range testClonedIds {
 					So(strings.Count(poolMock.ExecuteCalls()[0].Query, id), ShouldEqual, 1)
 				}
 				So(strings.HasSuffix(poolMock.ExecuteCalls()[0].Query, expectedQSuffix), ShouldBeTrue)
