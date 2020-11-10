@@ -10,6 +10,6 @@ import (
 // database communication.
 func mockDB(poolMock *internal.NeptunePoolMock) *NeptuneDB {
 	driver := driver.NeptuneDriver{Pool: poolMock}
-	db := &NeptuneDB{driver, 5, 30}
+	db := &NeptuneDB{driver, 5, 30, 25000, 150, 150}
 	return db
 }

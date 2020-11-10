@@ -40,7 +40,7 @@ func (n *NeptuneDB) GetCodesWithData(ctx context.Context, attempt int, instanceI
 	if err != nil {
 		return nil, errors.Wrapf(err, "Gremlin query failed: %q", codesWithDataStmt)
 	}
-	return unique(codes), nil
+	return codes, nil
 }
 
 // GetGenericHierarchyNodeIDs obtains a list of node IDs for generic hierarchy nodes for the provided codeListID, which have a code in the provided list.
@@ -53,18 +53,20 @@ func (n *NeptuneDB) GetGenericHierarchyAncestriesIDs(ctx context.Context, attemp
 	return n.doGetGenericHierarchyNodeIDs(ctx, attempt, codeListID, codes, true)
 }
 
-// clone generic hierarchy nodes in batches. This method assumes that provided codes are unique, and returns unique nodeIDs (as a map, for efficiency) among all batches
+// clone generic hierarchy nodes in batches. This method returns unique nodeIDs (as a map, for efficiency) among all batches
 func (n *NeptuneDB) doGetGenericHierarchyNodeIDs(ctx context.Context, attempt int, codeListID string, codes []string, ancestries bool) (nodeIDs map[string]struct{}, err error) {
 	logData := log.Data{
 		"fn":           "GetGenericHierarchyNodeIDs",
 		"code_list_id": codeListID,
 		"num_codes":    len(codes),
+		"max_workers":  n.maxWorkers,
+		"batch_size":   n.batchSizeReader,
 	}
 
 	if ancestries {
 		log.Event(ctx, "getting generic hierarchy node ancestry ids for the provided codes", log.INFO, logData)
 	} else {
-		log.Event(ctx, "getting generic hierarchy node leaf ids for the provided codes", log.INFO, logData)
+		log.Event(ctx, "getting generic hierarchy node ids for the provided codes", log.INFO, logData)
 	}
 
 	processBatch := func(chunkCodes []string) (ret []string, err error) {
@@ -91,7 +93,7 @@ func (n *NeptuneDB) doGetGenericHierarchyNodeIDs(ctx context.Context, attempt in
 		return ids, nil
 	}
 
-	ids, _, errs := processInConcurrentBatches(codes, processBatch, batchSizeReader)
+	ids, _, errs := processInConcurrentBatches(codes, processBatch, n.batchSizeReader, n.maxWorkers)
 	if errs != nil && len(errs) > 0 {
 		return map[string]struct{}{}, errs[0]
 	}
@@ -130,6 +132,8 @@ func (n *NeptuneDB) CloneNodesFromIDs(ctx context.Context, attempt int, instance
 		"code_list_id":   codeListID,
 		"has_data":       hasData,
 		"num_nodes":      len(ids),
+		"max_workers":    n.maxWorkers,
+		"batch_size":     n.batchSizeWriter,
 	}
 	log.Event(ctx, "cloning necessary nodes from the generic hierarchy", log.INFO, logData)
 
@@ -151,7 +155,7 @@ func (n *NeptuneDB) CloneNodesFromIDs(ctx context.Context, attempt int, instance
 		return nil, nil
 	}
 
-	_, _, errs := processInConcurrentBatches(createArray(ids), processBatch, batchSizeWriter)
+	_, _, errs := processInConcurrentBatches(createArray(ids), processBatch, n.batchSizeWriter, n.maxWorkers)
 	if errs != nil && len(errs) > 0 {
 		return errs[0]
 	}
@@ -210,6 +214,8 @@ func (n *NeptuneDB) CloneRelationshipsFromIDs(ctx context.Context, attempt int, 
 		"instance_id":    instanceID,
 		"dimension_name": dimensionName,
 		"num_ids":        len(ids),
+		"max_workers":    n.maxWorkers,
+		"batch_size":     n.batchSizeWriter,
 	}
 	log.Event(ctx, "cloning relationships from the generic hierarchy", log.INFO, logData)
 
@@ -231,7 +237,7 @@ func (n *NeptuneDB) CloneRelationshipsFromIDs(ctx context.Context, attempt int, 
 		return nil, nil
 	}
 
-	_, _, errs := processInConcurrentBatches(createArray(ids), processBatch, batchSizeWriter)
+	_, _, errs := processInConcurrentBatches(createArray(ids), processBatch, n.batchSizeWriter, n.maxWorkers)
 	if errs != nil && len(errs) > 0 {
 		return errs[0]
 	}
@@ -284,8 +290,10 @@ func (n *NeptuneDB) RemoveCloneEdges(ctx context.Context, attempt int, instanceI
 // RemoveCloneEdgesFromSourceIDs removes the 'clone-of' edges between a set of cloned nodes and their corresponding generic hierarchy nodes.
 func (n *NeptuneDB) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt int, ids map[string]struct{}) (err error) {
 	logData := log.Data{
-		"fn":      "RemoveCloneEdges",
-		"num_ids": len(ids),
+		"fn":          "RemoveCloneEdges",
+		"num_ids":     len(ids),
+		"max_workers": n.maxWorkers,
+		"batch_size":  n.batchSizeWriter,
 	}
 	log.Event(ctx, "removing edges to generic hierarchy", log.INFO, logData)
 
@@ -303,7 +311,7 @@ func (n *NeptuneDB) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt i
 		return
 	}
 
-	_, _, errs := processInConcurrentBatches(createArray(ids), processBatch, batchSizeWriter)
+	_, _, errs := processInConcurrentBatches(createArray(ids), processBatch, n.batchSizeWriter, n.maxWorkers)
 	if errs != nil && len(errs) > 0 {
 		return errs[0]
 	}
@@ -337,8 +345,10 @@ func (n *NeptuneDB) SetNumberOfChildren(ctx context.Context, attempt int, instan
 // SetNumberOfChildrenFromIDs sets a property called 'numberOfChildren' to the value indegree of edges 'hasParent' for the provided node IDs
 func (n *NeptuneDB) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int, ids map[string]struct{}) (err error) {
 	logData := log.Data{
-		"fn":      "SetNumberOfChildren",
-		"num_ids": len(ids),
+		"fn":          "SetNumberOfChildren",
+		"num_ids":     len(ids),
+		"max_workers": n.maxWorkers,
+		"batch_size":  n.batchSizeWriter,
 	}
 	log.Event(ctx, "setting number-of-children property value on the instance hierarchy nodes", log.INFO, logData)
 
@@ -356,7 +366,7 @@ func (n *NeptuneDB) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int,
 		return
 	}
 
-	_, _, errs := processInConcurrentBatches(createArray(ids), processBatch, batchSizeWriter)
+	_, _, errs := processInConcurrentBatches(createArray(ids), processBatch, n.batchSizeWriter, n.maxWorkers)
 	if errs != nil && len(errs) > 0 {
 		return errs[0]
 	}

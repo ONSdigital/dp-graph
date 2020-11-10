@@ -5,21 +5,12 @@ import (
 	"sync"
 )
 
-// batchSize is the size of each batch for queries that are run concurrently in batches
-const (
-	batchSizeReader = 25000
-	batchSizeWriter = 150
-)
-
-// maxWorkers is the maximum number of parallel go-routines that will trigger gremlin queries for a particular task
-const maxWorkers = 150
-
 // batchProcessor defines a generic function type to process a batch (array of strings) and may return a result (array of strings) and an error.
 type batchProcessor = func([]string) ([]string, error)
 
 // processInConcurrentBatches splits the provided items in batches and calls processBatch for each batch batch, concurrently.
 // The results of the batch Processor functions, if provided, are aggregated as unique items and returned.
-func processInConcurrentBatches(items []string, processBatch batchProcessor, batchSize int) (result map[string]struct{}, numChunks int, errs []error) {
+func processInConcurrentBatches(items []string, processBatch batchProcessor, batchSize, maxWorkers int) (result map[string]struct{}, numChunks int, errs []error) {
 	wg := sync.WaitGroup{}
 	chWait := make(chan struct{})
 	chErr := make(chan error)

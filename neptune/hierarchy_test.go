@@ -122,7 +122,7 @@ func TestNeptuneDB_GetGenericHierarchyAncestriesIDs(t *testing.T) {
 	})
 }
 
-func TestNeptuneDB_CloneNodes(t *testing.T) {
+func TestNeptuneDB_CloneNodesFromID(t *testing.T) {
 
 	Convey("Given a mocked neptune DB", t, func() {
 		poolMock := &internal.NeptunePoolMock{

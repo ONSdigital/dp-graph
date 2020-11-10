@@ -20,11 +20,14 @@ import (
 type NeptuneDB struct {
 	neptune.NeptuneDriver
 
-	maxAttempts int
-	timeout     int
+	maxAttempts     int
+	timeout         int
+	batchSizeReader int
+	batchSizeWriter int
+	maxWorkers      int
 }
 
-func New(dbAddr string, size, timeout, retries int, errs chan error) (n *NeptuneDB, err error) {
+func New(dbAddr string, size, timeout, retries, batchSizeReader, batchSizeWriter, maxWorkers int, errs chan error) (n *NeptuneDB, err error) {
 	// set defaults if not provided
 	if size == 0 {
 		size = 30
@@ -34,6 +37,15 @@ func New(dbAddr string, size, timeout, retries int, errs chan error) (n *Neptune
 	}
 	if retries == 0 {
 		retries = 5
+	}
+	if batchSizeReader == 0 {
+		batchSizeReader = 25000
+	}
+	if batchSizeWriter == 0 {
+		batchSizeWriter = 150
+	}
+	if maxWorkers == 0 {
+		maxWorkers = 150
 	}
 
 	var d *neptune.NeptuneDriver
@@ -48,6 +60,9 @@ func New(dbAddr string, size, timeout, retries int, errs chan error) (n *Neptune
 		*d,
 		1 + retries,
 		timeout,
+		batchSizeReader,
+		batchSizeWriter,
+		maxWorkers,
 	}
 	return
 }

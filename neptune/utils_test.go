@@ -97,7 +97,7 @@ func TestInConcurrentBatches(t *testing.T) {
 
 			Convey("Then processing the chunks concurrently results in an aggregated empty array, "+
 				"the expected number of chunks and no error being returned", func() {
-				result, numChunks, errs := processInConcurrentBatches(items, processor, 5)
+				result, numChunks, errs := processInConcurrentBatches(items, processor, 5, 150)
 				So(result, ShouldResemble, make(map[string]struct{}))
 				So(numChunks, ShouldEqual, 2)
 				So(errs, ShouldBeNil)
@@ -121,7 +121,7 @@ func TestInConcurrentBatches(t *testing.T) {
 
 				Convey("Then processing the chunks concurrently results in an aggregated array of the union of returned items, "+
 					"the expected number of chunks and no error being returned", func() {
-					result, numChunks, errs := processInConcurrentBatches(items, processor, 5)
+					result, numChunks, errs := processInConcurrentBatches(items, processor, 5, 150)
 					So(result, ShouldResemble, map[string]struct{}{"a": {}, "b": {}, "c": {}, "d": {}})
 					So(numChunks, ShouldEqual, 2)
 					So(errs, ShouldBeNil)
@@ -141,7 +141,7 @@ func TestInConcurrentBatches(t *testing.T) {
 				}
 
 				Convey("Then processing the chunks concurrently results in all errors being returned", func() {
-					result, numChunks, errs := processInConcurrentBatches(items, processor, 5)
+					result, numChunks, errs := processInConcurrentBatches(items, processor, 5, 150)
 					So(result, ShouldResemble, make(map[string]struct{}))
 					So(numChunks, ShouldEqual, 2)
 					So(errs, ShouldResemble, []error{testErr, testErr})
