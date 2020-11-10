@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"errors"
+	"github.com/ONSdigital/log.go/log"
 
 	"github.com/ONSdigital/dp-graph/v2/config"
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
@@ -21,6 +22,11 @@ type DB struct {
 	driver.Dimension
 
 	Errors chan error
+}
+
+// ErrorChan returns the error channel associated with this DB
+func (db DB) ErrorChan() chan error {
+	return db.Errors
 }
 
 // Subsets allows a clear and concise way of requesting any combination of
@@ -67,6 +73,8 @@ func New(ctx context.Context, choice Subsets) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	log.Event(ctx, "loaded graph database config", log.INFO, log.Data{"config": cfg})
 
 	var ok bool
 	var codelist driver.CodeList

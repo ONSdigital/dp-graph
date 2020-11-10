@@ -14,7 +14,7 @@ import (
 // relevant driver for further setup
 type Configuration struct {
 	DriverChoice    string `envconfig:"GRAPH_DRIVER_TYPE"`
-	DatabaseAddress string `envconfig:"GRAPH_ADDR"`
+	DatabaseAddress string `envconfig:"GRAPH_ADDR" json:"-"`
 	PoolSize        int    `envconfig:"GRAPH_POOL_SIZE"`
 	MaxRetries      int    `envconfig:"MAX_RETRIES"`
 	QueryTimeout    int    `envconfig:"GRAPH_QUERY_TIMEOUT"`

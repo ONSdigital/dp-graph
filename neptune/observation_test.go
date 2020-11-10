@@ -39,7 +39,7 @@ func Test_buildObservationsQuery(t *testing.T) {
 			result := buildObservationsQuery(instanceID, filter)
 
 			Convey("Then the resulting query portion should filter to relevant observations", func() {
-				So(result, ShouldEqual, ".V().hasId('_888_age_30').in('isValueOf')")
+				So(result, ShouldEqual, "g.V().hasId('_888_age_30').in('isValueOf')")
 			})
 		})
 	})
@@ -58,7 +58,7 @@ func Test_buildObservationsQuery(t *testing.T) {
 			result := buildObservationsQuery(instanceID, filter)
 
 			Convey("Then the resulting query portion should filter to relevant observations", func() {
-				expectedQuery := `.V().hasId('_888_age_29','_888_age_30','_888_age_31').in('isValueOf')` +
+				expectedQuery := `g.V().hasId('_888_age_29','_888_age_30','_888_age_31').in('isValueOf')` +
 					`.where(out('isValueOf').hasId('_888_sex_male','_888_sex_female','_888_sex_all','_888_geography_K0001','_888_geography_K0002','_888_geography_K0003')` +
 					`.fold().count(local).is_(2))`
 				So(result, ShouldEqual, expectedQuery)
@@ -113,5 +113,35 @@ func Test_StreamCSVRows(t *testing.T) {
 			})
 		})
 	})
+}
 
+func Test_escapeSingleQuotes(t *testing.T) {
+
+	Convey("Given a value with a single quote", t, func() {
+
+		value := "carl's"
+		expected := "carl\\'s"
+
+		Convey("When escapeSingleQuotes is called", func() {
+			actual := escapeSingleQuotes(value)
+
+			Convey("Then single quote is escaped", func() {
+				So(actual, ShouldEqual, expected)
+			})
+		})
+	})
+
+	Convey("Given a value with multiple single quotes", t, func() {
+
+		value := "83.8,,1999,1999,E07000146,King's Lynn and West Norfolk,68IMP,68IMP : Owner-occupiers' imputed rental,chained-volume-measures-index,Chained volume measures index"
+		expected := "83.8,,1999,1999,E07000146,King\\'s Lynn and West Norfolk,68IMP,68IMP : Owner-occupiers\\' imputed rental,chained-volume-measures-index,Chained volume measures index"
+
+		Convey("When escapeSingleQuotes is called", func() {
+			actual := escapeSingleQuotes(value)
+
+			Convey("Then each single quote is correctly escaped", func() {
+				So(actual, ShouldEqual, expected)
+			})
+		})
+	})
 }

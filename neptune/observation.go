@@ -35,6 +35,11 @@ func (n *NeptuneDB) StreamCSVRows(ctx context.Context, instanceID, filterID stri
 	}
 
 	q := fmt.Sprintf(query.GetInstanceHeaderPart, instanceID)
+	headerReader, err := n.Pool.OpenStreamCursor(ctx, q, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	q += buildObservationsQuery(instanceID, filter)
 	q += query.GetObservationValuesPart
 
@@ -42,7 +47,12 @@ func (n *NeptuneDB) StreamCSVRows(ctx context.Context, instanceID, filterID stri
 		q += fmt.Sprintf(query.LimitPart, *limit)
 	}
 
-	return n.Pool.OpenStreamCursor(ctx, q, nil, nil)
+	observationReader, err := n.Pool.OpenStreamCursor(ctx, q, nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return observation.NewCompositeRowReader(headerReader, observationReader), nil
 }
 
 func buildObservationsQuery(instanceID string, f *observation.DimensionFilters) string {
@@ -117,7 +127,7 @@ func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, ins
 				return fmt.Errorf("no nodeID [%s] found in dimension map", dimensionLookup)
 			}
 
-			create += fmt.Sprintf(query.AddObservationRelationshipPart, nodeID, instanceID, d.DimensionName, d.Name)
+			create += fmt.Sprintf(query.AddObservationRelationshipPart, nodeID)
 		}
 
 		create = strings.TrimSuffix(create, ".outV()")
@@ -134,10 +144,5 @@ func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, ins
 }
 
 func escapeSingleQuotes(input string) string {
-	for i, c := range input {
-		if string(c) == "'" {
-			input = input[:i] + "\\" + input[i:]
-		}
-	}
-	return input
+	return strings.Replace(input, "'", "\\'", -1)
 }
