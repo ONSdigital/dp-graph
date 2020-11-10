@@ -73,7 +73,7 @@ func TestNeptuneDB_GetGenericHierarchyNodeIDs(t *testing.T) {
 		}
 		db := mockDB(poolMock)
 
-		Convey("When GetGenericHierarchyNodeIDs is called", func() {
+		Convey("When GetGenericHierarchyNodeIDs is called with a list of codes", func() {
 			ids, err := db.GetGenericHierarchyNodeIDs(ctx, testAttempt, testCodeListID, testCodes)
 
 			Convey("Then no error is returned", func() {
@@ -90,6 +90,19 @@ func TestNeptuneDB_GetGenericHierarchyNodeIDs(t *testing.T) {
 				So(poolMock.GetStringListCalls()[0].Query, ShouldBeIn, []string{expectedQueryOp1, expectedQueryOp2})
 			})
 		})
+
+		Convey("When GetGenericHierarchyNodeIDs is called with an empty list of codes", func() {
+			ids, err := db.GetGenericHierarchyNodeIDs(ctx, testAttempt, testCodeListID, []string{})
+
+			Convey("Then no error is returned", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then an empty map of IDs is returned and no query is executed", func() {
+				So(ids, ShouldResemble, map[string]struct{}{})
+				So(len(poolMock.GetStringListCalls()), ShouldEqual, 0)
+			})
+		})
 	})
 }
 
@@ -101,7 +114,7 @@ func TestNeptuneDB_GetGenericHierarchyAncestriesIDs(t *testing.T) {
 		}
 		db := mockDB(poolMock)
 
-		Convey("When GetGenericHierarchyAncestriesIDs is called", func() {
+		Convey("When GetGenericHierarchyAncestriesIDs is called with a list of codes", func() {
 			ids, err := db.GetGenericHierarchyAncestriesIDs(ctx, testAttempt, testCodeListID, testCodes)
 
 			Convey("Then no error is returned", func() {
@@ -119,6 +132,19 @@ func TestNeptuneDB_GetGenericHierarchyAncestriesIDs(t *testing.T) {
 				So(poolMock.GetStringListCalls()[0].Query, ShouldBeIn, []string{expectedQueryOp1, expectedQueryOp2})
 			})
 		})
+
+		Convey("When GetGenericHierarchyAncestriesIDs is called with an empty list of codes", func() {
+			ids, err := db.GetGenericHierarchyAncestriesIDs(ctx, testAttempt, testCodeListID, []string{})
+
+			Convey("Then no error is returned", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then an empty map of IDs is returned and no query is executed", func() {
+				So(ids, ShouldResemble, map[string]struct{}{})
+				So(len(poolMock.GetStringListCalls()), ShouldEqual, 0)
+			})
+		})
 	})
 }
 
@@ -132,7 +158,7 @@ func TestNeptuneDB_CloneNodesFromID(t *testing.T) {
 		}
 		db := mockDB(poolMock)
 
-		Convey("When CloneNodes is called", func() {
+		Convey("When CloneNodes is called with a map of IDs", func() {
 			err := db.CloneNodesFromIDs(ctx, testAttempt, testInstanceID, testCodeListID, testDimensionName, testIds, true)
 
 			Convey("Then no error is returned", func() {
@@ -151,6 +177,18 @@ func TestNeptuneDB_CloneNodesFromID(t *testing.T) {
 				expectedQueryOp2 := fmt.Sprintf(expectedQueryFmt, "cpih1dim1aggid--cpih1dim1S90402", "cpih1dim1aggid--cpih1dim1S90401")
 				So(len(poolMock.ExecuteCalls()), ShouldEqual, 1)
 				So(poolMock.ExecuteCalls()[0].Query, ShouldBeIn, []string{expectedQueryOp1, expectedQueryOp2})
+			})
+		})
+
+		Convey("When CloneNodes is called with an empty map of IDs", func() {
+			err := db.CloneNodesFromIDs(ctx, testAttempt, testInstanceID, testCodeListID, testDimensionName, map[string]struct{}{}, true)
+
+			Convey("Then no error is returned", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then no query is executed", func() {
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 0)
 			})
 		})
 	})
@@ -194,7 +232,7 @@ func TestNeptuneDB_CloneRelationshipsFromIDs(t *testing.T) {
 		}
 		db := mockDB(poolMock)
 
-		Convey("When CloneRelationShips is called with unique IDs", func() {
+		Convey("When CloneRelationShips is called with a map of IDs", func() {
 			err := db.CloneRelationshipsFromIDs(ctx, testAttempt, testInstanceID, testDimensionName, testAllIds)
 
 			Convey("Then no error is returned", func() {
@@ -216,6 +254,18 @@ func TestNeptuneDB_CloneRelationshipsFromIDs(t *testing.T) {
 				So(strings.Count(poolMock.GetECalls()[0].Q, "'cpih1dim1aggid--cpih1dim1T90000'"), ShouldEqual, 1)
 				So(strings.Count(poolMock.GetECalls()[0].Q, "'cpih1dim1aggid--cpih1dim1A0'"), ShouldEqual, 1)
 				So(strings.HasSuffix(poolMock.GetECalls()[0].Q, expectedQSuffix), ShouldBeTrue)
+			})
+		})
+
+		Convey("When CloneRelationShips is called with an empty map of IDs", func() {
+			err := db.CloneRelationshipsFromIDs(ctx, testAttempt, testInstanceID, testDimensionName, map[string]struct{}{})
+
+			Convey("Then no error is returned", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then no query is executed", func() {
+				So(len(poolMock.GetECalls()), ShouldEqual, 0)
 			})
 		})
 	})
@@ -257,7 +307,7 @@ func TestNeptuneDB_RemoveCloneEdgesFromSourceIDs(t *testing.T) {
 		}
 		db := mockDB(poolMock)
 
-		Convey("When RemoveCloneEdgesFromSourceIDs is called", func() {
+		Convey("When RemoveCloneEdgesFromSourceIDs is called with a map of IDs", func() {
 			err := db.RemoveCloneEdgesFromSourceIDs(ctx, testAttempt, testClonedIds)
 
 			Convey("Then no error is returned", func() {
@@ -273,6 +323,18 @@ func TestNeptuneDB_RemoveCloneEdgesFromSourceIDs(t *testing.T) {
 					So(strings.Count(poolMock.ExecuteCalls()[0].Query, id), ShouldEqual, 1)
 				}
 				So(strings.HasSuffix(poolMock.ExecuteCalls()[0].Query, expectedQSuffix), ShouldBeTrue)
+			})
+		})
+
+		Convey("When RemoveCloneEdgesFromSourceIDs is called with an empty map of IDs", func() {
+			err := db.RemoveCloneEdgesFromSourceIDs(ctx, testAttempt, map[string]struct{}{})
+
+			Convey("Then no error is returned", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then no query is executed", func() {
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 0)
 			})
 		})
 	})
@@ -339,7 +401,7 @@ func TestNeptuneDB_SetNumberOfChildrenFromIDs(t *testing.T) {
 		}
 		db := mockDB(poolMock)
 
-		Convey("When SetNumberOfChildrenFromIDs is called", func() {
+		Convey("When SetNumberOfChildrenFromIDs is called with a map of IDs", func() {
 			err := db.SetNumberOfChildrenFromIDs(ctx, testAttempt, testClonedIds)
 
 			Convey("Then no error is returned", func() {
@@ -355,6 +417,18 @@ func TestNeptuneDB_SetNumberOfChildrenFromIDs(t *testing.T) {
 					So(strings.Count(poolMock.ExecuteCalls()[0].Query, id), ShouldEqual, 1)
 				}
 				So(strings.HasSuffix(poolMock.ExecuteCalls()[0].Query, expectedQSuffix), ShouldBeTrue)
+			})
+		})
+
+		Convey("When SetNumberOfChildrenFromIDs is called with an empty map of IDs", func() {
+			err := db.SetNumberOfChildrenFromIDs(ctx, testAttempt, map[string]struct{}{})
+
+			Convey("Then no error is returned", func() {
+				So(err, ShouldBeNil)
+			})
+
+			Convey("Then no query is executed", func() {
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 0)
 			})
 		})
 	})
