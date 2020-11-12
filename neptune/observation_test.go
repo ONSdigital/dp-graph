@@ -178,7 +178,7 @@ func Test_InsertObservationBatch(t *testing.T) {
 	expectedObsEdgeQuery := "g.V('_obs_1','_obs_2').bothE().id()"
 	expectedObsDeleteStmt := "g.E('_edge_1','_edge_2').drop().iterate();g.V('_obs_1','_obs_2').drop()"
 	expectedObsCreateStmt := "g.addV('_instanceID_observation').property(id, '_instanceID_observation_1').property(single, 'value', 'row,content,1').addV('_instanceID_observation').property(id, '_instanceID_observation_2').property(single, 'value', 'row,content,2')"
-	expectedObsEdgeCreateStmt := "g.V('instanceID_age_29').as('instanceID_age_29').V('instanceID_sex_male').as('instanceID_sex_male').V('instanceID_age_30').as('instanceID_age_30').V('_instanceID_observation_1').addE('isValueOf').to('instanceID_age_29').V('_instanceID_observation_1').addE('isValueOf').to('instanceID_sex_male').V('_instanceID_observation_2').addE('isValueOf').to('instanceID_age_30').V('_instanceID_observation_2').addE('isValueOf').to('instanceID_sex_male')"
+	expectedObsEdgeCreateStmt := "g.V('_instanceID_age_29').as('_instanceID_age_29').V('_instanceID_sex_male').as('_instanceID_sex_male').V('_instanceID_age_30').as('_instanceID_age_30').V('_instanceID_observation_1').addE('isValueOf').to('_instanceID_age_29').V('_instanceID_observation_1').addE('isValueOf').to('_instanceID_sex_male').V('_instanceID_observation_2').addE('isValueOf').to('_instanceID_age_30').V('_instanceID_observation_2').addE('isValueOf').to('_instanceID_sex_male')"
 
 	Convey("Given an error is returned when attempting to get existing observations", t, func() {
 

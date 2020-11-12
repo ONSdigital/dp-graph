@@ -177,7 +177,7 @@ func (n *NeptuneDB) addObservationEdges(dimIDs []string, obsIDs []string, obsIDM
 
 func createDimensionId(dim *models.DimensionOption, instanceID string) string {
 	dimName := strings.ToLower(dim.DimensionName)
-	dimID := instanceID + "_" + dimName + "_" + dim.Name
+	dimID := "_" + instanceID + "_" + dimName + "_" + dim.Name
 	return dimID
 }
 
