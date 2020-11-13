@@ -18,8 +18,16 @@ type Configuration struct {
 	PoolSize        int    `envconfig:"GRAPH_POOL_SIZE"`
 	MaxRetries      int    `envconfig:"MAX_RETRIES"`
 	QueryTimeout    int    `envconfig:"GRAPH_QUERY_TIMEOUT"`
+	Neptune         NeptuneConfig
 
 	Driver driver.Driver
+}
+
+// NeptuneConfig defines the neptune-specific configuration
+type NeptuneConfig struct {
+	BatchSizeReader int `envconfig:"NEPTUNE_BATCH_SIZE_READER"`
+	BatchSizeWriter int `envconfig:"NEPTUNE_BATCH_SIZE_WRITER"`
+	MaxWorkers      int `envconfig:"NEPTUNE_MAX_WORKERS"`
 }
 
 var cfg *Configuration
@@ -32,6 +40,11 @@ func Get(errs chan error) (*Configuration, error) {
 
 	cfg = &Configuration{
 		DriverChoice: "",
+		Neptune: NeptuneConfig{
+			BatchSizeReader: 25000,
+			BatchSizeWriter: 150,
+			MaxWorkers:      150,
+		},
 	}
 
 	err := envconfig.Process("", cfg)
@@ -45,7 +58,8 @@ func Get(errs chan error) (*Configuration, error) {
 			return nil, err
 		}
 	case "neptune":
-		d, err = neptune.New(cfg.DatabaseAddress, cfg.PoolSize, cfg.QueryTimeout, cfg.MaxRetries, errs)
+		d, err = neptune.New(cfg.DatabaseAddress, cfg.PoolSize, cfg.QueryTimeout, cfg.MaxRetries,
+			cfg.Neptune.BatchSizeReader, cfg.Neptune.BatchSizeWriter, cfg.Neptune.MaxWorkers, errs)
 		if err != nil {
 			return nil, err
 		}

@@ -28,19 +28,29 @@ type CodeList interface {
 
 // Hierarchy defines functions to create and retrieve generic and instance hierarchy nodes
 type Hierarchy interface {
+	// read
+	GetHierarchyCodelist(ctx context.Context, instanceID, dimension string) (string, error)
+	GetHierarchyRoot(ctx context.Context, instanceID, dimension string) (*models.HierarchyResponse, error)
+	GetHierarchyElement(ctx context.Context, instanceID, dimension, code string) (*models.HierarchyResponse, error)
+	GetCodesWithData(ctx context.Context, attempt int, instanceID, dimensionName string) (codes []string, err error)
+	GetGenericHierarchyNodeIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs map[string]struct{}, err error)
+	GetGenericHierarchyAncestriesIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs map[string]struct{}, err error)
+	CountNodes(ctx context.Context, instanceID, dimensionName string) (count int64, err error)
+	GetHierarchyNodeIDs(ctx context.Context, attempt int, instanceID, dimensionName string) (ids map[string]struct{}, err error)
+	// write
 	CreateInstanceHierarchyConstraints(ctx context.Context, attempt int, instanceID, dimensionName string) error
 	CloneNodes(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error
-	CountNodes(ctx context.Context, instanceID, dimensionName string) (count int64, err error)
+	CloneNodesFromIDs(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids map[string]struct{}, hasData bool) (err error)
 	CloneRelationships(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error
-	SetNumberOfChildren(ctx context.Context, attempt int, instanceID, dimensionName string) error
+	CloneRelationshipsFromIDs(ctx context.Context, attempt int, instanceID, dimensionName string, ids map[string]struct{}) error
+	SetNumberOfChildren(ctx context.Context, attempt int, instanceID, dimensionName string) (err error)
+	SetNumberOfChildrenFromIDs(ctx context.Context, attempt int, ids map[string]struct{}) (err error)
+	RemoveCloneEdges(ctx context.Context, attempt int, instanceID, dimensionName string) (err error)
+	RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt int, ids map[string]struct{}) (err error)
 	SetHasData(ctx context.Context, attempt int, instanceID, dimensionName string) error
 	MarkNodesToRemain(ctx context.Context, attempt int, instanceID, dimensionName string) error
 	RemoveNodesNotMarkedToRemain(ctx context.Context, attempt int, instanceID, dimensionName string) error
 	RemoveRemainMarker(ctx context.Context, attempt int, instanceID, dimensionName string) error
-
-	GetHierarchyCodelist(ctx context.Context, instanceID, dimension string) (string, error)
-	GetHierarchyRoot(ctx context.Context, instanceID, dimension string) (*models.HierarchyResponse, error)
-	GetHierarchyElement(ctx context.Context, instanceID, dimension, code string) (*models.HierarchyResponse, error)
 }
 
 // Observation defines functions to create and retrieve observation nodes

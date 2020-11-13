@@ -3,6 +3,8 @@ package internal
 import (
 	"fmt"
 
+	"errors"
+
 	"github.com/ONSdigital/graphson"
 )
 
@@ -10,10 +12,6 @@ import (
 This module provides a handful of mock convenience functions that can be
 used to inject behaviour into NeptunePoolMock.
 */
-
-import (
-	"errors"
-)
 
 // ReturnOne is a mock implementation for NeptunePool.GetCount()
 // that always returns a count of 1.
@@ -119,10 +117,37 @@ var ReturnEmptyCodesList = func(query string, bindings map[string]string, rebind
 
 var ReturnCodesList = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
 	var codes []string
-	codes = append(codes, "123")
-	codes = append(codes, "456")
-	codes = append(codes, "789")
+	codes = append(codes, "cpih1dim1S90401")
+	codes = append(codes, "cpih1dim1S90402")
 	return codes, nil
+}
+
+var ReturnGenericHierarchyLeavesIDs = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+	var ids []string
+	ids = append(ids, "cpih1dim1aggid--cpih1dim1S90401")
+	ids = append(ids, "cpih1dim1aggid--cpih1dim1S90402")
+	return ids, nil
+}
+
+var ReturnGenericHierarchyAncestryIDs = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+	var ids []string
+	ids = append(ids, "cpih1dim1aggid--cpih1dim1G90400")
+	ids = append(ids, "cpih1dim1aggid--cpih1dim1G90400")
+	ids = append(ids, "cpih1dim1aggid--cpih1dim1T90000")
+	ids = append(ids, "cpih1dim1aggid--cpih1dim1T90000")
+	ids = append(ids, "cpih1dim1aggid--cpih1dim1A0")
+	ids = append(ids, "cpih1dim1aggid--cpih1dim1A0")
+	return ids, nil
+}
+
+var ReturnHierarchyNodeIDs = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+	var ids []string
+	ids = append(ids, "62bab579-e923-7cb2-3be0-34d09dc0567b")
+	ids = append(ids, "acbab579-e923-87df-e59a-9daf2ffed388")
+	ids = append(ids, "b6bab57a-604d-8a7f-59f5-1d496c9b3ca5")
+	ids = append(ids, "08bab57a-604d-9cd9-492f-e879cee05502")
+	ids = append(ids, "6cbab57a-604d-f176-9370-c60c19369801")
+	return ids, nil
 }
 
 var ReturnInvalidCodeData = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
@@ -140,6 +165,24 @@ var ReturnThreeCodes = func(query string, bindings map[string]string, rebindings
 		codes = append(codes, fmt.Sprintf("code_%d", i))
 	}
 	return codes, nil
+}
+
+var ReturnNodeLeavesIDs = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+	var ids []string
+	ids = append(ids, "cpih1dim1S90401")
+	ids = append(ids, "cpih1dim1S90402")
+	return ids, nil
+}
+
+var ReturnNodeAncestryIDs = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+	var ids []string
+	ids = append(ids, "cpih1dim1A0")
+	ids = append(ids, "cpih1dim1T90000")
+	ids = append(ids, "cpih1dim1G90400")
+	ids = append(ids, "cpih1dim1A0")
+	ids = append(ids, "cpih1dim1T90000")
+	ids = append(ids, "cpih1dim1G90400")
+	return ids, nil
 }
 
 func MakeHierarchyVertex(vertexLabel, code, codeLabel string, numberOfChildren int, hasData bool) graphson.Vertex {

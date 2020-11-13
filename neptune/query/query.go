@@ -50,6 +50,16 @@ const (
 		union(select('rl', 'de', 'dv', 'did')).unfold().select(values)
 	`
 
+	// GetGenericHierarchyNodeIDs gets the IDs of the generic hierarchy nodes whose 'code' is in the provided list of codes
+	GetGenericHierarchyNodeIDs = `g.V().hasLabel('_generic_hierarchy_node_%s').has('code',within(%s)).id()`
+
+	// GetGenericHierarchyAncestryIDs gets IDs of the ancestries (parents, grandparents, etc) of the generic hierarchy nodes
+	// whose 'code' is in the provided list of codes.
+	GetGenericHierarchyAncestryIDs = `g.V().hasLabel('_generic_hierarchy_node_%s').has('code',within(%s)).repeat(out('hasParent')).emit().id()`
+
+	// GetHierarchyNodeIDs gets teh IDs of the cloned hierarchy nodes for a particular instanceID and dimensionName
+	GetHierarchyNodeIDs = `g.V().hasLabel('_hierarchy_node_%s_%s').id()`
+
 	// hierarchy write
 	CloneHierarchyNodes = `g.V().hasLabel('_generic_hierarchy_node_%s').as('old')` +
 		`.addV('_hierarchy_node_%s_%s')` +
@@ -59,14 +69,42 @@ const (
 		`.property('code_list','%s').as('new')` +
 		`.addE('clone_of').to('old')` +
 		`.select('new')`
-	CountHierarchyNodes         = `g.V().hasLabel('_hierarchy_node_%s_%s').count()`
+
+	// CloneHierarchyNodesFromIDs traverses the provided node IDs and creates a clone for each one
+	// by cloning 'code' and 'label' properties, setting 'hasData' to the provided boolean value, setting 'code_list' to the provided value,
+	// and creating a 'clone_of' edge between the new node and the original one.
+	CloneHierarchyNodesFromIDs = `g.V(%s).as('old')` +
+		`.addV('_hierarchy_node_%s_%s')` +
+		`.property(single,'code',select('old').values('code'))` +
+		`.property(single,'label',select('old').values('label'))` +
+		`.property(single,'hasData', %t)` +
+		`.property('code_list','%s').as('new')` +
+		`.addE('clone_of').to('old')`
+
+	// CountHierarchyNodes returns the number of hierarchy nodes for the provided instanceID and dimensionName
+	CountHierarchyNodes = `g.V().hasLabel('_hierarchy_node_%s_%s').count()`
+
 	CloneHierarchyRelationships = `g.V().hasLabel('_generic_hierarchy_node_%s').as('oc')` +
 		`.out('hasParent')` +
 		`.in('clone_of').hasLabel('_hierarchy_node_%s_%s').as('p')` +
 		`.select('oc').in('clone_of').hasLabel('_hierarchy_node_%s_%s')` +
 		`.addE('hasParent').to('p')`
-	RemoveCloneMarkers  = `g.V().hasLabel('_hierarchy_node_%s_%s').outE('clone_of').drop()`
-	SetNumberOfChildren = `g.V().hasLabel('_hierarchy_node_%s_%s').property(single,'numberOfChildren',__.in('hasParent').count())`
+
+	// CloneHierarchyRelationshipsFromIDs clones the 'hasParent' edges from the generic hierarchy structure to the cloned structure,
+	// for a provided set of generic hierarchy node IDs.
+	CloneHierarchyRelationshipsFromIDs = `g.V(%s).as('oc')` +
+		`.out('hasParent')` +
+		`.in('clone_of').hasLabel('_hierarchy_node_%s_%s').as('p')` +
+		`.select('oc').in('clone_of').hasLabel('_hierarchy_node_%s_%s')` +
+		`.addE('hasParent').to('p')`
+
+	// RemoveCloneMarkers drops the 'clone_of' outEdges from the provided nodes
+	RemoveCloneMarkers              = `g.V().hasLabel('_hierarchy_node_%s_%s').outE('clone_of').drop()`
+	RemoveCloneMarkersFromSourceIDs = `g.V(%s).outE('clone_of').drop()`
+
+	// SetNumberOfChildren sets a property called 'numberOfChildren' to the value indegree of edges 'hasParent'
+	SetNumberOfChildren        = `g.V().hasLabel('_hierarchy_node_%s_%s').property(single,'numberOfChildren',__.in('hasParent').count())`
+	SetNumberOfChildrenFromIDs = `g.V(%s).property(single,'numberOfChildren',__.in('hasParent').count())`
 
 	GetCodesWithData = `g.V().hasLabel('_%s_%s').values('value')`
 	SetHasData       = `g.V().hasLabel('_hierarchy_node_%s_%s').as('v').has('code',within(%s)).property(single,'hasData',true)`

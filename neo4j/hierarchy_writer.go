@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/query"
 	"github.com/ONSdigital/log.go/log"
 )
@@ -62,25 +63,6 @@ func (n *Neo4j) CloneNodes(ctx context.Context, attempt int, instanceID, codeLis
 	}
 
 	return nil
-}
-
-// CountNodes returns the number of nodes existing in the specified instance hierarchy
-func (n *Neo4j) CountNodes(ctx context.Context, instanceID, dimensionName string) (count int64, err error) {
-	q := fmt.Sprintf(
-		query.CountHierarchyNodes,
-		instanceID,
-		dimensionName,
-	)
-
-	logData := log.Data{
-		"instance_id":    instanceID,
-		"dimension_name": dimensionName,
-		"query":          q,
-	}
-
-	log.Event(ctx, "counting nodes in the new instance hierarchy", log.INFO, logData)
-
-	return n.Count(q)
 }
 
 // CloneRelationships copies relationships from a generic hierarchy and uses them to join instance specific hierarchy nodes
@@ -255,4 +237,24 @@ func (n *Neo4j) RemoveRemainMarker(ctx context.Context, attempt int, instanceID,
 	}
 
 	return nil
+}
+
+func (n *Neo4j) CloneNodesFromIDs(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids map[string]struct{}, hasData bool) (err error) {
+	return driver.ErrNotImplemented
+}
+
+func (n *Neo4j) CloneRelationshipsFromIDs(ctx context.Context, attempt int, instanceID, dimensionName string, ids map[string]struct{}) error {
+	return driver.ErrNotImplemented
+}
+
+func (n *Neo4j) RemoveCloneEdges(ctx context.Context, attempt int, instanceID, dimensionName string) (err error) {
+	return driver.ErrNotImplemented
+}
+
+func (n *Neo4j) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt int, ids map[string]struct{}) (err error) {
+	return driver.ErrNotImplemented
+}
+
+func (n *Neo4j) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int, ids map[string]struct{}) (err error) {
+	return driver.ErrNotImplemented
 }

@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"math"
 	"math/rand"
 	"strings"
 	"time"
+
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 
 	neptune "github.com/ONSdigital/dp-graph/v2/neptune/driver"
 	"github.com/ONSdigital/graphson"
@@ -19,11 +20,14 @@ import (
 type NeptuneDB struct {
 	neptune.NeptuneDriver
 
-	maxAttempts int
-	timeout     int
+	maxAttempts     int
+	timeout         int
+	batchSizeReader int
+	batchSizeWriter int
+	maxWorkers      int
 }
 
-func New(dbAddr string, size, timeout, retries int, errs chan error) (n *NeptuneDB, err error) {
+func New(dbAddr string, size, timeout, retries, batchSizeReader, batchSizeWriter, maxWorkers int, errs chan error) (n *NeptuneDB, err error) {
 	// set defaults if not provided
 	if size == 0 {
 		size = 30
@@ -33,6 +37,15 @@ func New(dbAddr string, size, timeout, retries int, errs chan error) (n *Neptune
 	}
 	if retries == 0 {
 		retries = 5
+	}
+	if batchSizeReader == 0 {
+		batchSizeReader = 25000
+	}
+	if batchSizeWriter == 0 {
+		batchSizeWriter = 150
+	}
+	if maxWorkers == 0 {
+		maxWorkers = 150
 	}
 
 	var d *neptune.NeptuneDriver
@@ -47,13 +60,16 @@ func New(dbAddr string, size, timeout, retries int, errs chan error) (n *Neptune
 		*d,
 		1 + retries,
 		timeout,
+		batchSizeReader,
+		batchSizeWriter,
+		maxWorkers,
 	}
 	return
 }
 
 func (n *NeptuneDB) getVertices(gremStmt string) (vertices []graphson.Vertex, err error) {
 	ctx := context.Background()
-	logData := log.Data{"fn": "getVertices", "statement": gremStmt, "attempt": 1}
+	logData := log.Data{"fn": "getVertices", "statement": statementSummary(gremStmt), "attempt": 1}
 
 	var res interface{}
 	for attempt := 1; attempt < n.maxAttempts; attempt++ {
@@ -86,7 +102,7 @@ func (n *NeptuneDB) getVertices(gremStmt string) (vertices []graphson.Vertex, er
 
 func (n *NeptuneDB) getStringList(gremStmt string) (strings []string, err error) {
 	ctx := context.Background()
-	logData := log.Data{"fn": "getStringList", "statement": gremStmt, "attempt": 1}
+	logData := log.Data{"fn": "getStringList", "statement": statementSummary(gremStmt), "attempt": 1}
 
 	for attempt := 1; attempt < n.maxAttempts; attempt++ {
 		if attempt > 1 {
@@ -104,6 +120,7 @@ func (n *NeptuneDB) getStringList(gremStmt string) (strings []string, err error)
 		}
 	}
 	// ASSERT: failed all attempts
+	logData["statement"] = gremStmt
 	log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
 	err = ErrAttemptsExceededLimit{err}
 	return
@@ -133,7 +150,7 @@ func (n *NeptuneDB) getVertex(gremStmt string) (vertex graphson.Vertex, err erro
 
 func (n *NeptuneDB) getEdges(gremStmt string) (edges []graphson.Edge, err error) {
 	ctx := context.Background()
-	logData := log.Data{"fn": "getEdges", "statement": gremStmt, "attempt": 1}
+	logData := log.Data{"fn": "getEdges", "statement": statementSummary(gremStmt), "attempt": 1}
 
 	var res interface{}
 	for attempt := 1; attempt < n.maxAttempts; attempt++ {
@@ -160,6 +177,7 @@ func (n *NeptuneDB) getEdges(gremStmt string) (edges []graphson.Edge, err error)
 		}
 	}
 	// ASSERT: failed all attempts
+	logData["statement"] = gremStmt
 	log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
 	err = ErrAttemptsExceededLimit{err}
 	return
@@ -167,7 +185,7 @@ func (n *NeptuneDB) getEdges(gremStmt string) (edges []graphson.Edge, err error)
 
 func (n *NeptuneDB) exec(gremStmt string) (res []gremgo.Response, err error) {
 	ctx := context.Background()
-	logData := log.Data{"fn": "n.exec", "statement": gremStmt, "attempt": 1}
+	logData := log.Data{"fn": "n.exec", "statement": statementSummary(gremStmt), "attempt": 1}
 
 	for attempt := 1; attempt < n.maxAttempts; attempt++ {
 		if attempt > 1 {
@@ -182,7 +200,6 @@ func (n *NeptuneDB) exec(gremStmt string) (res []gremgo.Response, err error) {
 				log.Event(ctx, "bad res", log.ERROR, logData, log.Error(err))
 				return
 			}
-			log.Event(ctx, "exec ok", log.INFO, logData)
 			return
 		}
 		// XXX check err more thoroughly (isTransientError?) (non-err failures?)
@@ -191,6 +208,7 @@ func (n *NeptuneDB) exec(gremStmt string) (res []gremgo.Response, err error) {
 		}
 	}
 	// ASSERT: failed all attempts
+	logData["statement"] = gremStmt
 	log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
 	err = ErrAttemptsExceededLimit{err}
 	return
@@ -198,7 +216,7 @@ func (n *NeptuneDB) exec(gremStmt string) (res []gremgo.Response, err error) {
 
 func (n *NeptuneDB) getNumber(gremStmt string) (count int64, err error) {
 	ctx := context.Background()
-	logData := log.Data{"fn": "n.getNumber", "statement": gremStmt, "attempt": 1}
+	logData := log.Data{"fn": "n.getNumber", "statement": statementSummary(gremStmt), "attempt": 1}
 
 	for attempt := 1; attempt < n.maxAttempts; attempt++ {
 		if attempt > 1 {
@@ -216,6 +234,7 @@ func (n *NeptuneDB) getNumber(gremStmt string) (count int64, err error) {
 		}
 	}
 	// ASSERT: failed all attempts
+	logData["statement"] = gremStmt
 	log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
 	err = ErrAttemptsExceededLimit{err}
 	return

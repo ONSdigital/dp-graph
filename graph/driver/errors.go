@@ -12,6 +12,9 @@ var ErrNotFound = errors.New("not found")
 // more than one error, inside a call that requires exactly one.
 var ErrMultipleFound = errors.New("multiple found where should be one")
 
+// ErrNotImplemented is returned when a method is called but the driver does not implement it
+var ErrNotImplemented = errors.New("method not implemented by driver")
+
 // ErrAttemptsExceededLimit is returned when the number of attempts has reaced
 // the maximum permitted
 type ErrAttemptsExceededLimit struct {
