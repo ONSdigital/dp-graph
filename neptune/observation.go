@@ -202,9 +202,7 @@ func (n *NeptuneDB) removeExistingObservations(obsIDs []string) error {
 	queryExistingObservations := fmt.Sprintf(query.GetObservations, `'`+strings.Join(obsIDs, `','`)+`'`)
 	existingObsIDs, err := n.getStringList(queryExistingObservations)
 	if err != nil {
-		if err.Error() != "DeserializeStringListFromBytes: Expected `g:List` type, but got \\\"\\\"" {
-			return err
-		}
+		return err
 	}
 
 	if len(existingObsIDs) > 0 {
