@@ -23,22 +23,19 @@ func (n *NeptuneDB) InsertDimension(ctx context.Context, uniqueDimensions map[st
 		return nil, err
 	}
 
-	createDimension := fmt.Sprintf(query.DropDimensionRelationships, instanceID, d.DimensionID, d.Option)
-	createDimension += fmt.Sprintf(query.DropDimension, instanceID, d.DimensionID, d.Option)
-	createDimension += fmt.Sprintf(query.CreateDimensionToInstanceRelationship,
-		instanceID,                // instance node
-		instanceID, d.DimensionID, // label
-		instanceID, d.DimensionID, d.Option, // option specific ID
-		d.Option, // value property
-	)
+	dimID := fmt.Sprintf("_%s_%s_%s", instanceID, d.DimensionID, d.Option)
 
-	res, err := n.getVertex(createDimension)
-
+	err := n.removeExistingDimension(dimID)
 	if err != nil {
 		return nil, err
 	}
 
-	d.NodeID = res.GetID()
+	err = n.createDimension(instanceID, d, dimID)
+	if err != nil {
+		return nil, err
+	}
+
+	d.NodeID = dimID
 	dimensionLabel := fmt.Sprintf("_%s_%s", instanceID, d.DimensionID)
 
 	if _, ok := uniqueDimensions[dimensionLabel]; !ok {
@@ -46,4 +43,40 @@ func (n *NeptuneDB) InsertDimension(ctx context.Context, uniqueDimensions map[st
 	}
 
 	return d, nil
+}
+
+func (n *NeptuneDB) createDimension(instanceID string, d *models.Dimension, dimID string) error {
+
+	createDim := fmt.Sprintf(query.CreateDimension, instanceID, d.DimensionID, dimID, d.Option)
+	if _, err := n.exec(createDim); err != nil {
+		return err
+	}
+
+	createDimEdge := fmt.Sprintf(query.CreateDimensionToInstanceRelationship, instanceID, dimID)
+	if _, err := n.exec(createDimEdge); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (n *NeptuneDB) removeExistingDimension(dimID string) error {
+
+	getDim := fmt.Sprintf(query.GetDimension, dimID)
+
+	existingDimIDs, err := n.getStringList(getDim)
+	if err != nil {
+		return err
+	}
+
+	if len(existingDimIDs) > 0 {
+		dropDim := fmt.Sprintf(query.DropDimensionRelationships, dimID)
+		dropDim += fmt.Sprintf(query.DropDimension, dimID)
+
+		if _, err := n.exec(dropDim); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -138,11 +138,13 @@ const (
 	AddInstanceDimensionsPropertyPart = `.property('dimensions', "%s")`
 
 	// dimension
-	DropDimensionRelationships            = `g.V().hasId('_%s_%s_%s').bothE().drop().iterate();`
-	DropDimension                         = `g.V().hasId('_%s_%s_%s').drop().iterate();`
-	CreateDimensionToInstanceRelationship = `g.V().hasId('_%s_Instance').as('inst')` +
-		`.addV('_%s_%s').as('d').property(id, '_%s_%s_%s').property('value',"%s")` +
-		`.addE('HAS_DIMENSION').to('inst').select('d')`
+	GetDimension               = `g.V('%s').id()`
+	DropDimensionRelationships = `g.V('%s').bothE().drop().iterate();`
+	DropDimension              = `g.V('%s').drop()`
+
+	CreateDimension                       = `g.addV('_%s_%s').property(id, '%s').property('value',"%s")`
+	CreateDimensionToInstanceRelationship = `g.V('_%s_Instance').as('inst')` +
+		`.V('%s').addE('HAS_DIMENSION').to('inst')`
 
 	// observation
 	GetObservations      = `g.V(%s).id()`
