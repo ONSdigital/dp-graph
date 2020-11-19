@@ -7,15 +7,12 @@ import (
 	"strings"
 
 	"github.com/ONSdigital/dp-graph/v2/neptune/query"
-	gremgo "github.com/ONSdigital/gremgo-neptune"
 	"github.com/ONSdigital/log.go/log"
 	"github.com/pkg/errors"
 )
 
 // Type check to ensure that NeptuneDB implements the driver.Instance interface
 var _ driver.Instance = (*NeptuneDB)(nil)
-
-const codeListNotFoundFmt = "VertexStep(OUT,[usedBy],vertex), HasStep([~label.eq(_code_list_%s)"
 
 // CountInsertedObservations returns the current number of observations relating to a given instance
 func (n *NeptuneDB) CountInsertedObservations(ctx context.Context, instanceID string) (count int64, err error) {
@@ -127,13 +124,19 @@ func (n *NeptuneDB) CreateCodeRelationship(ctx context.Context, instanceID, code
 		"code":        code,
 	}
 
-	createRelationships := fmt.Sprintf(query.CreateInstanceToCodeRelationship, instanceID, code, codeListID)
-	if res, err := n.exec(createRelationships); err != nil {
-		if len(res) > 0 && res[0].Status.Code == gremgo.StatusScriptEvaluationError &&
-			strings.Contains(res[0].Status.Message, fmt.Sprintf(codeListNotFoundFmt, codeListID)) {
+	getCode := fmt.Sprintf(query.GetCode, code, codeListID)
+	existingCodes, err := n.getStringList(getCode)
+	if err != nil {
+		return err
+	}
+	if len(existingCodes) == 0 {
+		return errors.Errorf("error creating relationship from instance to code: code or code list not found: %+v", data)
+	}
 
-			return errors.Wrapf(err, "error creating relationship from instance to code: code or code list not found: %+v", data)
-		}
+	codeNodeID := existingCodes[0]
+
+	createRelationships := fmt.Sprintf(query.CreateInstanceToCodeRelationship, instanceID, codeNodeID)
+	if _, err := n.exec(createRelationships); err != nil {
 		log.Event(ctx, "neptune exec failed on CreateCodeRelationship", log.ERROR, data, log.Error(err))
 		return err
 	}
