@@ -53,12 +53,16 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 
 	ctx := context.Background()
 	instanceID := "instanceID"
+	expectedGetDimStmt := "g.V('_instanceID_dimID_option').id()"
+	expectedCreateDimStmt := "g.addV('_instanceID_dimID').property(id, '_instanceID_dimID_option').property('value',\"option\")"
+	expectedCreateDimEdgeStmt := "g.V('_instanceID_Instance').as('inst').V('_instanceID_dimID_option').addE('HAS_DIMENSION').to('inst')"
 
 	Convey("Given a empty instance ID value", t, func() {
 
 		uniqueDimensions := map[string]string{}
 		dimension := createDimension()
-		db := mockDB(createPoolMock(createVertices()))
+		poolMock := createPoolMock(createVertices())
+		db := mockDB(poolMock)
 		instanceID := ""
 
 		Convey("When InsertDimension is called", func() {
@@ -70,12 +74,18 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 				So(err.Error(), ShouldEqual, "instance id is required but was empty")
 				So(insertedDimension, ShouldBeNil)
 			})
+
+			Convey("Then the graph DB is not called", func() {
+				So(len(poolMock.GetStringListCalls()), ShouldEqual, 0)
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 0)
+			})
 		})
 	})
 
 	Convey("Given a nil dimension value", t, func() {
 		uniqueDimensions := map[string]string{}
-		db := mockDB(createPoolMock(createVertices()))
+		poolMock := createPoolMock(createVertices())
+		db := mockDB(poolMock)
 		var dimension *models.Dimension
 
 		Convey("When InsertDimension is called", func() {
@@ -87,13 +97,19 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 				So(err.Error(), ShouldEqual, "dimension is required but was nil")
 				So(insertedDimension, ShouldBeNil)
 			})
+
+			Convey("Then the graph DB is not called", func() {
+				So(len(poolMock.GetStringListCalls()), ShouldEqual, 0)
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 0)
+			})
 		})
 	})
 
 	Convey("Given an empty dimension ID", t, func() {
 		uniqueDimensions := map[string]string{}
 		dimension := createDimension()
-		db := mockDB(createPoolMock(createVertices()))
+		poolMock := createPoolMock(createVertices())
+		db := mockDB(poolMock)
 
 		dimension.DimensionID = ""
 
@@ -105,13 +121,19 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 				So(err.Error(), ShouldEqual, "dimension id is required but was empty")
 				So(insertedDimension, ShouldBeNil)
 			})
+
+			Convey("Then the graph DB is not called", func() {
+				So(len(poolMock.GetStringListCalls()), ShouldEqual, 0)
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 0)
+			})
 		})
 	})
 
 	Convey("Given an empty dimension option value", t, func() {
 		uniqueDimensions := map[string]string{}
 		dimension := createDimension()
-		db := mockDB(createPoolMock(createVertices()))
+		poolMock := createPoolMock(createVertices())
+		db := mockDB(poolMock)
 
 		dimension.Option = ""
 
@@ -123,13 +145,19 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 				So(err.Error(), ShouldEqual, "dimension value is required but was empty")
 				So(insertedDimension, ShouldBeNil)
 			})
+
+			Convey("Then the graph DB is not called", func() {
+				So(len(poolMock.GetStringListCalls()), ShouldEqual, 0)
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 0)
+			})
 		})
 	})
 
 	Convey("Given an empty dimension ID and option value", t, func() {
 		uniqueDimensions := map[string]string{}
 		dimension := createDimension()
-		db := mockDB(createPoolMock(createVertices()))
+		poolMock := createPoolMock(createVertices())
+		db := mockDB(poolMock)
 
 		dimension.DimensionID = ""
 		dimension.Option = ""
@@ -141,6 +169,11 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 				So(err, ShouldNotBeNil)
 				So(err.Error(), ShouldEqual, "dimension invalid: both dimension.dimension_id and dimension.value are required but were both empty")
 				So(insertedDimension, ShouldBeNil)
+			})
+
+			Convey("Then the graph DB is not called", func() {
+				So(len(poolMock.GetStringListCalls()), ShouldEqual, 0)
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 0)
 			})
 		})
 	})
@@ -161,9 +194,14 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, instanceID, dimension)
 
 			Convey("Then the existing dimension is deleted from the graph DB", func() {
-				So(len(poolMock.ExecuteCalls()), ShouldBeGreaterThan, 0)
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 3)
 				expectedDropDimStmt := "g.V('_instanceID_dimID_option').bothE().drop().iterate();g.V('_instanceID_dimID_option').drop()"
 				So(poolMock.ExecuteCalls()[0].Query, ShouldEqual, expectedDropDimStmt)
+			})
+
+			Convey("Then the graph DB is called to insert the dimension", func() {
+				So(poolMock.ExecuteCalls()[1].Query, ShouldEqual, expectedCreateDimStmt)
+				So(poolMock.ExecuteCalls()[2].Query, ShouldEqual, expectedCreateDimEdgeStmt)
 			})
 
 			Convey("Then the new dimension ID is returned", func() {
@@ -190,10 +228,19 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 
 			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, instanceID, dimension)
 
+			Convey("Then the graph DB is queried to see if the dimension exists", func() {
+				So(len(poolMock.GetStringListCalls()), ShouldEqual, 1)
+				So(poolMock.GetStringListCalls()[0].Query, ShouldEqual, expectedGetDimStmt)
+			})
+
 			Convey("Then the expected error is returned", func() {
 				So(err, ShouldNotBeNil)
 				So(err, ShouldEqual, expectedErr)
 				So(insertedDimension, ShouldBeNil)
+			})
+
+			Convey("Then the graph DB is not called to insert the dimension", func() {
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 0)
 			})
 		})
 	})
@@ -211,15 +258,12 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 
 			Convey("Then the graph DB is queried to see if the dimension exists", func() {
 				So(len(poolMock.GetStringListCalls()), ShouldEqual, 1)
-				expectedGetDimStmt := "g.V('_instanceID_dimID_option').id()"
 				So(poolMock.GetStringListCalls()[0].Query, ShouldEqual, expectedGetDimStmt)
 			})
 
 			Convey("Then the graph DB is called to insert the dimension", func() {
 				So(len(poolMock.ExecuteCalls()), ShouldEqual, 2)
-				expectedCreateDimStmt := "g.addV('_instanceID_dimID').property(id, '_instanceID_dimID_option').property('value',\"option\")"
 				So(poolMock.ExecuteCalls()[0].Query, ShouldEqual, expectedCreateDimStmt)
-				expectedCreateDimEdgeStmt := "g.V('_instanceID_Instance').as('inst').V('_instanceID_dimID_option').addE('HAS_DIMENSION').to('inst')"
 				So(poolMock.ExecuteCalls()[1].Query, ShouldEqual, expectedCreateDimEdgeStmt)
 			})
 
