@@ -15,7 +15,7 @@ func TestNeptuneDB_CreateCodeRelationship(t *testing.T) {
 	createPoolMock := func() *internal.NeptunePoolMock {
 		poolMock := &internal.NeptunePoolMock{
 			GetStringListFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
-				return []string{}, nil
+				return []string{"_code_codeListID_codeID"}, nil
 			},
 			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
 				return []gremgo.Response{}, nil
@@ -45,6 +45,11 @@ func TestNeptuneDB_CreateCodeRelationship(t *testing.T) {
 				expectedErr := "instance id is required but was empty"
 				So(err.Error(), ShouldEqual, expectedErr)
 			})
+
+			Convey("Then the graph DB is not called", func() {
+				So(len(poolMock.GetStringListCalls()), ShouldEqual, 0)
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 0)
+			})
 		})
 	})
 
@@ -61,12 +66,20 @@ func TestNeptuneDB_CreateCodeRelationship(t *testing.T) {
 				expectedErr := "error creating relationship from instance to code: code is required but was empty"
 				So(err.Error(), ShouldEqual, expectedErr)
 			})
+
+			Convey("Then the graph DB is not called", func() {
+				So(len(poolMock.GetStringListCalls()), ShouldEqual, 0)
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 0)
+			})
 		})
 	})
 
 	Convey("Given a code that does not exist", t, func() {
 
 		poolMock := createPoolMock()
+		poolMock.GetStringListFunc = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+			return []string{}, nil
+		}
 		db := mockDB(poolMock)
 
 		Convey("When CreateCodeRelationship is called", func() {
@@ -81,6 +94,10 @@ func TestNeptuneDB_CreateCodeRelationship(t *testing.T) {
 			Convey("Then the expected error is returned", func() {
 				expectedErr := "error creating relationship from instance to code: code or code list not found: map[code:code code_list:codeListID instance_id:instanceID]"
 				So(err.Error(), ShouldEqual, expectedErr)
+			})
+
+			Convey("Then the graph DB is not called to insert the instance to code relationship", func() {
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 0)
 			})
 		})
 	})
@@ -106,15 +123,16 @@ func TestNeptuneDB_CreateCodeRelationship(t *testing.T) {
 			Convey("Then the expected error is returned", func() {
 				So(err, ShouldEqual, expectedErr)
 			})
+
+			Convey("Then the graph DB is not called to insert the instance to code relationship", func() {
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 0)
+			})
 		})
 	})
 
 	Convey("Given an error is returned when adding the relationship to the DB", t, func() {
 
 		poolMock := createPoolMock()
-		poolMock.GetStringListFunc = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
-			return []string{"_code_codeListID_codeID"}, nil
-		}
 		expectedErr := errors.New(" INVALID REQUEST ARGUMENTS ") // specific error that does not trigger retries
 		poolMock.ExecuteFunc = func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
 			return nil, expectedErr
@@ -144,9 +162,6 @@ func TestNeptuneDB_CreateCodeRelationship(t *testing.T) {
 	Convey("Given an existing code", t, func() {
 
 		poolMock := createPoolMock()
-		poolMock.GetStringListFunc = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
-			return []string{"_code_codeListID_codeID"}, nil
-		}
 		db := mockDB(poolMock)
 
 		Convey("When CreateCodeRelationship is called", func() {
