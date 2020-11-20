@@ -123,12 +123,12 @@ const (
 	GetAncestry = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code', '%s').repeat(out('hasParent')).emit()`
 
 	// instance - import process
-	CreateInstance                   = `g.addV('_%s_Instance').property(id, '_%s_Instance').property(single,'header',"%s")`
-	CheckInstance                    = `g.V().hasId('_%s_Instance').count()`
-	CreateInstanceToCodeRelationship = `g.V().hasId('_%s_Instance').as('i').` +
-		`V().hasLabel('_code').has('value',"%s").where(out('usedBy').hasLabel('_code_list').has('listID','%s')).as('c')` +
-		`.addE('inDataset').to('i')`
-	AddVersionDetailsToInstance = `g.V().hasId('_%s_Instance').property(single,'dataset_id','%s').` +
+	CreateInstance = `g.addV('_%s_Instance').property(id, '_%s_Instance').property(single,'header',"%s")`
+	CheckInstance  = `g.V('_%s_Instance').count()`
+
+	GetCode                          = `g.V().hasLabel('_code').has('value',"%s").where(out('usedBy').hasLabel('_code_list').has('listID','%s')).id()`
+	CreateInstanceToCodeRelationship = `g.V('_%s_Instance').as('i').V('%s').addE('inDataset').to('i')`
+	AddVersionDetailsToInstance      = `g.V().hasId('_%s_Instance').property(single,'dataset_id','%s').` +
 		`property(single,'edition','%s').property(single,'version','%d')`
 	SetInstanceIsPublished = `g.V().hasId('_%s_Instance').property(single,'is_published',true)`
 	CountObservations      = `g.V().hasLabel('_%s_observation').count()`
