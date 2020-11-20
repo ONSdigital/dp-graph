@@ -34,9 +34,9 @@ Each such result from the database (potentially) has the properties:
     - datasetEdition
     - version
 
-The results however include all permuations of dimensionName and
+The results however include all permutations of dimensionName and
 datasetEdition - BUT ONLY CITES the most recent dataset *version* of those
-found for that permuation.
+found for that permutation.
 
 */
 func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error) {
@@ -55,7 +55,7 @@ func (n *NeptuneDB) GetCodeDatasets(ctx context.Context, codeListID, edition str
 		return nil, errors.Wrap(err, "Cannot create records.")
 	}
 
-	// Build datastructure to capture only latest dataset versions.
+	// Build data structure to capture only latest dataset versions.
 	latestVersionMaps, err := buildLatestVersionMaps(responseRecords)
 	if err != nil {
 		return nil, errors.Wrap(err, "Cannot isolate latest versions.")

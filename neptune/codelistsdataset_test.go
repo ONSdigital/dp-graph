@@ -221,8 +221,8 @@ func TestGetCodeDatasetsAtAPILevel(t *testing.T) {
 							__.as('r').outV().has('value',"unusedCode").as('c'),
 							__.as('c').out('inDataset').as('d').
 								select('d').values('edition').as('de').
-								select('d').values('version').as('dv'),
-								select('d').values('dataset_id').as('did').
+								select('d').values('version').as('dv').
+								select('d').values('dataset_id').as('did'),
 							__.as('d').has('is_published',true)).
 						union(select('rl', 'de', 'dv', 'did')).unfold().select(values)
                     `)
