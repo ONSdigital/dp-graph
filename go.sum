@@ -12,8 +12,8 @@ github.com/ONSdigital/graphson v0.0.0-20190718134034-c13ceacd109d h1:yrCtEGlohmA
 github.com/ONSdigital/graphson v0.0.0-20190718134034-c13ceacd109d/go.mod h1:zQ+8pTnCLGuy4eUek81pWUxZo4/f71ri3VYz97Wby+4=
 github.com/ONSdigital/graphson v0.1.0 h1:Z+9l9RGnSG5OU5sx/QanLEfhrHGqY+hni+7NJ2TLFAY=
 github.com/ONSdigital/graphson v0.1.0/go.mod h1:IRS8d1ydh1oczDKbLhTcqc/BNfgZyzhrrjr21SQOkjA=
-github.com/ONSdigital/gremgo-neptune v1.0.0 h1:l0Pizt2goXK5oCFeqs2sOkosZbF4sva0RpcR150VvNE=
-github.com/ONSdigital/gremgo-neptune v1.0.0/go.mod h1:GZz/N6xjNY+EN0x4FmfBDrM73R+Pr3aI5iCwYbY1oYQ=
+github.com/ONSdigital/gremgo-neptune v1.0.1 h1:2IFocPqHsWZhlzFBsXpBEYfDaw3zQiGjRajVfQ+b2A4=
+github.com/ONSdigital/gremgo-neptune v1.0.1/go.mod h1:GZz/N6xjNY+EN0x4FmfBDrM73R+Pr3aI5iCwYbY1oYQ=
 github.com/ONSdigital/log.go v1.0.0 h1:hZQTuitFv4nSrpzMhpGvafUC5/8xMVnLI0CWe1rAJNc=
 github.com/ONSdigital/log.go v1.0.0/go.mod h1:UnGu9Q14gNC+kz0DOkdnLYGoqugCvnokHBRBxFRpVoQ=
 github.com/ONSdigital/log.go v1.0.1-0.20200805084515-ee61165ea36a/go.mod h1:dDnQATFXCBOknvj6ZQuKfmDhbOWf3e8mtV+dPEfWJqs=
