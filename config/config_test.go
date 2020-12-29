@@ -10,6 +10,7 @@ import (
 
 func TestGetFailsByDefault(t *testing.T) {
 	Convey("When configuration not provided, fail by default", t, func() {
+		os.Clearenv()
 		cfg = nil
 		cfg, err := Get(nil)
 		So(err, ShouldNotBeNil)
