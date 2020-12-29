@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"time"
 
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/dp-graph/v2/mock"
@@ -13,11 +14,12 @@ import (
 // Configuration allows environment variables to be read and sent to the
 // relevant driver for further setup
 type Configuration struct {
-	DriverChoice    string `envconfig:"GRAPH_DRIVER_TYPE"`
-	DatabaseAddress string `envconfig:"GRAPH_ADDR" json:"-"`
-	PoolSize        int    `envconfig:"GRAPH_POOL_SIZE"`
-	MaxRetries      int    `envconfig:"MAX_RETRIES"`
-	QueryTimeout    int    `envconfig:"GRAPH_QUERY_TIMEOUT"`
+	DriverChoice    string        `envconfig:"GRAPH_DRIVER_TYPE"`
+	DatabaseAddress string        `envconfig:"GRAPH_ADDR" json:"-"`
+	PoolSize        int           `envconfig:"GRAPH_POOL_SIZE"`
+	MaxRetries      int           `envconfig:"MAX_RETRIES"`
+	RetryTime       time.Duration `envconfig:"RETRY_TIME"`
+	QueryTimeout    int           `envconfig:"GRAPH_QUERY_TIMEOUT"`
 	Neptune         NeptuneConfig
 
 	Driver driver.Driver
@@ -58,8 +60,16 @@ func Get(errs chan error) (*Configuration, error) {
 			return nil, err
 		}
 	case "neptune":
-		d, err = neptune.New(cfg.DatabaseAddress, cfg.PoolSize, cfg.QueryTimeout, cfg.MaxRetries,
-			cfg.Neptune.BatchSizeReader, cfg.Neptune.BatchSizeWriter, cfg.Neptune.MaxWorkers, errs)
+		d, err = neptune.New(
+			cfg.DatabaseAddress,
+			cfg.PoolSize,
+			cfg.QueryTimeout,
+			cfg.MaxRetries,
+			cfg.Neptune.BatchSizeReader,
+			cfg.Neptune.BatchSizeWriter,
+			cfg.Neptune.MaxWorkers,
+			cfg.RetryTime,
+			errs)
 		if err != nil {
 			return nil, err
 		}

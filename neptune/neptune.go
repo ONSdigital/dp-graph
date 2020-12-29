@@ -3,8 +3,7 @@ package neptune
 import (
 	"context"
 	"errors"
-	"fmt"
-	"math"
+	"github.com/ONSdigital/dp-graph/v2/retry"
 	"math/rand"
 	"strings"
 	"time"
@@ -21,13 +20,14 @@ type NeptuneDB struct {
 	neptune.NeptuneDriver
 
 	maxAttempts     int
+	retryTime       time.Duration
 	timeout         int
 	batchSizeReader int
 	batchSizeWriter int
 	maxWorkers      int
 }
 
-func New(dbAddr string, size, timeout, retries, batchSizeReader, batchSizeWriter, maxWorkers int, errs chan error) (n *NeptuneDB, err error) {
+func New(dbAddr string, size, timeout, retries, batchSizeReader, batchSizeWriter, maxWorkers int, retryTime time.Duration, errs chan error) (n *NeptuneDB, err error) {
 	// set defaults if not provided
 	if size == 0 {
 		size = 30
@@ -37,6 +37,9 @@ func New(dbAddr string, size, timeout, retries, batchSizeReader, batchSizeWriter
 	}
 	if retries == 0 {
 		retries = 5
+	}
+	if retryTime == 0 {
+		retryTime = 20 * time.Millisecond
 	}
 	if batchSizeReader == 0 {
 		batchSizeReader = 25000
@@ -59,6 +62,7 @@ func New(dbAddr string, size, timeout, retries, batchSizeReader, batchSizeWriter
 	n = &NeptuneDB{
 		*d,
 		1 + retries,
+		retryTime,
 		timeout,
 		batchSizeReader,
 		batchSizeWriter,
@@ -71,32 +75,20 @@ func (n *NeptuneDB) getVertices(gremStmt string) (vertices []graphson.Vertex, er
 	ctx := context.Background()
 	logData := log.Data{"fn": "getVertices", "statement": statementSummary(gremStmt), "attempt": 1}
 
-	var res interface{}
-	for attempt := 1; attempt < n.maxAttempts; attempt++ {
-		if attempt > 1 {
-			log.Event(ctx, "will retry", log.WARN, logData, log.Error(err))
-			sleepy(attempt, 20*time.Millisecond)
-			logData["attempt"] = attempt
-		}
-		res, err = n.Pool.Get(gremStmt, nil, nil)
-		if err == nil {
-			var ok bool
-			if vertices, ok = res.([]graphson.Vertex); !ok {
-				err = errors.New("cannot cast Get results to []Vertex")
-				log.Event(ctx, "cast", log.ERROR, logData, log.Error(err))
-				return
-			}
-			// success
-			return
-		}
-		// XXX check err for non-retriable errors
-		if !isTransientError(err) {
-			return
-		}
+	doer := func() (interface{}, error) {
+		return n.Pool.Get(gremStmt, nil, nil)
 	}
-	// ASSERT: failed all attempts
-	log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
-	err = ErrAttemptsExceededLimit{err}
+
+	res, err := n.attemptNeptuneRequest(ctx, doer, logData)
+	if err != nil {
+		return
+	}
+
+	var ok bool
+	if vertices, ok = res.([]graphson.Vertex); !ok {
+		err = errors.New("cannot cast Get results to []Vertex")
+		log.Event(ctx, "cast", log.ERROR, logData, log.Error(err))
+	}
 	return
 }
 
@@ -104,25 +96,20 @@ func (n *NeptuneDB) getStringList(gremStmt string) (strings []string, err error)
 	ctx := context.Background()
 	logData := log.Data{"fn": "getStringList", "statement": statementSummary(gremStmt), "attempt": 1}
 
-	for attempt := 1; attempt < n.maxAttempts; attempt++ {
-		if attempt > 1 {
-			log.Event(ctx, "will retry", log.WARN, logData, log.Error(err))
-			sleepy(attempt, 20*time.Millisecond)
-			logData["attempt"] = attempt
-		}
-		strings, err = n.Pool.GetStringList(gremStmt, nil, nil)
-		if err == nil {
-			return
-		}
-		// XXX check err for non-retriable errors
-		if !isTransientError(err) {
-			return
-		}
+	doer := func() (interface{}, error) {
+		return n.Pool.GetStringList(gremStmt, nil, nil)
 	}
-	// ASSERT: failed all attempts
-	logData["statement"] = gremStmt
-	log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
-	err = ErrAttemptsExceededLimit{err}
+
+	res, err := n.attemptNeptuneRequest(ctx, doer, nil)
+	if err != nil {
+		return
+	}
+
+	var ok bool
+	if strings, ok = res.([]string); !ok {
+		err = errors.New("cannot cast GetStringList results to []String")
+		log.Event(ctx, "cast", log.ERROR, logData, log.Error(err))
+	}
 	return
 }
 
@@ -152,65 +139,42 @@ func (n *NeptuneDB) getEdges(gremStmt string) (edges []graphson.Edge, err error)
 	ctx := context.Background()
 	logData := log.Data{"fn": "getEdges", "statement": statementSummary(gremStmt), "attempt": 1}
 
-	var res interface{}
-	for attempt := 1; attempt < n.maxAttempts; attempt++ {
-		if attempt > 1 {
-			log.Event(ctx, "will retry", log.WARN, logData, log.Error(err))
-			sleepy(attempt, 20*time.Millisecond)
-			logData["attempt"] = attempt
-		}
-		res, err = n.Pool.GetE(gremStmt, nil, nil)
-		if err == nil {
-			// success
-			var ok bool
-			if edges, ok = res.([]graphson.Edge); !ok {
-				err = errors.New("cannot cast GetE results to []Edge")
-				log.Event(ctx, "cast", log.ERROR, logData, log.Error(err))
-				return
-			}
-			// return re-cast success
-			return
-		}
-		// XXX check err for non-retriable errors
-		if !isTransientError(err) {
-			return
-		}
+	doer := func() (interface{}, error) {
+		return n.Pool.GetE(gremStmt, nil, nil)
 	}
-	// ASSERT: failed all attempts
-	logData["statement"] = gremStmt
-	log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
-	err = ErrAttemptsExceededLimit{err}
+
+	res, err := n.attemptNeptuneRequest(ctx, doer, nil)
+	if err != nil {
+		return
+	}
+
+	var ok bool
+	if edges, ok = res.([]graphson.Edge); !ok {
+		err = errors.New("cannot cast GetE results to []Edge")
+		log.Event(ctx, "cast", log.ERROR, logData, log.Error(err))
+	}
 	return
 }
 
-func (n *NeptuneDB) exec(gremStmt string) (res []gremgo.Response, err error) {
+func (n *NeptuneDB) exec(gremStmt string) (gremgoRes []gremgo.Response, err error) {
 	ctx := context.Background()
-	logData := log.Data{"fn": "n.exec", "statement": statementSummary(gremStmt), "attempt": 1}
+	logData := log.Data{"fn": "n.exec", "statement": statementSummary(gremStmt)}
 
-	for attempt := 1; attempt < n.maxAttempts; attempt++ {
-		if attempt > 1 {
-			log.Event(ctx, "will retry", log.WARN, logData, log.Error(err))
-			sleepy(attempt, 20*time.Millisecond)
-			logData["attempt"] = attempt
-		}
-		if res, err = n.Pool.Execute(gremStmt, nil, nil); err == nil {
-			// success
-			if res == nil {
-				err = errors.New("res returned nil")
-				log.Event(ctx, "bad res", log.ERROR, logData, log.Error(err))
-				return
-			}
-			return
-		}
-		// XXX check err more thoroughly (isTransientError?) (non-err failures?)
-		if !isTransientError(err) {
-			return
-		}
+	doer := func() (interface{}, error) {
+		return n.Pool.Execute(gremStmt, nil, nil)
 	}
-	// ASSERT: failed all attempts
-	logData["statement"] = gremStmt
-	log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
-	err = ErrAttemptsExceededLimit{err}
+
+	res, err := n.attemptNeptuneRequest(ctx, doer, nil)
+	if err != nil {
+		return
+	}
+
+	var ok bool
+	if gremgoRes, ok = res.([]gremgo.Response); !ok {
+		err = errors.New("cannot cast results to []gremgo.Response")
+		log.Event(ctx, "cast", log.ERROR, logData, log.Error(err))
+	}
+
 	return
 }
 
@@ -218,70 +182,43 @@ func (n *NeptuneDB) getNumber(gremStmt string) (count int64, err error) {
 	ctx := context.Background()
 	logData := log.Data{"fn": "n.getNumber", "statement": statementSummary(gremStmt), "attempt": 1}
 
-	for attempt := 1; attempt < n.maxAttempts; attempt++ {
-		if attempt > 1 {
-			log.Event(ctx, "will retry", log.WARN, logData, log.Error(err))
-			sleepy(attempt, 20*time.Millisecond)
-			logData["attempt"] = attempt
-		}
-		if count, err = n.Pool.GetCount(gremStmt, nil, nil); err == nil {
-			// success, so return number
-			return
-		}
-		// XXX check non-nil err more thoroughly (isTransientError?)
-		if !isTransientError(err) {
-			return
-		}
+	doer := func() (interface{}, error) {
+		return n.Pool.GetCount(gremStmt, nil, nil)
 	}
-	// ASSERT: failed all attempts
-	logData["statement"] = gremStmt
-	log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
-	err = ErrAttemptsExceededLimit{err}
+
+	res, err := n.attemptNeptuneRequest(ctx, doer, nil)
+	if err != nil {
+		return
+	}
+
+	var ok bool
+	if count, ok = res.(int64); !ok {
+		err = errors.New("cannot cast count results to int64")
+		log.Event(ctx, "cast", log.ERROR, logData, log.Error(err))
+	}
+
 	return
 }
 
-// ErrAttemptsExceededLimit is returned when the number of attempts has reached
-// the maximum permitted
-type ErrAttemptsExceededLimit struct {
-	WrappedErr error
-}
-
-func (e ErrAttemptsExceededLimit) Error() string {
-	return fmt.Sprintf("number of attempts to execute statement exceeded: %s", e.WrappedErr.Error())
-}
-
-/*
-func (n *Neptune) checkAttempts(err error, instanceID string, attempt int) error {
-	if !isTransientError(err) {
-		log.Info("received an error from neptune that cannot be retried",
-			log.Data{"instance_id": instanceID, "error": err})
-
-		return err
+func (n *NeptuneDB) attemptNeptuneRequest(ctx context.Context, doer retry.Doer, logData log.Data) (res interface{}, err error) {
+	res, err = retry.Do(
+		ctx,
+		doer,
+		isTransientError,
+		n.maxAttempts,
+		n.retryTime,
+	)
+	if err != nil {
+		log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
+		return nil, err
 	}
-
-	time.Sleep(getSleepTime(attempt, 20*time.Millisecond))
-
-	if attempt >= n.maxRetries {
-		return ErrAttemptsExceededLimit{err}
-	}
-
-	return nil
+	return
 }
-*/
+
 func isTransientError(err error) bool {
 	if strings.Contains(err.Error(), " MALFORMED REQUEST ") ||
 		strings.Contains(err.Error(), " INVALID REQUEST ARGUMENTS ") {
 		return false
 	}
 	return true
-}
-
-// sleepy sleeps for a time which increases, based on the attempt and initial retry time.
-// It uses the algorithm 2^n where n is the attempt number (double the previous) and
-// a randomization factor of between 0-5ms so that the server isn't being hit constantly
-// at the same time by many clients
-func sleepy(attempt int, retryTime time.Duration) {
-	n := (math.Pow(2, float64(attempt)))
-	rnd := time.Duration(rand.Intn(4)+1) * time.Millisecond
-	time.Sleep((time.Duration(n) * retryTime) - rnd)
 }
