@@ -61,9 +61,7 @@ func Test_buildObservationsQuery(t *testing.T) {
 			result := buildObservationsQuery(instanceID, filter)
 
 			Convey("Then the resulting query portion should filter to relevant observations", func() {
-				expectedQuery := `g.V().hasId('_888_age_29','_888_age_30','_888_age_31').in('isValueOf')` +
-					`.where(out('isValueOf').hasId('_888_sex_male','_888_sex_female','_888_sex_all','_888_geography_K0001','_888_geography_K0002','_888_geography_K0003')` +
-					`.fold().count(local).is_(2))`
+				expectedQuery := `g.V().hasId('_888_geography_K0001','_888_geography_K0002','_888_geography_K0003').in('isValueOf').where(out('isValueOf').hasId('_888_age_29','_888_age_30','_888_age_31','_888_sex_male','_888_sex_female','_888_sex_all').fold().count(local).is_(2))`
 				So(result, ShouldEqual, expectedQuery)
 			})
 		})
@@ -317,6 +315,89 @@ func Test_InsertObservationBatch(t *testing.T) {
 
 			Convey("Then the expected error is returned", func() {
 				So(err.Error(), ShouldEqual, "failed to add observation edges: "+expectedErr.Error())
+			})
+		})
+	})
+}
+
+func Test_sortDimensions(t *testing.T) {
+
+	Convey("Given an empty list of dimensions", t, func() {
+		var dimensionOptions []*observation.Dimension
+
+		Convey("When sortDimensions is called", func() {
+			result := sortDimensions(dimensionOptions)
+
+			Convey("Then the same list is returned", func() {
+				So(result, ShouldEqual, dimensionOptions)
+			})
+		})
+	})
+
+	Convey("Given a list of dimensions with 1 dimension", t, func() {
+
+		dimensionOptions := []*observation.Dimension{
+			{Name: "age", Options: []string{"30"}},
+		}
+
+		Convey("When sortDimensions is called", func() {
+			result := sortDimensions(dimensionOptions)
+
+			Convey("Then the same list is returned", func() {
+				So(result, ShouldResemble, dimensionOptions)
+			})
+		})
+	})
+
+	Convey("Given a list of dimensions with 1 geography dimension", t, func() {
+
+		dimensionOptions := []*observation.Dimension{
+			{Name: "geography", Options: []string{"K0001", "K0002", "K0003"}},
+		}
+
+		Convey("When sortDimensions is called", func() {
+			result := sortDimensions(dimensionOptions)
+
+			Convey("Then the same list is returned", func() {
+				So(result, ShouldResemble, dimensionOptions)
+			})
+		})
+	})
+
+	Convey("Given a list of dimensions without a geography dimension", t, func() {
+		dimensionOptions := []*observation.Dimension{
+			{Name: "age", Options: []string{"29", "30", "31"}},
+			{Name: "sex", Options: []string{"male", "female", "all"}},
+			{Name: "time", Options: []string{"2004", "2005", "2006"}},
+		}
+
+		Convey("When sortDimensions is called", func() {
+			result := sortDimensions(dimensionOptions)
+
+			Convey("Then the same list is returned", func() {
+				So(result, ShouldResemble, dimensionOptions)
+			})
+		})
+	})
+
+	Convey("Given a list of dimensions with a geography dimension", t, func() {
+		dimensionOptions := []*observation.Dimension{
+			{Name: "age", Options: []string{"29", "30", "31"}},
+			{Name: "sex", Options: []string{"male", "female", "all"}},
+			{Name: "geography", Options: []string{"K0001", "K0002", "K0003"}},
+		}
+
+		expectedDimensionOptions := []*observation.Dimension{
+			{Name: "geography", Options: []string{"K0001", "K0002", "K0003"}},
+			{Name: "age", Options: []string{"29", "30", "31"}},
+			{Name: "sex", Options: []string{"male", "female", "all"}},
+		}
+
+		Convey("When sortDimensions is called", func() {
+			result := sortDimensions(dimensionOptions)
+
+			Convey("Then the list is returned with the geography dimension first", func() {
+				So(result, ShouldResemble, expectedDimensionOptions)
 			})
 		})
 	})
