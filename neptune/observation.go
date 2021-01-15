@@ -58,7 +58,7 @@ func (n *NeptuneDB) StreamCSVRows(ctx context.Context, instanceID, filterID stri
 // sortDimensions takes a list of dimensions and returns them sorted for query performance
 // for now this function will return the geography dimension first, but in future it would be
 // more optimal to return the dimension with the highest cardinality first.
-func sortDimensions(dimensions []*observation.Dimension) (Dimensions []*observation.Dimension) {
+func sortDimensions(dimensions []*observation.Dimension) (sortedDimensions []*observation.Dimension) {
 
 	if len(dimensions) == 0 {
 		return dimensions
@@ -70,8 +70,6 @@ func sortDimensions(dimensions []*observation.Dimension) (Dimensions []*observat
 	if geographyIndex == -1 {
 		return dimensions
 	}
-
-	var sortedDimensions []*observation.Dimension
 
 	// add geography first
 	sortedDimensions = append(sortedDimensions, dimensions[geographyIndex])
