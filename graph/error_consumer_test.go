@@ -49,7 +49,7 @@ func TestChannelConsumer_CloseContext(t *testing.T) {
 			err := errorConsumer.Close(ctx)
 
 			Convey("Then a context timeout error is returned", func() {
-				So(errors.Is(err, ErrContextDone), ShouldBeTrue)
+				So(err, ShouldBeError, ErrContextDone)
 			})
 		})
 	})
