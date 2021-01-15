@@ -60,7 +60,7 @@ func (n *NeptuneDB) StreamCSVRows(ctx context.Context, instanceID, filterID stri
 // more optimal to return the dimension with the highest cardinality first.
 func sortDimensions(dimensions []*observation.Dimension) (sortedDimensions []*observation.Dimension) {
 
-	if len(dimensions) == 0 {
+	if len(dimensions) <= 1 {
 		return dimensions
 	}
 
@@ -85,13 +85,14 @@ func sortDimensions(dimensions []*observation.Dimension) (sortedDimensions []*ob
 }
 
 func getGeographyIndex(dimensions []*observation.Dimension) int {
-	geographyIndex := -1
+
 	for i, dimension := range dimensions {
 		if strings.ToLower(dimension.Name) == "geography" {
-			geographyIndex = i
+			return i
 		}
 	}
-	return geographyIndex
+
+	return -1
 }
 
 func buildObservationsQuery(instanceID string, f *observation.DimensionFilters) string {
