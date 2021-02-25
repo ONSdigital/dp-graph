@@ -75,7 +75,7 @@ func (m *Mock) CountCodes(ctx context.Context, codeListID string, edition string
 	return 1, nil
 }
 
-func (m *Mock) GetCodes(ctx context.Context, codeListID, edition string, offset, limit int) (*models.CodeResults, error) {
+func (m *Mock) GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error) {
 	if err := m.checkForErrors(); err != nil {
 		return nil, err
 	}

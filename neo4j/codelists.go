@@ -82,7 +82,7 @@ func (n *Neo4j) CountCodes(ctx context.Context, codeListID, edition string) (int
 }
 
 // GetCodes returns a list of codes for a specified edition of a code list
-func (n *Neo4j) GetCodes(ctx context.Context, codeListID, editionID string, offset, limit int) (*models.CodeResults, error) {
+func (n *Neo4j) GetCodes(ctx context.Context, codeListID, editionID string) (*models.CodeResults, error) {
 	log.Event(ctx, "about to query neo4j for codes", log.INFO, log.Data{"code_list_id": codeListID, "edition": editionID})
 
 	exists, err := n.GetEdition(ctx, codeListID, editionID)

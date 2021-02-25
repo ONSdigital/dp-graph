@@ -329,8 +329,6 @@ func TestCountCodes(t *testing.T) {
 }
 
 func TestGetCodes(t *testing.T) {
-	offset := 0
-	limit := 20
 	unusedCodeListID := "unused-id"
 	unusedEdition := "unused-edition"
 
@@ -340,7 +338,7 @@ func TestGetCodes(t *testing.T) {
 		}
 		db := mockDB(poolMock)
 		Convey("When GetCodes() is called", func() {
-			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition, offset, limit)
+			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
 			expectedErr := `Gremlin query failed: "g.V().has('_code_list','listID', 'unused-id').has('edition', 'unused-edition').` +
 				`inE('usedBy').has('order').count()":  MALFORMED REQUEST `
 			Convey("Then the returned error should wrap the underlying one", func() {
@@ -356,7 +354,7 @@ func TestGetCodes(t *testing.T) {
 		}
 		db := mockDB(poolMock)
 		Convey("When GetCodes() is called", func() {
-			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition, offset, limit)
+			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
 			expectedErr := `Gremlin query failed: "g.V().has('_code_list','listID', 'unused-id').has('edition', 'unused-edition').` +
 				`inE('usedBy').as('usedBy').outV().order().by('value',incr).as('code').select('usedBy', 'code').by('label').by('value').` +
 				`unfold().select(values)":  MALFORMED REQUEST `
@@ -373,7 +371,7 @@ func TestGetCodes(t *testing.T) {
 		}
 		db := mockDB(poolMock)
 		Convey("When GetCodes() is called", func() {
-			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition, offset, limit)
+			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
 			expectedErr := `Gremlin query failed: "g.V().has('_code_list', 'listID', 'unused-id').has('edition', 'unused-edition').` +
 				`inE('usedBy').order().by('order',incr).as('usedBy').outV().as('code').select('usedBy', 'code').by('label').by('value').` +
 				`unfold().select(values)":  MALFORMED REQUEST `
@@ -390,7 +388,7 @@ func TestGetCodes(t *testing.T) {
 		}
 		db := mockDB(poolMock)
 		Convey("When GetCodes() is called", func() {
-			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition, offset, limit)
+			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
 			Convey("Then the returned error should be ErrNotFound", func() {
 				So(err, ShouldEqual, driver.ErrNotFound)
 			})
@@ -404,7 +402,7 @@ func TestGetCodes(t *testing.T) {
 		}
 		db := mockDB(poolMock)
 		Convey("When GetCodes() is called", func() {
-			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition, offset, limit)
+			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
 			expectedErr := `list length is not divisible by 2`
 			Convey("Then the returned error should wrap the underlying one", func() {
 				So(err.Error(), ShouldEqual, expectedErr)
@@ -419,7 +417,7 @@ func TestGetCodes(t *testing.T) {
 		}
 		db := mockDB(poolMock)
 		Convey("When GetCodes() is called", func() {
-			codesResponse, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition, offset, limit)
+			codesResponse, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
 			Convey("Then no error should be returned", func() {
 				So(err, ShouldBeNil)
 			})
@@ -454,7 +452,7 @@ func TestGetCodes(t *testing.T) {
 		}
 		db := mockDB(poolMock)
 		Convey("When GetCodes() is called", func() {
-			codesResponse, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition, offset, limit)
+			codesResponse, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
 			Convey("Then no error should be returned", func() {
 				So(err, ShouldBeNil)
 			})

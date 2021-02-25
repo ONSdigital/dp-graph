@@ -168,7 +168,7 @@ query).  It raises driver.ErrNotFound if the graph traversal above produces an e
 including the case of a short-circuit early termination of the query, because no such qualifying code
 list exists. It returns a wrapped error if a Code is found that does not have a "value" property.
 */
-func (n *NeptuneDB) GetCodes(ctx context.Context, codeListID, edition string, offset, limit int) (*models.CodeResults, error) {
+func (n *NeptuneDB) GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error) {
 
 	// Check if order is defined
 	qry := fmt.Sprintf(query.CountOrderedEdges, codeListID, edition)

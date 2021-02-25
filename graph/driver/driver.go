@@ -22,7 +22,7 @@ type CodeList interface {
 	GetEditions(ctx context.Context, codeListID string) (*models.Editions, error)
 	GetEdition(ctx context.Context, codeListID, edition string) (*models.Edition, error)
 	CountCodes(ctx context.Context, codeListID string, edition string) (int64, error)
-	GetCodes(ctx context.Context, codeListID, edition string, offset, limit int) (*models.CodeResults, error)
+	GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error)
 	GetCode(ctx context.Context, codeListID, edition string, code string) (*models.Code, error)
 	GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error)
 }
