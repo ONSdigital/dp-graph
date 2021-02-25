@@ -148,6 +148,18 @@ func (n *NeptuneDB) GetEdition(ctx context.Context, codeListID, edition string) 
 }
 
 /*
+CountCodes counts the number of codes corresponding to the provided codeListID and edition.
+*/
+func (n *NeptuneDB) CountCodes(ctx context.Context, codeListID, edition string) (int64, error) {
+	qry := fmt.Sprintf(query.CountCodes, codeListID, edition)
+	totalCount, err := n.getNumber(qry)
+	if err != nil {
+		return 0, errors.Wrapf(err, "Gremlin query failed: %q", qry)
+	}
+	return totalCount, nil
+}
+
+/*
 GetCodes provides a list of Code(s) packaged into a models.CodeResults structure that has been populated by
 a database query that finds the Code List nodes of the required codeListID (e.g. "ashe-earnings"), and the
 required edition (e.g.  "one-off"), and then harvests the Code nodes that are known to be "usedBy" that
@@ -156,8 +168,22 @@ query).  It raises driver.ErrNotFound if the graph traversal above produces an e
 including the case of a short-circuit early termination of the query, because no such qualifying code
 list exists. It returns a wrapped error if a Code is found that does not have a "value" property.
 */
-func (n *NeptuneDB) GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error) {
-	qry := fmt.Sprintf(query.GetCodes, codeListID, edition)
+func (n *NeptuneDB) GetCodes(ctx context.Context, codeListID, edition string, offset, limit int) (*models.CodeResults, error) {
+
+	// Check if order is defined
+	qry := fmt.Sprintf(query.CountOrderedEdges, codeListID, edition)
+	orderedCount, err := n.getNumber(qry)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
+	}
+	hasOrder := orderedCount > 0
+
+	// query depending on the presence of order in usedBy edges
+	if hasOrder {
+		qry = fmt.Sprintf(query.GetCodesWithOrder, codeListID, edition)
+	} else {
+		qry = fmt.Sprintf(query.GetCodesAlphabetically, codeListID, edition)
+	}
 	values, err := n.getStringList(qry)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)

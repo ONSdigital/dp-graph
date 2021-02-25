@@ -12,8 +12,16 @@ const (
 	GetCodeList           = `g.V().hasLabel('_code_list').has('listID', '%s')`
 	CodeListExists        = `g.V().hasLabel('_code_list').has('listID', '%s').count()`
 	CodeListEditionExists = `g.V().hasLabel('_code_list').has('listID', '%s').has('edition', '%s').count()`
-	GetCodes              = `g.V().has('_code_list','listID', '%s').has('edition', '%s')` +
-		`.inE("usedBy").as('usedBy')` +
+	CountCodes            = `g.V().has('_code_list','listID', '%s').has('edition', '%s')` +
+		`.in('usedBy').count()`
+	CountOrderedEdges      = `g.V().has('_code_list','listID', '%s').has('edition', '%s').inE('usedBy').has('order').count()`
+	GetCodesAlphabetically = `g.V().has('_code_list','listID', '%s').has('edition', '%s')` +
+		`.inE('usedBy').as('usedBy')` +
+		`.outV().order().by('value',incr).as('code')` +
+		`.select('usedBy', 'code').by('label').by('value')` +
+		`.unfold().select(values)`
+	GetCodesWithOrder = `g.V().has('_code_list', 'listID', '%s').has('edition', '%s')` +
+		`.inE('usedBy').order().by('order',incr).as('usedBy')` +
 		`.outV().as('code')` +
 		`.select('usedBy', 'code').by('label').by('value')` +
 		`.unfold().select(values)`
