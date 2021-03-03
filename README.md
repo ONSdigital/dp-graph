@@ -26,7 +26,7 @@ See [DESIGN](DESIGN-NOTES.md) for details.
 
 The Graph checker function is currently implemented only for Neo4J. It connects to Neo4J and performs a 'ping query', just to validate that we can communicate with it. The health check will succeed only if the query succeeds.
 
-Read the [Health Check Specification](https://github.com/ONSdigital/dp/blob/master/standards/HEALTH_CHECK_SPECIFICATION.md) for details.
+Read the [Health Check Specification](https://github.com/ONSdigital/dp/blob/main/standards/HEALTH_CHECK_SPECIFICATION.md) for details.
 
 Instantiate a Neo4J client
 ```
