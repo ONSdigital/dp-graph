@@ -8,6 +8,7 @@ package neptune
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/pkg/errors"
@@ -246,6 +247,36 @@ func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, cod
 	return &models.Code{
 		Code: code,
 	}, nil
+}
+
+// GetCodeOrder obtains the numerical order value defined in the 'usedBy' edge between the provided code and codeListID
+func (n *NeptuneDB) GetCodeOrder(ctx context.Context, codeListID, code string) (order *int, err error) {
+	qry := fmt.Sprintf(query.GetUsedByEdge, codeListID, code, codeListID)
+	res, err := n.getEdges(qry)
+	if err != nil {
+		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
+	}
+
+	if len(res) == 0 {
+		return nil, driver.ErrNotFound
+	}
+	if len(res) > 1 {
+		return nil, driver.ErrMultipleFound
+	}
+
+	o, ok := res[0].Value.Properties["order"]
+	if !ok {
+		// valid edge, with no order defined (valid case)
+		return nil, nil
+	}
+
+	// unmarshal property of type int
+	var orderProperty PropertyValueInt
+	if err = json.Unmarshal(o.Value.Value, &orderProperty); err != nil {
+		return nil, err
+	}
+
+	return &orderProperty.Value, nil
 }
 
 // convert a flat array of record values into  a 2d array of records

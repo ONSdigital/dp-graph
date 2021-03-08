@@ -117,6 +117,11 @@ func (n *Neo4j) GetCode(ctx context.Context, codeListID, editionID string, codeI
 	return code, nil
 }
 
+// GetCodeOrder is not implemented
+func (n *Neo4j) GetCodeOrder(ctx context.Context, codeListID, code string) (order *int, err error) {
+	return nil, driver.ErrNotImplemented
+}
+
 // GetCodeDatasets returns a list of datasets where the code is used
 func (n *Neo4j) GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error) {
 	log.Event(ctx, "about to query neo4j for datasets by code", log.INFO, log.Data{"code_list_id": codeListID, "edition": edition, "code": code})

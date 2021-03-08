@@ -3,14 +3,13 @@ package neptune
 import (
 	"context"
 	"errors"
-	"github.com/ONSdigital/dp-graph/v2/retry"
 	"math/rand"
 	"strings"
 	"time"
 
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
-
 	neptune "github.com/ONSdigital/dp-graph/v2/neptune/driver"
+	"github.com/ONSdigital/dp-graph/v2/retry"
 	"github.com/ONSdigital/graphson"
 	gremgo "github.com/ONSdigital/gremgo-neptune"
 	"github.com/ONSdigital/log.go/log"
@@ -133,6 +132,11 @@ func (n *NeptuneDB) getVertex(gremStmt string) (vertex graphson.Vertex, err erro
 		return
 	}
 	return vertices[0], nil
+}
+
+// PropertyValueInt represents an edge property value of type int
+type PropertyValueInt struct {
+	Value int `json:"@value"`
 }
 
 func (n *NeptuneDB) getEdges(gremStmt string) (edges []graphson.Edge, err error) {

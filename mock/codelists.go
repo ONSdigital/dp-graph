@@ -93,6 +93,13 @@ func (m *Mock) GetCode(ctx context.Context, codeListID, edition string, code str
 	return &models.Code{}, nil
 }
 
+func (m *Mock) GetCodeOrder(ctx context.Context, codeListID, code string) (order *int, err error) {
+	if err := m.checkForErrors(); err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
 func (m *Mock) GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error) {
 	if err := m.checkForErrors(); err != nil {
 		return nil, err
