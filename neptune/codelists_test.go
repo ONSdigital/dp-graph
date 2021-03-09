@@ -649,7 +649,7 @@ func TestGetCodeOrder(t *testing.T) {
 		})
 	})
 
-	Convey("Given a database that fails to get get edges", t, func() {
+	Convey("Given a database that fails to get edges", t, func() {
 		errGetE := errors.New("getE failed")
 		poolMock := &internal.NeptunePoolMock{
 			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
