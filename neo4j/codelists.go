@@ -117,8 +117,8 @@ func (n *Neo4j) GetCode(ctx context.Context, codeListID, editionID string, codeI
 	return code, nil
 }
 
-// GetCodeOrder is not implemented
-func (n *Neo4j) GetCodeOrder(ctx context.Context, codeListID, code string) (order *int, err error) {
+// GetCodesOrder is not implemented
+func (n *Neo4j) GetCodesOrder(ctx context.Context, codeListID string, codes []string) (codeOrders map[string]*int, err error) {
 	return nil, driver.ErrNotImplemented
 }
 

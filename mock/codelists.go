@@ -93,7 +93,7 @@ func (m *Mock) GetCode(ctx context.Context, codeListID, edition string, code str
 	return &models.Code{}, nil
 }
 
-func (m *Mock) GetCodeOrder(ctx context.Context, codeListID, code string) (order *int, err error) {
+func (m *Mock) GetCodesOrder(ctx context.Context, codeListID string, codes []string) (codeOrders map[string]*int, err error) {
 	if err := m.checkForErrors(); err != nil {
 		return nil, err
 	}

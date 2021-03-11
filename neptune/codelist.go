@@ -7,15 +7,18 @@ a Neptune database.
 package neptune
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/pkg/errors"
 
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/dp-graph/v2/neptune/query"
+	"github.com/ONSdigital/log.go/log"
 )
 
 // Type check to ensure that NeptuneDB implements the driver.CodeList interface
@@ -249,34 +252,196 @@ func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, cod
 	}, nil
 }
 
-// GetCodeOrder obtains the numerical order value defined in the 'usedBy' edge between the provided code and codeListID
-func (n *NeptuneDB) GetCodeOrder(ctx context.Context, codeListID, code string) (order *int, err error) {
-	qry := fmt.Sprintf(query.GetUsedByEdge, codeListID, code, codeListID)
-	res, err := n.getEdges(qry)
+// GremlinMap represents a map
+type GremlinMap struct {
+	Value []json.RawMessage `json:"@value"`
+	// Value []interface{} `json:"@value"`
+	Type string `json:"@type"`
+}
+
+type GMap struct {
+	Type  string        `json:"@type"`
+	Value []interface{} `json:"@value"`
+}
+
+// type GremlinOrderResponse struct {
+// 	Type  string        `json:"@type"`
+// 	Value []interface{} `json:"@value"`
+// }
+
+// type GremlinMMM struct {
+// Data []interface{} `json:"@value"`
+// Type string        `json:"@type"`
+// }
+
+// GetCodesOrder obtains the numerical order value defined in the 'usedBy' edge between the provided codes and codeListID nodes
+func (n *NeptuneDB) GetCodesOrder(ctx context.Context, codeListID string, codes []string) (codeOrders map[string]*int, err error) {
+
+	if len(codes) == 0 {
+		return make(map[string]*int), nil
+	}
+
+	codeNodeIDs := make([]string, len(codes))
+	for i, code := range codes {
+		codeNodeIDs[i] = fmt.Sprintf("_code_%s_%s", codeListID, code)
+	}
+
+	codesString := `'` + strings.Join(codeNodeIDs, `','`) + `'`
+
+	// codes := `'_code_mmm_mar','_code_mmm_apr','_code_mmm_jun'`
+	qry := fmt.Sprintf(query.GetUsedByEdges, codeListID, codesString)
+	fmt.Sprintf("query: %s", qry)
+
+	// res, err := n.getStringList(qry)
+	res, err := n.exec(qry)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
+		return make(map[string]*int), err
 	}
 
-	if len(res) == 0 {
-		return nil, driver.ErrNotFound
-	}
-	if len(res) > 1 {
-		return nil, driver.ErrMultipleFound
+	results := res[0].Result.Data
+
+	// resMap := map[string]interface{}{}
+	resMap := GremlinMap{}
+
+	err = json.Unmarshal(results, &resMap)
+	if err != nil {
+		return make(map[string]*int), err
 	}
 
-	o, ok := res[0].Value.Properties["order"]
-	if !ok {
-		// valid edge, with no order defined (valid case)
-		return nil, nil
+	codeOrders = make(map[string]*int)
+	for _, val := range resMap.Value {
+		rrr, err := DeserializeMapFromBytes(val)
+		if err != nil {
+			return make(map[string]*int), err
+		}
+
+		// unmarshal to order property
+		// var orderProperty PropertyValueInt
+		// if err := json.Unmarshal(rrr["order"], orderProperty); err != nil {
+		// return make(map[string]*int), err
+		// }
+
+		// option value
+		optVal, ok := rrr["val"]
+		if !ok {
+			return make(map[string]*int), errors.New("option not found in response")
+		}
+
+		// order value
+
+		var order int
+		orderDef := rrr["order"]
+		switch orderDef.(type) {
+		case map[string]interface{}:
+			orderDefValid, ok := orderDef.(map[string]interface{})
+			if !ok {
+				return make(map[string]*int), errors.New("wrong type for order")
+			}
+			switch orderDefValid["@value"].(type) {
+			case float64:
+				order = int(orderDefValid["@value"].(float64))
+			default:
+				return make(map[string]*int), errors.New("wrong type for order value")
+			}
+		default:
+			return make(map[string]*int), errors.New("wrong type for order value")
+		}
+
+		// codeOrders[optVal] = &orderProperty.Value
+		// order := 666
+		codeOrders[optVal.(string)] = &order
 	}
 
-	// unmarshal property of type int
-	var orderProperty PropertyValueInt
-	if err = json.Unmarshal(o.Value.Value, &orderProperty); err != nil {
+	log.Event(ctx, "result", log.Data{"res": res})
+
+	return codeOrders, nil
+
+	// g.V().hasLabel('_code_list').has('_code_list', 'listID', 'mmm').inE('usedBy').where(otherV().hasId('_code_mmm_mar','_code_mmm_apr','_code_mmm_jun')).as('r').values('order').as('order').select('r').outV().values('value').as('vv').union(select('vv', 'order'))
+	// GetUsedByEdges
+	// qry := fmt.Sprintf(query.GetUsedByEdges, codeListID, code, codeListID, edition)
+	// qry := fmt.Sprintf(query.GetUsedByEdge, codeListID, code, codeListID, edition)
+
+	// res, err := n.getEdges(qry)
+	// if err != nil {
+	// 	return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
+	// }
+
+	// if len(res) == 0 {
+	// 	return nil, driver.ErrNotFound
+	// }
+	// if len(res) > 1 {
+	// 	return nil, driver.ErrMultipleFound
+	// }
+
+	// o, ok := res[0].Value.Properties["order"]
+	// if !ok {
+	// 	// valid edge, with no order defined (valid case)
+	// 	return nil, nil
+	// }
+
+	// // unmarshal property of type int
+	// var orderProperty PropertyValueInt
+	// if err = json.Unmarshal(o.Value.Value, &orderProperty); err != nil {
+	// 	return nil, err
+	// }
+
+	// return &orderProperty.Value, nil
+}
+
+func isEmptyResponse(rawResponse []byte) bool {
+	return len(rawResponse) == 0 || isNullResponse(rawResponse)
+}
+
+func isNullResponse(rawResponse []byte) bool {
+	return len(rawResponse) == 4 && string(rawResponse) == "null"
+}
+
+func DeserializeMapFromBytes(rawResponse []byte) (resMap map[string]interface{}, err error) {
+
+	if isEmptyResponse(rawResponse) {
+		return map[string]interface{}{}, nil
+	}
+
+	// var metaResponse graphson.GList
+	var metaResponse GMap
+
+	dec := json.NewDecoder(bytes.NewReader(rawResponse))
+	dec.DisallowUnknownFields()
+	if err = dec.Decode(&metaResponse); err != nil {
 		return nil, err
 	}
 
-	return &orderProperty.Value, nil
+	if metaResponse.Type != "g:Map" {
+		return resMap, fmt.Errorf("DeserializeMapFromBytes: Expected `g:Map` type, but got %q", metaResponse.Type)
+	}
+
+	// populate map
+	lastKey := ""
+	resMap = make(map[string]interface{})
+	for i, val := range metaResponse.Value {
+		if i%2 == 0 {
+			switch val.(type) {
+			case string:
+				lastKey = val.(string)
+			default:
+				return map[string]interface{}{}, errors.New("Wrong type for key")
+			}
+		} else {
+			if lastKey == "" {
+				return map[string]interface{}{}, errors.New("Empty key")
+			}
+			resMap[lastKey] = val
+			lastKey = ""
+		}
+	}
+
+	// rrr := GMap{}
+
+	// if err = json.Unmarshal(metaResponse.Value, &metaResponse); err != nil {
+	// return resMap, err
+	// }
+
+	return resMap, nil
 }
 
 // convert a flat array of record values into  a 2d array of records
