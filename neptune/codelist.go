@@ -18,6 +18,7 @@ import (
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/dp-graph/v2/neptune/query"
+	"github.com/ONSdigital/graphson"
 	"github.com/ONSdigital/log.go/log"
 )
 
@@ -260,8 +261,8 @@ type GremlinMap struct {
 }
 
 type GMap struct {
-	Type  string        `json:"@type"`
-	Value []interface{} `json:"@value"`
+	Type  string            `json:"@type"`
+	Value []json.RawMessage `json:"@value"`
 }
 
 // type GremlinOrderResponse struct {
@@ -273,6 +274,11 @@ type GMap struct {
 // Data []interface{} `json:"@value"`
 // Type string        `json:"@type"`
 // }
+
+type GremlinString struct {
+	Type  string `json:"@type"`
+	Value string `json:"@value"`
+}
 
 // GetCodesOrder obtains the numerical order value defined in the 'usedBy' edge between the provided codes and codeListID nodes
 func (n *NeptuneDB) GetCodesOrder(ctx context.Context, codeListID string, codes []string) (codeOrders map[string]*int, err error) {
@@ -298,6 +304,10 @@ func (n *NeptuneDB) GetCodesOrder(ctx context.Context, codeListID string, codes 
 		return make(map[string]*int), err
 	}
 
+	if len(res) == 0 || res[0].Status.Code != 200 {
+		return make(map[string]*int), errors.New("failed to run")
+	}
+
 	results := res[0].Result.Data
 
 	// resMap := map[string]interface{}{}
@@ -308,84 +318,43 @@ func (n *NeptuneDB) GetCodesOrder(ctx context.Context, codeListID string, codes 
 		return make(map[string]*int), err
 	}
 
-	codeOrders = make(map[string]*int)
+	// codeOrders = make(map[string]*int)
+	usedByEdgesByCode := map[string]graphson.Edge{}
 	for _, val := range resMap.Value {
 		rrr, err := DeserializeMapFromBytes(val)
 		if err != nil {
 			return make(map[string]*int), err
 		}
+		log.Event(ctx, "result", log.Data{"rrr": rrr})
 
-		// unmarshal to order property
-		// var orderProperty PropertyValueInt
-		// if err := json.Unmarshal(rrr["order"], orderProperty); err != nil {
-		// return make(map[string]*int), err
-		// }
-
-		// option value
-		optVal, ok := rrr["val"]
-		if !ok {
-			return make(map[string]*int), errors.New("option not found in response")
+		for k, v := range rrr {
+			usedByEdgesByCode[k] = v
 		}
-
-		// order value
-
-		var order int
-		orderDef := rrr["order"]
-		switch orderDef.(type) {
-		case map[string]interface{}:
-			orderDefValid, ok := orderDef.(map[string]interface{})
-			if !ok {
-				return make(map[string]*int), errors.New("wrong type for order")
-			}
-			switch orderDefValid["@value"].(type) {
-			case float64:
-				order = int(orderDefValid["@value"].(float64))
-			default:
-				return make(map[string]*int), errors.New("wrong type for order value")
-			}
-		default:
-			return make(map[string]*int), errors.New("wrong type for order value")
-		}
-
-		// codeOrders[optVal] = &orderProperty.Value
-		// order := 666
-		codeOrders[optVal.(string)] = &order
 	}
 
 	log.Event(ctx, "result", log.Data{"res": res})
 
+	codeOrders = make(map[string]*int, len(usedByEdgesByCode))
+	for k, v := range usedByEdgesByCode {
+
+		// get order property from edge
+		o, ok := v.Value.Properties["order"]
+		if !ok {
+			// valid edge, with no order defined (valid case)
+			codeOrders[k] = nil
+			continue
+		}
+
+		// unmarshal property of type int
+		var orderProperty PropertyValueInt
+		if err = json.Unmarshal(o.Value.Value, &orderProperty); err != nil {
+			return nil, err
+		}
+
+		codeOrders[k] = &orderProperty.Value
+	}
+
 	return codeOrders, nil
-
-	// g.V().hasLabel('_code_list').has('_code_list', 'listID', 'mmm').inE('usedBy').where(otherV().hasId('_code_mmm_mar','_code_mmm_apr','_code_mmm_jun')).as('r').values('order').as('order').select('r').outV().values('value').as('vv').union(select('vv', 'order'))
-	// GetUsedByEdges
-	// qry := fmt.Sprintf(query.GetUsedByEdges, codeListID, code, codeListID, edition)
-	// qry := fmt.Sprintf(query.GetUsedByEdge, codeListID, code, codeListID, edition)
-
-	// res, err := n.getEdges(qry)
-	// if err != nil {
-	// 	return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
-	// }
-
-	// if len(res) == 0 {
-	// 	return nil, driver.ErrNotFound
-	// }
-	// if len(res) > 1 {
-	// 	return nil, driver.ErrMultipleFound
-	// }
-
-	// o, ok := res[0].Value.Properties["order"]
-	// if !ok {
-	// 	// valid edge, with no order defined (valid case)
-	// 	return nil, nil
-	// }
-
-	// // unmarshal property of type int
-	// var orderProperty PropertyValueInt
-	// if err = json.Unmarshal(o.Value.Value, &orderProperty); err != nil {
-	// 	return nil, err
-	// }
-
-	// return &orderProperty.Value, nil
 }
 
 func isEmptyResponse(rawResponse []byte) bool {
@@ -396,10 +365,13 @@ func isNullResponse(rawResponse []byte) bool {
 	return len(rawResponse) == 4 && string(rawResponse) == "null"
 }
 
-func DeserializeMapFromBytes(rawResponse []byte) (resMap map[string]interface{}, err error) {
+// DeserializeMapFromBytes TODO move this method to graphson, after generalising
+func DeserializeMapFromBytes(rawResponse []byte) (edgesMap map[string]graphson.Edge, err error) {
+
+	edgesMap = make(map[string]graphson.Edge)
 
 	if isEmptyResponse(rawResponse) {
-		return map[string]interface{}{}, nil
+		return edgesMap, nil
 	}
 
 	// var metaResponse graphson.GList
@@ -412,28 +384,66 @@ func DeserializeMapFromBytes(rawResponse []byte) (resMap map[string]interface{},
 	}
 
 	if metaResponse.Type != "g:Map" {
-		return resMap, fmt.Errorf("DeserializeMapFromBytes: Expected `g:Map` type, but got %q", metaResponse.Type)
+		return edgesMap, fmt.Errorf("DeserializeMapFromBytes: Expected `g:Map` type, but got %q", metaResponse.Type)
 	}
 
 	// populate map
-	lastKey := ""
-	resMap = make(map[string]interface{})
-	for i, val := range metaResponse.Value {
-		if i%2 == 0 {
-			switch val.(type) {
-			case string:
-				lastKey = val.(string)
-			default:
-				return map[string]interface{}{}, errors.New("Wrong type for key")
-			}
-		} else {
-			if lastKey == "" {
-				return map[string]interface{}{}, errors.New("Empty key")
-			}
-			resMap[lastKey] = val
-			lastKey = ""
+	if len(metaResponse.Value) != 4 {
+		return edgesMap, errors.New("wrong respose size for edges map")
+	}
+
+	var k0 string
+	if err := json.Unmarshal(metaResponse.Value[0], &k0); err != nil {
+		return edgesMap, err
+	}
+
+	var k2 string
+	if err := json.Unmarshal(metaResponse.Value[2], &k2); err != nil {
+		return edgesMap, err
+	}
+
+	var code string
+	if k0 == "code" {
+		if err := json.Unmarshal(metaResponse.Value[1], &code); err != nil {
+			return edgesMap, err
+		}
+	} else if k2 == "code" {
+		if err := json.Unmarshal(metaResponse.Value[3], &code); err != nil {
+			return edgesMap, err
+		}
+	} else {
+		return edgesMap, errors.New("code key not found in response")
+	}
+
+	var edge graphson.Edge
+	if k0 == "usedBy" {
+		if err := json.Unmarshal(metaResponse.Value[1], &edge); err != nil {
+			return edgesMap, err
+		}
+	} else if k2 == "usedBy" {
+		if err := json.Unmarshal(metaResponse.Value[3], &edge); err != nil {
+			return edgesMap, err
 		}
 	}
+
+	edgesMap[code] = edge
+
+	// for i, val := range metaResponse.Value {
+	// 	if i%2 == 0 {
+	// 		switch val.(type) {
+	// 		case string:
+	// 			lastKey = val.(string)
+	// 		default:
+	// 			return edgesMap, errors.New("Wrong type for key")
+	// 		}
+	// 	} else {
+	// 		if lastKey == "" {
+	// 			return edgesMap, errors.New("Empty key")
+	// 		}
+	// 		edgesMap[lastKey] = nil
+	// 		lastKey = ""
+	// 	}
+	// }
 
 	// rrr := GMap{}
 
@@ -441,8 +451,19 @@ func DeserializeMapFromBytes(rawResponse []byte) (resMap map[string]interface{},
 	// return resMap, err
 	// }
 
-	return resMap, nil
+	return edgesMap, nil
 }
+
+// func getEdgeArray(val json.RawMessage) (res []graphson.Edge, err error) {
+// 	for _, item := range resp {
+// 		var resN []graphson.Edge
+// 		if resN, err = graphson.DeserializeListOfEdgesFromBytes(item.Result.Data); err != nil {
+// 			return
+// 		}
+// 		res = append(res, resN...)
+// 	}
+
+// }
 
 // convert a flat array of record values into  a 2d array of records
 func createRecords(values []string, valuesPerRecord int) ([][]string, error) {
