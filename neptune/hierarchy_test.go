@@ -6,7 +6,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/dp-graph/v2/neptune/internal"
+	"github.com/ONSdigital/dp-graph/v2/neptune/query"
 	"github.com/ONSdigital/graphson"
 	"github.com/ONSdigital/gremgo-neptune"
 
@@ -60,6 +62,103 @@ func TestNeptuneDB_GetCodesWithData(t *testing.T) {
 				expectedQuery := `g.V().hasLabel('_f0a2f3f2-cc86-4bbb-a549-ffc99c89292c_aggregate').values('value')`
 				So(len(poolMock.GetStringListCalls()), ShouldEqual, 1)
 				So(poolMock.GetStringListCalls()[0].Query, ShouldEqual, expectedQuery)
+			})
+		})
+	})
+}
+
+func TestNeptuneDB_HierarchyExists(t *testing.T) {
+
+	vertex := internal.MakeHierarchyVertex("vertex-label", "code", "label", 1, true)
+
+	Convey("Given a mocked neptune DB that returns a single hierarchy node", t, func() {
+
+		poolMock := &internal.NeptunePoolMock{GetFunc: func(query string, bindings map[string]string, rebindings map[string]string) (vertices []graphson.Vertex, err error) {
+			return []graphson.Vertex{vertex}, nil
+		}}
+		db := mockDB(poolMock)
+
+		Convey("When HierarchyExists is called", func() {
+			hierarchyExists, err := db.HierarchyExists(ctx, testInstanceID, testDimensionName)
+
+			Convey("Then the expected query is sent to Neptune", func() {
+
+				expectedQuery := fmt.Sprintf(query.HierarchyExists, testInstanceID, testDimensionName)
+				So(len(poolMock.GetCalls()), ShouldEqual, 1)
+				So(poolMock.GetCalls()[0].Query, ShouldEqual, expectedQuery)
+			})
+
+			Convey("Then the return value is true", func() {
+				So(hierarchyExists, ShouldBeTrue)
+				So(err, ShouldBeNil)
+			})
+		})
+	})
+
+	Convey("Given a mocked neptune DB that returns multiple hierarchy nodes", t, func() {
+
+		poolMock := &internal.NeptunePoolMock{GetFunc: func(query string, bindings map[string]string, rebindings map[string]string) (vertices []graphson.Vertex, err error) {
+			return []graphson.Vertex{vertex, vertex}, nil
+		}}
+		db := mockDB(poolMock)
+
+		Convey("When HierarchyExists is called", func() {
+			_, err := db.HierarchyExists(ctx, testInstanceID, testDimensionName)
+
+			Convey("Then the expected query is sent to Neptune", func() {
+
+				expectedQuery := fmt.Sprintf(query.HierarchyExists, testInstanceID, testDimensionName)
+				So(len(poolMock.GetCalls()), ShouldEqual, 1)
+				So(poolMock.GetCalls()[0].Query, ShouldEqual, expectedQuery)
+			})
+
+			Convey("Then the expected error is returned", func() {
+				So(err, ShouldEqual, driver.ErrMultipleFound)
+			})
+		})
+	})
+
+	Convey("Given a mocked neptune DB that returns an empty array of vertices", t, func() {
+
+		poolMock := &internal.NeptunePoolMock{GetFunc: func(query string, bindings map[string]string, rebindings map[string]string) (vertices []graphson.Vertex, err error) {
+			return []graphson.Vertex{}, nil
+		}}
+		db := mockDB(poolMock)
+
+		Convey("When HierarchyExists is called", func() {
+			hierarchyExists, err := db.HierarchyExists(ctx, testInstanceID, testDimensionName)
+
+			Convey("Then the expected query is sent to Neptune", func() {
+				expectedQuery := fmt.Sprintf(query.HierarchyExists, testInstanceID, testDimensionName)
+				So(len(poolMock.GetCalls()), ShouldEqual, 1)
+				So(poolMock.GetCalls()[0].Query, ShouldEqual, expectedQuery)
+			})
+
+			Convey("Then the return value is false", func() {
+				So(hierarchyExists, ShouldBeFalse)
+				So(err, ShouldBeNil)
+			})
+		})
+	})
+
+	Convey("Given a mocked neptune DB that returns an error", t, func() {
+
+		poolMock := &internal.NeptunePoolMock{
+			GetFunc: internal.ReturnMalformedNilInterfaceRequestErr,
+		}
+		db := mockDB(poolMock)
+
+		Convey("When HierarchyExists is called", func() {
+			_, err := db.HierarchyExists(ctx, testInstanceID, testDimensionName)
+
+			Convey("Then the expected query is sent to Neptune", func() {
+				expectedQuery := fmt.Sprintf(query.HierarchyExists, testInstanceID, testDimensionName)
+				So(len(poolMock.GetCalls()), ShouldEqual, 1)
+				So(poolMock.GetCalls()[0].Query, ShouldEqual, expectedQuery)
+			})
+
+			Convey("Then the expected error is returned", func() {
+				So(err, ShouldEqual, internal.NonTransientErr)
 			})
 		})
 	})

@@ -13,6 +13,10 @@ This module provides a handful of mock convenience functions that can be
 used to inject behaviour into NeptunePoolMock.
 */
 
+// a mock error that is judged to be not transient by neptune.isTransientError
+// which prevents retry attempts in tests
+var NonTransientErr = errors.New(" MALFORMED REQUEST ")
+
 // ReturnOne is a mock implementation for NeptunePool.GetCount()
 // that always returns a count of 1.
 var ReturnOne = func(q string, bindings, rebindings map[string]string) (i int64, err error) {
@@ -41,21 +45,21 @@ var ReturnZero = func(q string, bindings, rebindings map[string]string) (i int64
 // that always returns an error that is judged to be not transient by
 // neptune.isTransientError
 var ReturnMalformedIntRequestErr = func(q string, bindings, rebindings map[string]string) (i int64, err error) {
-	return -1, errors.New(" MALFORMED REQUEST ")
+	return -1, NonTransientErr
 }
 
 // ReturnMalformedNilInterfaceRequestErr is a mock implementation for
 // NeptunePool functions that return  ([]graphson.Vertex, error) which always returns an
 // error that is judged to be not transient by neptune.isTransientError
 var ReturnMalformedNilInterfaceRequestErr = func(q string, bindings, rebindings map[string]string) ([]graphson.Vertex, error) {
-	return nil, errors.New(" MALFORMED REQUEST ")
+	return nil, NonTransientErr
 }
 
 // ReturnMalformedStringListRequestErr is a mock implementation for
 // NeptunePool functions that return  ([]string, error) which always returns an
 // error that is judged to be not transient by neptune.isTransientError
 var ReturnMalformedStringListRequestErr = func(q string, bindings, rebindings map[string]string) ([]string, error) {
-	return nil, errors.New(" MALFORMED REQUEST ")
+	return nil, NonTransientErr
 }
 
 // ReturnThreeCodeLists is mock implementation for NeptunePool.Get() that always
