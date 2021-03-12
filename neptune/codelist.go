@@ -250,8 +250,8 @@ func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, cod
 }
 
 // GetCodeOrder obtains the numerical order value defined in the 'usedBy' edge between the provided code and codeListID
-func (n *NeptuneDB) GetCodeOrder(ctx context.Context, codeListID, code string) (order *int, err error) {
-	qry := fmt.Sprintf(query.GetUsedByEdge, codeListID, code, codeListID)
+func (n *NeptuneDB) GetCodeOrder(ctx context.Context, codeListID, codeLabel string) (order *int, err error) {
+	qry := fmt.Sprintf(query.GetUsedByEdge, codeListID, codeLabel)
 	res, err := n.getEdges(qry)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)

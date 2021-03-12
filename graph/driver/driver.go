@@ -25,7 +25,7 @@ type CodeList interface {
 	GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error)
 	GetCode(ctx context.Context, codeListID, edition string, code string) (*models.Code, error)
 	GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error)
-	GetCodeOrder(ctx context.Context, codeListID, code string) (order *int, err error)
+	GetCodeOrder(ctx context.Context, codeListID, codeLabel string) (order *int, err error)
 }
 
 // Hierarchy defines functions to create and retrieve generic and instance hierarchy nodes

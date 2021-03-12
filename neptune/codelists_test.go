@@ -563,8 +563,8 @@ func TestGetCode(t *testing.T) {
 
 func TestGetCodeOrder(t *testing.T) {
 
-	testCodeListID := "mmm"
-	testCode := "mar"
+	testCodeListID := "yyyy-qq"
+	testCodeLabel := "2016 Q1"
 
 	Convey("Given a database containing valid 'usedBy' edge with order", t, func() {
 		expectedOrder := PropertyValueInt{
@@ -598,7 +598,7 @@ func TestGetCodeOrder(t *testing.T) {
 		db := mockDB(poolMock)
 
 		Convey("When GetCodeOrder() is called", func() {
-			order, err := db.GetCodeOrder(context.Background(), testCodeListID, testCode)
+			order, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
 
 			Convey("Then the expected order should be returned withour error", func() {
 				So(err, ShouldBeNil)
@@ -606,9 +606,7 @@ func TestGetCodeOrder(t *testing.T) {
 			})
 
 			Convey("Then the driver GetE function should be called once with the expected query", func() {
-				expectedQry := `g.V().hasId('_code_mmm_mar')` +
-					`.outE('usedBy')` +
-					`.where(otherV().hasLabel('_code_list').has('_code_list', 'listID', 'mmm'))`
+				expectedQry := `g.V().hasLabel('_code_list').has('_code_list', 'listID', 'yyyy-qq').inE('usedBy').has('label', '2016 Q1')`
 				So(poolMock.GetECalls(), ShouldHaveLength, 1)
 				So(poolMock.GetECalls()[0].Q, ShouldEqual, expectedQry)
 			})
@@ -632,7 +630,7 @@ func TestGetCodeOrder(t *testing.T) {
 		db := mockDB(poolMock)
 
 		Convey("When GetCodeOrder() is called", func() {
-			order, err := db.GetCodeOrder(context.Background(), testCodeListID, testCode)
+			order, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
 
 			Convey("Then a nil order should be returned withour error", func() {
 				So(err, ShouldBeNil)
@@ -640,9 +638,7 @@ func TestGetCodeOrder(t *testing.T) {
 			})
 
 			Convey("Then the driver GetE function should be called once with the expected query", func() {
-				expectedQry := `g.V().hasId('_code_mmm_mar')` +
-					`.outE('usedBy')` +
-					`.where(otherV().hasLabel('_code_list').has('_code_list', 'listID', 'mmm'))`
+				expectedQry := `g.V().hasLabel('_code_list').has('_code_list', 'listID', 'yyyy-qq').inE('usedBy').has('label', '2016 Q1')`
 				So(poolMock.GetECalls(), ShouldHaveLength, 1)
 				So(poolMock.GetECalls()[0].Q, ShouldEqual, expectedQry)
 			})
@@ -659,10 +655,10 @@ func TestGetCodeOrder(t *testing.T) {
 		db := mockDB(poolMock)
 
 		Convey("When GetCodeOrder() is called", func() {
-			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCode)
+			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
 
 			Convey("Then the wrapped error should be returned", func() {
-				expectedErr := "Gremlin query failed: \"g.V().hasId('_code_mmm_mar').outE('usedBy').where(otherV().hasLabel('_code_list').has('_code_list', 'listID', 'mmm'))\": number of attempts exceeded: getE failed"
+				expectedErr := "Gremlin query failed: \"g.V().hasLabel('_code_list').has('_code_list', 'listID', 'yyyy-qq').inE('usedBy').has('label', '2016 Q1')\": number of attempts exceeded: getE failed"
 				So(err.Error(), ShouldResemble, expectedErr)
 			})
 		})
@@ -677,7 +673,7 @@ func TestGetCodeOrder(t *testing.T) {
 		db := mockDB(poolMock)
 
 		Convey("When GetCodeOrder() is called", func() {
-			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCode)
+			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
 
 			Convey("Then a notFound error should be returned", func() {
 				So(err, ShouldResemble, driver.ErrNotFound)
@@ -709,7 +705,7 @@ func TestGetCodeOrder(t *testing.T) {
 		db := mockDB(poolMock)
 
 		Convey("When GetCodeOrder() is called", func() {
-			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCode)
+			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
 
 			Convey("Then a multipleFound error should be returned", func() {
 				So(err, ShouldResemble, driver.ErrMultipleFound)
@@ -742,7 +738,7 @@ func TestGetCodeOrder(t *testing.T) {
 		db := mockDB(poolMock)
 
 		Convey("When GetCodeOrder() is called", func() {
-			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCode)
+			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
 
 			Convey("Then the expected unmarshal order should be returned", func() {
 				So(err.Error(), ShouldResemble, "invalid character '\\x01' looking for beginning of value")

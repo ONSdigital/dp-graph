@@ -28,10 +28,8 @@ const (
 	CodeExists = `g.V().hasLabel('_code_list')` +
 		`.has('listID', '%s').has('edition', '%s')` +
 		`.in('usedBy').has('value', "%s").count()`
-	GetUsedByEdge = `g.V().hasId('_code_%s_%s')` +
-		`.outE('usedBy')` +
-		`.where(otherV().hasLabel('_code_list').has('_code_list', 'listID', '%s'))`
-
+	GetUsedByEdge = `g.V().hasLabel('_code_list').has('_code_list', 'listID', '%s')` +
+		`.inE('usedBy').has('label', '%s')`
 	/*
 		This query harvests data from both edges and nodes, so we collapse
 		the response to contain only strings - to make it parse-able with
