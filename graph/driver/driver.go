@@ -31,6 +31,7 @@ type CodeList interface {
 // Hierarchy defines functions to create and retrieve generic and instance hierarchy nodes
 type Hierarchy interface {
 	// read
+	HierarchyExists(ctx context.Context, instanceID, dimension string) (hierarchyExists bool, err error)
 	GetHierarchyCodelist(ctx context.Context, instanceID, dimension string) (string, error)
 	GetHierarchyRoot(ctx context.Context, instanceID, dimension string) (*models.HierarchyResponse, error)
 	GetHierarchyElement(ctx context.Context, instanceID, dimension, code string) (*models.HierarchyResponse, error)

@@ -3,7 +3,6 @@ package neo4j
 import (
 	"context"
 	"fmt"
-
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/mapper"
@@ -48,6 +47,40 @@ func (n *Neo4j) GetHierarchyElement(ctx context.Context, instanceID, dimension, 
 
 	if res.Breadcrumbs, err = n.getAncestry(ctx, instanceID, dimension, code); err != nil {
 		return
+	}
+
+	return
+}
+
+// HierarchyExists returns true if the hierarchy exists
+func (n *Neo4j) HierarchyExists(ctx context.Context, instanceID, dimension string) (hierarchyExists bool, err error) {
+	neoStmt := fmt.Sprintf(query.HierarchyExists, instanceID, dimension)
+	logData := log.Data{
+		"fn":             "HierarchyExists",
+		"cypher":         neoStmt,
+		"instance_id":    instanceID,
+		"dimension_name": dimension,
+	}
+
+	if err != nil {
+		return
+	}
+
+	var vertices []*models.HierarchyElement
+	if vertices, err = n.queryElements(ctx, instanceID, dimension, neoStmt, neoArgMap{}); err != nil {
+		log.Event(ctx, "queryElements failed when attempting to get a hierarchy node", log.ERROR, logData, log.Error(err))
+		return
+	}
+	if len(vertices) > 1 {
+		err = driver.ErrMultipleFound
+		log.Event(ctx, "expected a single hierarchy node but multiple were returned", log.ERROR, logData, log.Error(err))
+		return
+	}
+
+	hierarchyExists = false
+
+	if len(vertices) == 1 {
+		hierarchyExists = true
 	}
 
 	return
