@@ -2,12 +2,15 @@ package neptune
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 
+	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"
 
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/dp-graph/v2/neptune/internal"
+	"github.com/ONSdigital/graphson"
 )
 
 func TestGetCodeLists(t *testing.T) {
@@ -558,192 +561,190 @@ func TestGetCode(t *testing.T) {
 	})
 }
 
-// func TestGetCodesOrder(t *testing.T) {
+func TestGetCodeOrder(t *testing.T) {
 
-// 	testCodeListID := "mmm"
-// 	testCode := "mar"
+	testCodeListID := "yyyy-qq"
+	testCodeLabel := "2016 Q1"
 
-// 	Convey("Given a database containing valid 'usedBy' edge with order", t, func() {
-// 		expectedOrder := PropertyValueInt{
-// 			Value: 2,
-// 		}
+	Convey("Given a database containing valid 'usedBy' edge with order", t, func() {
+		expectedOrderValue := 2
+		expectedOrder := graphson.Raw{
+			Type:  "g:Int32",
+			Value: json.RawMessage{50}, // corresponds to ASCII value of 2
+		}
 
-// 		orderValue, err := json.Marshal(&expectedOrder)
-// 		So(err, ShouldBeNil)
+		orderValue, err := json.Marshal(&expectedOrder)
+		So(err, ShouldBeNil)
 
-// 		poolMock := &internal.NeptunePoolMock{
-// 			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-// 				return []graphson.Edge{
-// 					{
-// 						Type: "g:Edge",
-// 						Value: graphson.EdgeValue{
-// 							Label: "usedBy",
-// 							Properties: map[string]graphson.EdgeProperty{
-// 								"order": {
-// 									Type: "g.Property",
-// 									Value: graphson.EdgePropertyValue{
-// 										Label: "order",
-// 										Value: orderValue,
-// 									},
-// 								},
-// 							},
-// 						},
-// 					},
-// 				}, nil
-// 			},
-// 		}
-// 		db := mockDB(poolMock)
+		poolMock := &internal.NeptunePoolMock{
+			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+				return []graphson.Edge{
+					{
+						Type: "g:Edge",
+						Value: graphson.EdgeValue{
+							Label: "usedBy",
+							Properties: map[string]graphson.EdgeProperty{
+								"order": {
+									Type: "g.Property",
+									Value: graphson.EdgePropertyValue{
+										Label: "order",
+										Value: orderValue,
+									},
+								},
+							},
+						},
+					},
+				}, nil
+			},
+		}
+		db := mockDB(poolMock)
 
-// 		Convey("When GetCodeOrder() is called", func() {
-// 			order, err := db.GetCodeOrder(context.Background(), testCodeListID, testCode)
+		Convey("When GetCodeOrder() is called", func() {
+			order, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
 
-// 			Convey("Then the expected order should be returned withour error", func() {
-// 				So(err, ShouldBeNil)
-// 				So(*order, ShouldEqual, expectedOrder.Value)
-// 			})
+			Convey("Then the expected order should be returned withour error", func() {
+				So(err, ShouldBeNil)
+				So(*order, ShouldEqual, expectedOrderValue)
+			})
 
-// 			Convey("Then the driver GetE function should be called once with the expected query", func() {
-// 				expectedQry := `g.V().hasId('_code_mmm_mar')` +
-// 					`.outE('usedBy')` +
-// 					`.where(otherV().hasLabel('_code_list').has('_code_list', 'listID', 'mmm'))`
-// 				So(poolMock.GetECalls(), ShouldHaveLength, 1)
-// 				So(poolMock.GetECalls()[0].Q, ShouldEqual, expectedQry)
-// 			})
-// 		})
-// 	})
+			Convey("Then the driver GetE function should be called once with the expected query", func() {
+				expectedQry := `g.V().hasLabel('_code_list').has('_code_list', 'listID', 'yyyy-qq').inE('usedBy').has('label', '2016 Q1')`
+				So(poolMock.GetECalls(), ShouldHaveLength, 1)
+				So(poolMock.GetECalls()[0].Q, ShouldEqual, expectedQry)
+			})
+		})
+	})
 
-// 	Convey("Given a database containing valid 'usedBy' edge without order", t, func() {
-// 		poolMock := &internal.NeptunePoolMock{
-// 			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-// 				return []graphson.Edge{
-// 					{
-// 						Type: "g:Edge",
-// 						Value: graphson.EdgeValue{
-// 							Label:      "usedBy",
-// 							Properties: map[string]graphson.EdgeProperty{},
-// 						},
-// 					},
-// 				}, nil
-// 			},
-// 		}
-// 		db := mockDB(poolMock)
+	Convey("Given a database containing valid 'usedBy' edge without order", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+				return []graphson.Edge{
+					{
+						Type: "g:Edge",
+						Value: graphson.EdgeValue{
+							Label:      "usedBy",
+							Properties: map[string]graphson.EdgeProperty{},
+						},
+					},
+				}, nil
+			},
+		}
+		db := mockDB(poolMock)
 
-// 		Convey("When GetCodeOrder() is called", func() {
-// 			order, err := db.GetCodeOrder(context.Background(), testCodeListID, testCode)
+		Convey("When GetCodeOrder() is called", func() {
+			order, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
 
-// 			Convey("Then a nil order should be returned withour error", func() {
-// 				So(err, ShouldBeNil)
-// 				So(order, ShouldBeNil)
-// 			})
+			Convey("Then a nil order should be returned withour error", func() {
+				So(err, ShouldBeNil)
+				So(order, ShouldBeNil)
+			})
 
-// 			Convey("Then the driver GetE function should be called once with the expected query", func() {
-// 				expectedQry := `g.V().hasId('_code_mmm_mar')` +
-// 					`.outE('usedBy')` +
-// 					`.where(otherV().hasLabel('_code_list').has('_code_list', 'listID', 'mmm'))`
-// 				So(poolMock.GetECalls(), ShouldHaveLength, 1)
-// 				So(poolMock.GetECalls()[0].Q, ShouldEqual, expectedQry)
-// 			})
-// 		})
-// 	})
+			Convey("Then the driver GetE function should be called once with the expected query", func() {
+				expectedQry := `g.V().hasLabel('_code_list').has('_code_list', 'listID', 'yyyy-qq').inE('usedBy').has('label', '2016 Q1')`
+				So(poolMock.GetECalls(), ShouldHaveLength, 1)
+				So(poolMock.GetECalls()[0].Q, ShouldEqual, expectedQry)
+			})
+		})
+	})
 
-// 	Convey("Given a database that fails to get edges", t, func() {
-// 		errGetE := errors.New("getE failed")
-// 		poolMock := &internal.NeptunePoolMock{
-// 			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-// 				return []graphson.Edge{}, errGetE
-// 			},
-// 		}
-// 		db := mockDB(poolMock)
+	Convey("Given a database that fails to get edges", t, func() {
+		errGetE := errors.New("getE failed")
+		poolMock := &internal.NeptunePoolMock{
+			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+				return []graphson.Edge{}, errGetE
+			},
+		}
+		db := mockDB(poolMock)
 
-// 		Convey("When GetCodeOrder() is called", func() {
-// 			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCode)
+		Convey("When GetCodeOrder() is called", func() {
+			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
 
-// 			Convey("Then the wrapped error should be returned", func() {
-// 				expectedErr := "Gremlin query failed: \"g.V().hasId('_code_mmm_mar').outE('usedBy').where(otherV().hasLabel('_code_list').has('_code_list', 'listID', 'mmm'))\": number of attempts exceeded: getE failed"
-// 				So(err.Error(), ShouldResemble, expectedErr)
-// 			})
-// 		})
-// 	})
+			Convey("Then the wrapped error should be returned", func() {
+				expectedErr := "Gremlin query failed: \"g.V().hasLabel('_code_list').has('_code_list', 'listID', 'yyyy-qq').inE('usedBy').has('label', '2016 Q1')\": number of attempts exceeded: getE failed"
+				So(err.Error(), ShouldResemble, expectedErr)
+			})
+		})
+	})
 
-// 	Convey("Given a database that does not return any 'usedBy' edge", t, func() {
-// 		poolMock := &internal.NeptunePoolMock{
-// 			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-// 				return []graphson.Edge{}, nil
-// 			},
-// 		}
-// 		db := mockDB(poolMock)
+	Convey("Given a database that does not return any 'usedBy' edge", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+				return []graphson.Edge{}, nil
+			},
+		}
+		db := mockDB(poolMock)
 
-// 		Convey("When GetCodeOrder() is called", func() {
-// 			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCode)
+		Convey("When GetCodeOrder() is called", func() {
+			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
 
-// 			Convey("Then a notFound error should be returned", func() {
-// 				So(err, ShouldResemble, driver.ErrNotFound)
-// 			})
-// 		})
-// 	})
+			Convey("Then a notFound error should be returned", func() {
+				So(err, ShouldResemble, driver.ErrNotFound)
+			})
+		})
+	})
 
-// 	Convey("Given a database containing multiple 'usedBy' edges for the same code-codelist pair", t, func() {
-// 		poolMock := &internal.NeptunePoolMock{
-// 			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-// 				return []graphson.Edge{
-// 					{
-// 						Type: "g:Edge",
-// 						Value: graphson.EdgeValue{
-// 							Label:      "usedBy",
-// 							Properties: map[string]graphson.EdgeProperty{},
-// 						},
-// 					},
-// 					{
-// 						Type: "g:Edge",
-// 						Value: graphson.EdgeValue{
-// 							Label:      "usedBy",
-// 							Properties: map[string]graphson.EdgeProperty{},
-// 						},
-// 					},
-// 				}, nil
-// 			},
-// 		}
-// 		db := mockDB(poolMock)
+	Convey("Given a database containing multiple 'usedBy' edges for the same code-codelist pair", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+				return []graphson.Edge{
+					{
+						Type: "g:Edge",
+						Value: graphson.EdgeValue{
+							Label:      "usedBy",
+							Properties: map[string]graphson.EdgeProperty{},
+						},
+					},
+					{
+						Type: "g:Edge",
+						Value: graphson.EdgeValue{
+							Label:      "usedBy",
+							Properties: map[string]graphson.EdgeProperty{},
+						},
+					},
+				}, nil
+			},
+		}
+		db := mockDB(poolMock)
 
-// 		Convey("When GetCodeOrder() is called", func() {
-// 			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCode)
+		Convey("When GetCodeOrder() is called", func() {
+			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
 
-// 			Convey("Then a multipleFound error should be returned", func() {
-// 				So(err, ShouldResemble, driver.ErrMultipleFound)
-// 			})
-// 		})
-// 	})
+			Convey("Then a multipleFound error should be returned", func() {
+				So(err, ShouldResemble, driver.ErrMultipleFound)
+			})
+		})
+	})
 
-// 	Convey("Given a database containing a 'usedBy' edge with invalid order value", t, func() {
-// 		poolMock := &internal.NeptunePoolMock{
-// 			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-// 				return []graphson.Edge{
-// 					{
-// 						Type: "g:Edge",
-// 						Value: graphson.EdgeValue{
-// 							Label: "usedBy",
-// 							Properties: map[string]graphson.EdgeProperty{
-// 								"order": {
-// 									Type: "g.Property",
-// 									Value: graphson.EdgePropertyValue{
-// 										Label: "order",
-// 										Value: []byte{1, 2, 3, 4, 5},
-// 									},
-// 								},
-// 							},
-// 						},
-// 					},
-// 				}, nil
-// 			},
-// 		}
-// 		db := mockDB(poolMock)
+	Convey("Given a database containing a 'usedBy' edge with invalid order value", t, func() {
+		poolMock := &internal.NeptunePoolMock{
+			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+				return []graphson.Edge{
+					{
+						Type: "g:Edge",
+						Value: graphson.EdgeValue{
+							Label: "usedBy",
+							Properties: map[string]graphson.EdgeProperty{
+								"order": {
+									Type: "g.Property",
+									Value: graphson.EdgePropertyValue{
+										Label: "order",
+										Value: []byte{1, 2, 3, 4, 5},
+									},
+								},
+							},
+						},
+					},
+				}, nil
+			},
+		}
+		db := mockDB(poolMock)
 
-// 		Convey("When GetCodeOrder() is called", func() {
-// 			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCode)
+		Convey("When GetCodeOrder() is called", func() {
+			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
 
-// 			Convey("Then the expected unmarshal order should be returned", func() {
-// 				So(err.Error(), ShouldResemble, "invalid character '\\x01' looking for beginning of value")
-// 			})
-// 		})
-// 	})
-// }
+			Convey("Then the expected unmarshal order should be returned", func() {
+				So(err.Error(), ShouldResemble, "invalid character '\\x01' looking for beginning of value")
+			})
+		})
+	})
+}

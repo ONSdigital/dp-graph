@@ -134,11 +134,6 @@ func (n *NeptuneDB) getVertex(gremStmt string) (vertex graphson.Vertex, err erro
 	return vertices[0], nil
 }
 
-// PropertyValueInt represents an edge property value of type int
-type PropertyValueInt struct {
-	Value int `json:"@value"`
-}
-
 func (n *NeptuneDB) getEdges(gremStmt string) (edges []graphson.Edge, err error) {
 	ctx := context.Background()
 	logData := log.Data{"fn": "getEdges", "statement": statementSummary(gremStmt), "attempt": 1}

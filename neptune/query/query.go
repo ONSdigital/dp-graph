@@ -28,21 +28,11 @@ const (
 	CodeExists = `g.V().hasLabel('_code_list')` +
 		`.has('listID', '%s').has('edition', '%s')` +
 		`.in('usedBy').has('value', "%s").count()`
-	// GetUsedByEdges = `g.V(%s).outE('usedBy').where(otherV().hasId('_code_list_%s_%s'))`
-	// GetUsedByEdge = `g.V().hasId('_code_%s_%s')` +
-	// 	`.outE('usedBy')` +
-	// 	`.where(otherV().hasId('_code_list_%s').has('edition', '%s'))`
-
-	GetUsedByEdges = `g.V().hasLabel('_code_list').has('_code_list', 'listID', '%s')` +
+	GetUsedByEdge = `g.V().hasLabel('_code_list').has('_code_list', 'listID', '%s')` +
+		`.inE('usedBy').has('label', '%s')`
+	GetUsedByEdgesFromNodeIDs = `g.V().hasLabel('_code_list').has('_code_list', 'listID', '%s')` +
 		`.inE('usedBy').where(otherV().hasId(%s)).as('usedBy')` +
 		`.outV().values('value').as('code').union(select('code', 'usedBy'))`
-
-	// GetUsedByEdges = `g.V().hasLabel('_code_list').has('_code_list', 'listID', '%s')` +
-	// `.inE('usedBy').where(otherV().hasId(%s)).as('r').values('order').as('order').select('r').
-	// outV().values('value').as('val').union(select('val', 'order'))`
-
-	// multiple
-	// g.V().hasLabel('_code_list').has('_code_list', 'listID', 'mmm').inE('usedBy').where(otherV().hasId('_code_mmm_mar','_code_mmm_apr')).valueMap(true)
 
 	/*
 		This query harvests data from both edges and nodes, so we collapse
