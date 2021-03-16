@@ -10,8 +10,8 @@ github.com/ONSdigital/golang-neo4j-bolt-driver v0.0.0-20190228153339-da534111531
 github.com/ONSdigital/golang-neo4j-bolt-driver v0.0.0-20190228153339-da534111531d/go.mod h1:75Sxr59AMz2RiPskqSymLFxdeaIEhnkNaJE5lonMS3M=
 github.com/ONSdigital/graphson v0.0.0-20190718134034-c13ceacd109d h1:yrCtEGlohmA3OnXtke0nOOp/m9O83orpSnTGOfYOw1Q=
 github.com/ONSdigital/graphson v0.0.0-20190718134034-c13ceacd109d/go.mod h1:zQ+8pTnCLGuy4eUek81pWUxZo4/f71ri3VYz97Wby+4=
-github.com/ONSdigital/graphson v0.1.1-0.20210315135227-90a356f187dd h1:rzPBiP8ydR3IPY81k8aeCAYgl2RTolrxrWFOgMgnNj4=
-github.com/ONSdigital/graphson v0.1.1-0.20210315135227-90a356f187dd/go.mod h1:IRS8d1ydh1oczDKbLhTcqc/BNfgZyzhrrjr21SQOkjA=
+github.com/ONSdigital/graphson v0.1.1-0.20210315170650-a0fc5edb3d84 h1:XBt89d+PWDKD3VK9EGe6JRPD9vxSR4sLRb0lpDQNTlI=
+github.com/ONSdigital/graphson v0.1.1-0.20210315170650-a0fc5edb3d84/go.mod h1:IRS8d1ydh1oczDKbLhTcqc/BNfgZyzhrrjr21SQOkjA=
 github.com/ONSdigital/gremgo-neptune v1.0.1 h1:2IFocPqHsWZhlzFBsXpBEYfDaw3zQiGjRajVfQ+b2A4=
 github.com/ONSdigital/gremgo-neptune v1.0.1/go.mod h1:GZz/N6xjNY+EN0x4FmfBDrM73R+Pr3aI5iCwYbY1oYQ=
 github.com/ONSdigital/log.go v1.0.0 h1:hZQTuitFv4nSrpzMhpGvafUC5/8xMVnLI0CWe1rAJNc=

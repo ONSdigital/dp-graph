@@ -329,6 +329,12 @@ func (n *NeptuneDB) GetCodesOrder(ctx context.Context, codeListID string, codes 
 		}
 		codeOrders[code] = order
 	}
+
+	// if not all 'usedBy' edges were found, we need to return ErrNotFound
+	if len(orderEdgesMaps) < len(codes) {
+		return codeOrders, driver.ErrNotFound
+	}
+
 	return codeOrders, nil
 }
 
