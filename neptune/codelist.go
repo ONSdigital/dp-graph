@@ -251,34 +251,6 @@ func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, cod
 	}, nil
 }
 
-// GetCodeOrder obtains the numerical order value defined in the 'usedBy' edge between the provided code and codeListID
-func (n *NeptuneDB) GetCodeOrder(ctx context.Context, codeListID, codeLabel string) (order *int, err error) {
-	qry := fmt.Sprintf(query.GetUsedByEdge, codeListID, codeLabel)
-	res, err := n.getEdges(qry)
-	if err != nil {
-		return nil, errors.Wrapf(err, "Gremlin query failed: %q", qry)
-	}
-	if len(res) == 0 {
-		return nil, driver.ErrNotFound
-	}
-	if len(res) > 1 {
-		return nil, driver.ErrMultipleFound
-	}
-	o, ok := res[0].Value.Properties["order"]
-	if !ok {
-		// valid edge, with no order defined (valid case)
-		return nil, nil
-	}
-
-	// unmarshal property of type int
-	orderProperty, err := graphson.DeserializeInt32(o.Value.Value)
-	if err != nil {
-		return nil, err
-	}
-	orderPropertyInt := int(orderProperty)
-	return &orderPropertyInt, nil
-}
-
 // codeNodeIDs generates a string representing a list of nodeIDs for the provided codes.
 // For example, if codeListID = 'mmm', codes = {'mar', 'apr', 'may'} then the generated string is `'_code_mmm_mar','_code_mmm_apr','_code_mmm_may'`
 func codeNodeIDs(codeListID string, codes []string) string {

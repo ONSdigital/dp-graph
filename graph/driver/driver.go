@@ -25,7 +25,6 @@ type CodeList interface {
 	GetCodes(ctx context.Context, codeListID, edition string) (*models.CodeResults, error)
 	GetCode(ctx context.Context, codeListID, edition string, code string) (*models.Code, error)
 	GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error)
-	GetCodeOrder(ctx context.Context, codeListID, codeLabel string) (order *int, err error)
 	GetCodesOrder(ctx context.Context, codeListID string, codes []string) (codeOrders map[string]*int, err error)
 }
 

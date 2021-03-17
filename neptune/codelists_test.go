@@ -562,147 +562,6 @@ func TestGetCode(t *testing.T) {
 	})
 }
 
-func TestGetCodeOrder(t *testing.T) {
-
-	testCodeListID := "yyyy-qq"
-	testCodeLabel := "2016 Q1"
-
-	Convey("Given a database containing valid 'usedBy' edge with order", t, func() {
-		expectedOrder := 2
-		testEdge := mockUsedByEdge(&expectedOrder)
-
-		poolMock := &internal.NeptunePoolMock{
-			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-				return []graphson.Edge{testEdge}, nil
-			},
-		}
-		db := mockDB(poolMock)
-
-		Convey("When GetCodeOrder() is called", func() {
-			order, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
-
-			Convey("Then the expected order should be returned withour error", func() {
-				So(err, ShouldBeNil)
-				So(*order, ShouldEqual, expectedOrder)
-			})
-
-			Convey("Then the driver GetE function should be called once with the expected query", func() {
-				expectedQry := `g.V().hasLabel('_code_list').has('_code_list', 'listID', 'yyyy-qq').inE('usedBy').has('label', '2016 Q1')`
-				So(poolMock.GetECalls(), ShouldHaveLength, 1)
-				So(poolMock.GetECalls()[0].Q, ShouldEqual, expectedQry)
-			})
-		})
-	})
-
-	Convey("Given a database containing valid 'usedBy' edge without order", t, func() {
-		testEdge := mockUsedByEdge(nil)
-
-		poolMock := &internal.NeptunePoolMock{
-			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-				return []graphson.Edge{testEdge}, nil
-			},
-		}
-		db := mockDB(poolMock)
-
-		Convey("When GetCodeOrder() is called", func() {
-			order, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
-
-			Convey("Then a nil order should be returned withour error", func() {
-				So(err, ShouldBeNil)
-				So(order, ShouldBeNil)
-			})
-
-			Convey("Then the driver GetE function should be called once with the expected query", func() {
-				expectedQry := `g.V().hasLabel('_code_list').has('_code_list', 'listID', 'yyyy-qq').inE('usedBy').has('label', '2016 Q1')`
-				So(poolMock.GetECalls(), ShouldHaveLength, 1)
-				So(poolMock.GetECalls()[0].Q, ShouldEqual, expectedQry)
-			})
-		})
-	})
-
-	Convey("Given a database that fails to get edges", t, func() {
-		errGetE := errors.New("getE failed")
-		poolMock := &internal.NeptunePoolMock{
-			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-				return []graphson.Edge{}, errGetE
-			},
-		}
-		db := mockDB(poolMock)
-
-		Convey("When GetCodeOrder() is called", func() {
-			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
-
-			Convey("Then the wrapped error should be returned", func() {
-				expectedErr := "Gremlin query failed: \"g.V().hasLabel('_code_list').has('_code_list', 'listID', 'yyyy-qq').inE('usedBy').has('label', '2016 Q1')\": number of attempts exceeded: getE failed"
-				So(err.Error(), ShouldResemble, expectedErr)
-			})
-		})
-	})
-
-	Convey("Given a database that does not return any 'usedBy' edge", t, func() {
-		poolMock := &internal.NeptunePoolMock{
-			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-				return []graphson.Edge{}, nil
-			},
-		}
-		db := mockDB(poolMock)
-
-		Convey("When GetCodeOrder() is called", func() {
-			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
-
-			Convey("Then a notFound error should be returned", func() {
-				So(err, ShouldResemble, driver.ErrNotFound)
-			})
-		})
-	})
-
-	Convey("Given a database containing multiple 'usedBy' edges for the same code-codelist pair", t, func() {
-		testEdge1 := mockUsedByEdge(nil)
-		testEdge2 := mockUsedByEdge(nil)
-
-		poolMock := &internal.NeptunePoolMock{
-			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-				return []graphson.Edge{testEdge1, testEdge2}, nil
-			},
-		}
-		db := mockDB(poolMock)
-
-		Convey("When GetCodeOrder() is called", func() {
-			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
-
-			Convey("Then a multipleFound error should be returned", func() {
-				So(err, ShouldResemble, driver.ErrMultipleFound)
-			})
-		})
-	})
-
-	Convey("Given a database containing a 'usedBy' edge with invalid order value", t, func() {
-		testEdgeInvalid := mockUsedByEdge(nil)
-		testEdgeInvalid.Value.Properties["order"] = graphson.EdgeProperty{
-			Type: "g.Property",
-			Value: graphson.EdgePropertyValue{
-				Label: "order",
-				Value: []byte{1, 2, 3, 4, 5},
-			},
-		}
-
-		poolMock := &internal.NeptunePoolMock{
-			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-				return []graphson.Edge{testEdgeInvalid}, nil
-			},
-		}
-		db := mockDB(poolMock)
-
-		Convey("When GetCodeOrder() is called", func() {
-			_, err := db.GetCodeOrder(context.Background(), testCodeListID, testCodeLabel)
-
-			Convey("Then the expected unmarshal order should be returned", func() {
-				So(err.Error(), ShouldResemble, "invalid character '\\x01' looking for beginning of value")
-			})
-		})
-	})
-}
-
 func TestGetCodeOrderFromMap(t *testing.T) {
 
 	Convey("Given a valid code-edge map with order, then the values are correctly extracted by getCodeOrderFromMap", t, func() {
@@ -1024,25 +883,34 @@ func mockCodeEdgeMap(expectedCode string, expectedOrder *int) map[string]json.Ra
 // mockCodeEdgeMapResponse generates a code-edge map with the expected code and order property for the usedBy edge,
 // as returned by Neptune before being processed by graphson into a map (slice representation of the map)
 func mockCodeEdgeMapResponse(expectedCode string, expectedOrder *int) json.RawMessage {
-	rawCode, err := json.Marshal(expectedCode)
+	m := mockCodeEdgeMap(expectedCode, expectedOrder)
+	rawMap, err := SerializeMap(m)
 	So(err, ShouldBeNil)
+	return rawMap
+}
 
-	edge := mockUsedByEdge(expectedOrder)
-	rawEdge, err := json.Marshal(edge)
-	So(err, ShouldBeNil)
-
-	rawCodeKey, err := json.Marshal("code")
-	So(err, ShouldBeNil)
-
-	rawEdgeKey, err := json.Marshal("usedBy")
-	So(err, ShouldBeNil)
+// SerializeMap converts the provided map to the json.RawMessage as used by Neptune,
+// where type is g:Map and the values are an array of jsonRawMessages with even items being serialized keys and odd items being serialized values
+func SerializeMap(inputMap map[string]json.RawMessage) (json.RawMessage, error) {
 
 	mapSliceRepresentation := graphson.RawSlice{
 		Type:  "g:Map",
-		Value: []json.RawMessage{rawCodeKey, rawCode, rawEdgeKey, rawEdge},
+		Value: []json.RawMessage{},
 	}
-	rawMap, err := json.Marshal(mapSliceRepresentation)
-	So(err, ShouldBeNil)
 
-	return rawMap
+	for key, val := range inputMap {
+		rawKey, err := json.Marshal(key)
+		if err != nil {
+			return nil, err
+		}
+
+		rawVal, err := json.Marshal(val)
+		if err != nil {
+			return nil, err
+		}
+
+		mapSliceRepresentation.Value = append(mapSliceRepresentation.Value, rawKey, rawVal)
+	}
+
+	return json.Marshal(mapSliceRepresentation)
 }

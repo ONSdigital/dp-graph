@@ -5,7 +5,7 @@ go 1.16
 require (
 	github.com/ONSdigital/dp-healthcheck v1.0.5
 	github.com/ONSdigital/golang-neo4j-bolt-driver v0.0.0-20190228153339-da534111531d
-	github.com/ONSdigital/graphson v0.1.1-0.20210315170650-a0fc5edb3d84
+	github.com/ONSdigital/graphson v0.1.1-0.20210317162900-dbbc920ad87a
 	github.com/ONSdigital/gremgo-neptune v1.0.1
 	github.com/ONSdigital/log.go v1.0.1
 	github.com/kelseyhightower/envconfig v1.4.0
