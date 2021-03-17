@@ -299,7 +299,7 @@ func (n *NeptuneDB) GetCodesOrder(ctx context.Context, codeListID string, codes 
 	}
 
 	// generate query with list of code node IDs
-	codesString := codeNodeIDs(codeListID, codes)
+	codesString := `'` + strings.Join(codes, `','`) + `'`
 	qry := fmt.Sprintf(query.GetUsedByEdgesFromNodeIDs, codeListID, codesString)
 
 	// execute query

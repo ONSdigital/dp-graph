@@ -862,7 +862,7 @@ func TestGetCodesOrder(t *testing.T) {
 			})
 
 			Convey("Then the driver Execute function should be called once with the expected query", func() {
-				expectedQry := `g.V().hasLabel('_code_list').has('_code_list', 'listID', 'mmm').inE('usedBy').where(otherV().hasId('_code_mmm_mar','_code_mmm_apr')).as('usedBy').outV().values('value').as('code').union(select('code', 'usedBy'))`
+				expectedQry := `g.V().hasLabel('_code_list').has('_code_list', 'listID', 'mmm').inE('usedBy').where(otherV().has('value', within('mar','apr'))).as('usedBy').outV().values('value').as('code').union(select('code', 'usedBy'))`
 				So(poolMock.ExecuteCalls(), ShouldHaveLength, 1)
 				So(poolMock.ExecuteCalls()[0].Query, ShouldEqual, expectedQry)
 			})
@@ -904,7 +904,7 @@ func TestGetCodesOrder(t *testing.T) {
 			})
 
 			Convey("Then the driver Execute function should be called once with the expected query", func() {
-				expectedQry := `g.V().hasLabel('_code_list').has('_code_list', 'listID', 'mmm').inE('usedBy').where(otherV().hasId('_code_mmm_mar')).as('usedBy').outV().values('value').as('code').union(select('code', 'usedBy'))`
+				expectedQry := `g.V().hasLabel('_code_list').has('_code_list', 'listID', 'mmm').inE('usedBy').where(otherV().has('value', within('mar'))).as('usedBy').outV().values('value').as('code').union(select('code', 'usedBy'))`
 				So(poolMock.ExecuteCalls(), ShouldHaveLength, 1)
 				So(poolMock.ExecuteCalls()[0].Query, ShouldEqual, expectedQry)
 			})

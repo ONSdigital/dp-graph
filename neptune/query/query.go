@@ -31,7 +31,7 @@ const (
 	GetUsedByEdge = `g.V().hasLabel('_code_list').has('_code_list', 'listID', '%s')` +
 		`.inE('usedBy').has('label', '%s')`
 	GetUsedByEdgesFromNodeIDs = `g.V().hasLabel('_code_list').has('_code_list', 'listID', '%s')` +
-		`.inE('usedBy').where(otherV().hasId(%s)).as('usedBy')` +
+		`.inE('usedBy').where(otherV().has('value', within(%s))).as('usedBy')` +
 		`.outV().values('value').as('code').union(select('code', 'usedBy'))`
 
 	/*
