@@ -251,16 +251,6 @@ func (n *NeptuneDB) GetCode(ctx context.Context, codeListID, edition string, cod
 	}, nil
 }
 
-// codeNodeIDs generates a string representing a list of nodeIDs for the provided codes.
-// For example, if codeListID = 'mmm', codes = {'mar', 'apr', 'may'} then the generated string is `'_code_mmm_mar','_code_mmm_apr','_code_mmm_may'`
-func codeNodeIDs(codeListID string, codes []string) string {
-	ids := make([]string, len(codes))
-	for i, code := range codes {
-		ids[i] = fmt.Sprintf("_code_%s_%s", codeListID, code)
-	}
-	return `'` + strings.Join(ids, `','`) + `'`
-}
-
 // GetCodesOrder obtains the numerical order value defined in the 'usedBy' edge between the provided codes and codeListID nodes
 func (n *NeptuneDB) GetCodesOrder(ctx context.Context, codeListID string, codes []string) (codeOrders map[string]*int, err error) {
 	codeOrders = make(map[string]*int)

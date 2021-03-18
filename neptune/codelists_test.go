@@ -657,13 +657,6 @@ func TestGetCodeOrderFromMap(t *testing.T) {
 	})
 }
 
-func TestCodeNodeIDs(t *testing.T) {
-	Convey("Given a codeListID and a list of codes, the codeNodeIDs generates the expected csv string representation of the corresponding nodeIDs", t, func() {
-		nodeIDsStr := codeNodeIDs("myCodeListID", []string{"code1", "code2", "code3"})
-		So(nodeIDsStr, ShouldResemble, `'_code_myCodeListID_code1','_code_myCodeListID_code2','_code_myCodeListID_code3'`)
-	})
-}
-
 func TestGetCodesOrder(t *testing.T) {
 
 	testCodeListID := "mmm"
