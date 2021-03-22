@@ -526,6 +526,36 @@ func (n *NeptuneDB) GetHierarchyRoot(ctx context.Context, instanceID, dimension 
 	return
 }
 
+func (n *NeptuneDB) HierarchyExists(ctx context.Context, instanceID, dimension string) (hierarchyExists bool, err error) {
+	gremStmt := fmt.Sprintf(query.HierarchyExists, instanceID, dimension)
+	logData := log.Data{
+		"fn":             "HierarchyExists",
+		"gremlin":        gremStmt,
+		"instance_id":    instanceID,
+		"dimension_name": dimension,
+	}
+
+	var vertices []graphson.Vertex
+	if vertices, err = n.getVertices(gremStmt); err != nil {
+		log.Event(ctx, "getVertices failed when attempting to get a hierarchy node", log.ERROR, logData, log.Error(err))
+		return
+	}
+
+	if len(vertices) == 1 {
+		hierarchyExists = true
+		return hierarchyExists, nil
+	}
+
+	if len(vertices) > 1 {
+		hierarchyExists = true
+		err = driver.ErrMultipleFound
+		log.Event(ctx, "expected a single hierarchy node but multiple were returned", log.ERROR, logData, log.Error(err))
+		return hierarchyExists, err
+	}
+
+	return hierarchyExists, nil
+}
+
 func (n *NeptuneDB) GetHierarchyElement(ctx context.Context, instanceID, dimension, code string) (node *models.HierarchyResponse, err error) {
 	gremStmt := fmt.Sprintf(query.GetHierarchyElement, instanceID, dimension, code)
 	logData := log.Data{

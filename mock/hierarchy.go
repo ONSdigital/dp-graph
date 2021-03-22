@@ -6,6 +6,10 @@ import (
 	"github.com/ONSdigital/dp-graph/v2/models"
 )
 
+func (m *Mock) HierarchyExists(ctx context.Context, instanceID, dimension string) (hierarchyExists bool, err error) {
+	return true, m.checkForErrors()
+}
+
 func (m *Mock) CreateInstanceHierarchyConstraints(ctx context.Context, attempt int, instanceID, dimensionName string) error {
 	return m.checkForErrors()
 }

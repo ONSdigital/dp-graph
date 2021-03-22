@@ -4,12 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/mapper"
+	"github.com/ONSdigital/dp-graph/v2/neo4j/query"
 	"testing"
 
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	graph "github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/internal"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	neoErrors "github.com/ONSdigital/golang-neo4j-bolt-driver/errors"
+	boltstructures "github.com/ONSdigital/golang-neo4j-bolt-driver/structures/graph"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/messages"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -26,7 +30,7 @@ var (
 
 func Test_CreateInstanceHierarchyConstraints(t *testing.T) {
 
-	Convey("Given a mock bolt connection", t, func() {
+	Convey("Given a bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return &internal.ResultMock{}, nil
@@ -58,7 +62,7 @@ func Test_CreateInstanceHierarchyConstraints(t *testing.T) {
 
 func Test_CreateInstanceHierarchyConstraints_NeoErrExec(t *testing.T) {
 
-	Convey("Given a mock bolt connection that returns an error", t, func() {
+	Convey("Given a bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return nil, errExec
@@ -82,7 +86,7 @@ func Test_CreateInstanceHierarchyConstraints_NeoErrExec(t *testing.T) {
 }
 
 func TestStore_CreateInstanceHierarchyConstraints_NeoExecRetry(t *testing.T) {
-	Convey("Given a mock bolt connection that returns a transient error", t, func() {
+	Convey("Given a bolt connection that returns a transient error", t, func() {
 		transientNeoErr := neoErrors.Wrap(messages.FailureMessage{Metadata: map[string]interface{}{"code": "Neo.TransientError.Transaction.ConstraintsChanged"}}, "constraint error msg")
 
 		driver := &internal.Neo4jDriverMock{
@@ -117,7 +121,7 @@ func TestStore_CloneNodes(t *testing.T) {
 		dimensionName,
 	)
 
-	Convey("Given a mock bolt connection", t, func() {
+	Convey("Given a bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return &internal.ResultMock{}, nil
@@ -143,7 +147,7 @@ func TestStore_CloneNodes(t *testing.T) {
 
 func TestStore_CloneNodes_NeoerrExec(t *testing.T) {
 
-	Convey("Given a mock bolt connection that returns an error", t, func() {
+	Convey("Given a bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return nil, errExec
@@ -182,7 +186,7 @@ func TestStore_CloneRelationships(t *testing.T) {
 		dimensionName,
 	)
 
-	Convey("Given a mock bolt connection", t, func() {
+	Convey("Given a bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return &internal.ResultMock{}, nil
@@ -208,7 +212,7 @@ func TestStore_CloneRelationships(t *testing.T) {
 
 func TestStore_CloneRelationships_NeoErrExec(t *testing.T) {
 
-	Convey("Given a mock bolt connection that returns an error", t, func() {
+	Convey("Given a bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return nil, errExec
@@ -243,7 +247,7 @@ func TestStore_SetNumberOfChildren(t *testing.T) {
 		dimensionName,
 	)
 
-	Convey("Given a mock bolt connection", t, func() {
+	Convey("Given a bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return &internal.ResultMock{}, nil
@@ -269,7 +273,7 @@ func TestStore_SetNumberOfChildren(t *testing.T) {
 
 func TestStore_SetNumberOfChildren_NeoErrExec(t *testing.T) {
 
-	Convey("Given a mock bolt connection that returns an error", t, func() {
+	Convey("Given a bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return nil, errExec
@@ -302,7 +306,7 @@ func TestStore_SetHasData(t *testing.T) {
 		dimensionName,
 	)
 
-	Convey("Given a mock bolt connection", t, func() {
+	Convey("Given a bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return &internal.ResultMock{}, nil
@@ -328,7 +332,7 @@ func TestStore_SetHasData(t *testing.T) {
 
 func TestStore_SetHasData_NeoErrExec(t *testing.T) {
 
-	Convey("Given a mock bolt connection that returns an error", t, func() {
+	Convey("Given a bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return nil, errExec
@@ -361,7 +365,7 @@ func TestStore_MarkNodesToRemain(t *testing.T) {
 		dimensionName,
 	)
 
-	Convey("Given a mock bolt connection", t, func() {
+	Convey("Given a bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return &internal.ResultMock{}, nil
@@ -387,7 +391,7 @@ func TestStore_MarkNodesToRemain(t *testing.T) {
 
 func TestStore_MarkNodesToRemain_NeoErrExec(t *testing.T) {
 
-	Convey("Given a mock bolt connection that returns an error", t, func() {
+	Convey("Given a bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return nil, errExec
@@ -417,7 +421,7 @@ func TestStore_RemoveNodesNotMarkedToRemain(t *testing.T) {
 		dimensionName,
 	)
 
-	Convey("Given a mock bolt connection", t, func() {
+	Convey("Given a bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return &internal.ResultMock{}, nil
@@ -443,7 +447,7 @@ func TestStore_RemoveNodesNotMarkedToRemain(t *testing.T) {
 
 func TestStore_RemoveNodesNotMarkedToRemain_NeoErrExec(t *testing.T) {
 
-	Convey("Given a mock bolt connection that returns an error", t, func() {
+	Convey("Given a bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return nil, errExec
@@ -473,7 +477,7 @@ func TestStore_RemoveRemainMarker(t *testing.T) {
 		dimensionName,
 	)
 
-	Convey("Given a mock bolt connection", t, func() {
+	Convey("Given a bolt connection", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return &internal.ResultMock{}, nil
@@ -499,7 +503,7 @@ func TestStore_RemoveRemainMarker(t *testing.T) {
 
 func TestStore_RemoveRemainMarker_NeoErrExec(t *testing.T) {
 
-	Convey("Given a mock bolt connection that returns an error", t, func() {
+	Convey("Given a bolt connection that returns an error", t, func() {
 		driver := &internal.Neo4jDriverMock{
 			ExecFunc: func(q string, params map[string]interface{}) (bolt.Result, error) {
 				return nil, errExec
@@ -517,6 +521,168 @@ func TestStore_RemoveRemainMarker_NeoErrExec(t *testing.T) {
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
 				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
+			})
+		})
+	})
+}
+
+func TestStore_HierarchyExists(t *testing.T) {
+
+	node := boltstructures.Node{
+		Properties: map[string]interface{}{},
+	}
+	mockNeoResponse := &mapper.Result{
+		Data:  []interface{}{node},
+		Meta:  nil,
+		Index: 0,
+	}
+
+	Convey("Given a bolt connection that returns a node", t, func() {
+		neoDriverMock := &internal.Neo4jDriverMock{
+			ReadWithParamsFunc: func(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error {
+				mapp(mockNeoResponse)
+				return nil
+			},
+		}
+
+		db := &Neo4j{neoDriverMock, 5, 30}
+
+		Convey("When HierarchyExists is called", func() {
+			hierarchyExists, err := db.HierarchyExists(context.Background(), instanceID, dimensionName)
+
+			Convey("Then db.Exec should be called once for the expected query", func() {
+				expectedQuery := fmt.Sprintf(query.HierarchyExists, instanceID, dimensionName)
+				So(len(neoDriverMock.ReadWithParamsCalls()), ShouldEqual, 1)
+				So(neoDriverMock.ReadWithParamsCalls()[0].Query, ShouldEqual, expectedQuery)
+			})
+
+			Convey("Then the return value should be true", func() {
+				So(hierarchyExists, ShouldBeTrue)
+			})
+
+			Convey("Then the returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+		})
+	})
+
+	Convey("Given a bolt connection that returns multiple nodes", t, func() {
+		neoDriverMock := &internal.Neo4jDriverMock{
+			ReadWithParamsFunc: func(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error {
+				mapp(mockNeoResponse)
+				mapp(mockNeoResponse)
+				mapp(mockNeoResponse)
+				return nil
+			},
+		}
+
+		db := &Neo4j{neoDriverMock, 5, 30}
+
+		Convey("When HierarchyExists is called", func() {
+			hierarchyExists, err := db.HierarchyExists(context.Background(), instanceID, dimensionName)
+
+			Convey("Then db.Exec should be called once for the expected query", func() {
+				expectedQuery := fmt.Sprintf(query.HierarchyExists, instanceID, dimensionName)
+				So(len(neoDriverMock.ReadWithParamsCalls()), ShouldEqual, 1)
+				So(neoDriverMock.ReadWithParamsCalls()[0].Query, ShouldEqual, expectedQuery)
+			})
+
+			Convey("Then the return value should be true", func() {
+				So(hierarchyExists, ShouldBeTrue)
+			})
+
+			Convey("Then the expected error is returned", func() {
+				So(err, ShouldEqual, driver.ErrMultipleFound)
+			})
+		})
+	})
+
+	Convey("Given a bolt connection that returns an empty result set", t, func() {
+		neoDriverMock := &internal.Neo4jDriverMock{
+			ReadWithParamsFunc: func(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error {
+				return nil
+			},
+		}
+
+		db := &Neo4j{neoDriverMock, 5, 30}
+
+		Convey("When HierarchyExists is called", func() {
+			hierarchyExists, err := db.HierarchyExists(context.Background(), instanceID, dimensionName)
+
+			Convey("Then db.Exec should be called once for the expected query", func() {
+				expectedQuery := fmt.Sprintf(query.HierarchyExists, instanceID, dimensionName)
+				So(len(neoDriverMock.ReadWithParamsCalls()), ShouldEqual, 1)
+				So(neoDriverMock.ReadWithParamsCalls()[0].Query, ShouldEqual, expectedQuery)
+			})
+
+			Convey("Then the return value should be false", func() {
+				So(hierarchyExists, ShouldBeFalse)
+			})
+
+			Convey("Then the returned error should be nil", func() {
+				So(err, ShouldBeNil)
+			})
+		})
+	})
+
+	Convey("Given a bolt connection that returns a not found error", t, func() {
+
+		expectedError := driver.ErrNotFound
+
+		neoDriverMock := &internal.Neo4jDriverMock{
+			ReadWithParamsFunc: func(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error {
+				return expectedError
+			},
+		}
+
+		db := &Neo4j{neoDriverMock, 5, 30}
+
+		Convey("When HierarchyExists is called", func() {
+			hierarchyExists, err := db.HierarchyExists(context.Background(), instanceID, dimensionName)
+
+			Convey("Then db.Exec should be called once for the expected query", func() {
+				expectedQuery := fmt.Sprintf(query.HierarchyExists, instanceID, dimensionName)
+				So(len(neoDriverMock.ReadWithParamsCalls()), ShouldEqual, 1)
+				So(neoDriverMock.ReadWithParamsCalls()[0].Query, ShouldEqual, expectedQuery)
+			})
+
+			Convey("Then the return value should be false", func() {
+				So(hierarchyExists, ShouldBeFalse)
+			})
+
+			Convey("Then the error returned is nil", func() {
+				So(err, ShouldBeNil)
+			})
+		})
+	})
+
+	Convey("Given a bolt connection that returns an error", t, func() {
+
+		expectedError := errors.New("test error")
+
+		neoDriverMock := &internal.Neo4jDriverMock{
+			ReadWithParamsFunc: func(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error {
+				return expectedError
+			},
+		}
+
+		db := &Neo4j{neoDriverMock, 5, 30}
+
+		Convey("When HierarchyExists is called", func() {
+			hierarchyExists, err := db.HierarchyExists(context.Background(), instanceID, dimensionName)
+
+			Convey("Then db.Exec should be called once for the expected query", func() {
+				expectedQuery := fmt.Sprintf(query.HierarchyExists, instanceID, dimensionName)
+				So(len(neoDriverMock.ReadWithParamsCalls()), ShouldEqual, 1)
+				So(neoDriverMock.ReadWithParamsCalls()[0].Query, ShouldEqual, expectedQuery)
+			})
+
+			Convey("Then the return value should be false", func() {
+				So(hierarchyExists, ShouldBeFalse)
+			})
+
+			Convey("Then the expected error is returned", func() {
+				So(err, ShouldEqual, expectedError)
 			})
 		})
 	})
