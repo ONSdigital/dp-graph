@@ -547,6 +547,7 @@ func (n *NeptuneDB) HierarchyExists(ctx context.Context, instanceID, dimension s
 	}
 
 	if len(vertices) > 1 {
+		hierarchyExists = true
 		err = driver.ErrMultipleFound
 		log.Event(ctx, "expected a single hierarchy node but multiple were returned", log.ERROR, logData, log.Error(err))
 		return hierarchyExists, err

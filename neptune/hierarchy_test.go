@@ -112,8 +112,8 @@ func TestNeptuneDB_HierarchyExists(t *testing.T) {
 				So(poolMock.GetCalls()[0].Query, ShouldEqual, expectedQuery)
 			})
 
-			Convey("Then the return value should be false", func() {
-				So(hierarchyExists, ShouldBeFalse)
+			Convey("Then the return value should be true", func() {
+				So(hierarchyExists, ShouldBeTrue)
 			})
 
 			Convey("Then the expected error is returned", func() {
