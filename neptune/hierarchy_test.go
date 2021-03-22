@@ -42,7 +42,7 @@ var (
 
 func TestNeptuneDB_GetCodesWithData(t *testing.T) {
 
-	Convey("Given a mocked neptune DB that returns a code list", t, func() {
+	Convey("Given a neptune DB that returns a code list", t, func() {
 		poolMock := &internal.NeptunePoolMock{
 			GetStringListFunc: internal.ReturnCodesList,
 		}
@@ -71,7 +71,7 @@ func TestNeptuneDB_HierarchyExists(t *testing.T) {
 
 	vertex := internal.MakeHierarchyVertex("vertex-label", "code", "label", 1, true)
 
-	Convey("Given a mocked neptune DB that returns a single hierarchy node", t, func() {
+	Convey("Given a neptune DB that returns a single hierarchy node", t, func() {
 
 		poolMock := &internal.NeptunePoolMock{GetFunc: func(query string, bindings map[string]string, rebindings map[string]string) (vertices []graphson.Vertex, err error) {
 			return []graphson.Vertex{vertex}, nil
@@ -95,7 +95,7 @@ func TestNeptuneDB_HierarchyExists(t *testing.T) {
 		})
 	})
 
-	Convey("Given a mocked neptune DB that returns multiple hierarchy nodes", t, func() {
+	Convey("Given a neptune DB that returns multiple hierarchy nodes", t, func() {
 
 		poolMock := &internal.NeptunePoolMock{GetFunc: func(query string, bindings map[string]string, rebindings map[string]string) (vertices []graphson.Vertex, err error) {
 			return []graphson.Vertex{vertex, vertex}, nil
@@ -103,7 +103,7 @@ func TestNeptuneDB_HierarchyExists(t *testing.T) {
 		db := mockDB(poolMock)
 
 		Convey("When HierarchyExists is called", func() {
-			_, err := db.HierarchyExists(ctx, testInstanceID, testDimensionName)
+			hierarchyExists, err := db.HierarchyExists(ctx, testInstanceID, testDimensionName)
 
 			Convey("Then the expected query is sent to Neptune", func() {
 
@@ -112,13 +112,17 @@ func TestNeptuneDB_HierarchyExists(t *testing.T) {
 				So(poolMock.GetCalls()[0].Query, ShouldEqual, expectedQuery)
 			})
 
+			Convey("Then the return value should be false", func() {
+				So(hierarchyExists, ShouldBeFalse)
+			})
+
 			Convey("Then the expected error is returned", func() {
 				So(err, ShouldEqual, driver.ErrMultipleFound)
 			})
 		})
 	})
 
-	Convey("Given a mocked neptune DB that returns an empty array of vertices", t, func() {
+	Convey("Given a neptune DB that returns an empty array of vertices", t, func() {
 
 		poolMock := &internal.NeptunePoolMock{GetFunc: func(query string, bindings map[string]string, rebindings map[string]string) (vertices []graphson.Vertex, err error) {
 			return []graphson.Vertex{}, nil
@@ -141,7 +145,7 @@ func TestNeptuneDB_HierarchyExists(t *testing.T) {
 		})
 	})
 
-	Convey("Given a mocked neptune DB that returns an error", t, func() {
+	Convey("Given a neptune DB that returns an error", t, func() {
 
 		poolMock := &internal.NeptunePoolMock{
 			GetFunc: internal.ReturnMalformedNilInterfaceRequestErr,
@@ -149,12 +153,16 @@ func TestNeptuneDB_HierarchyExists(t *testing.T) {
 		db := mockDB(poolMock)
 
 		Convey("When HierarchyExists is called", func() {
-			_, err := db.HierarchyExists(ctx, testInstanceID, testDimensionName)
+			hierarchyExists, err := db.HierarchyExists(ctx, testInstanceID, testDimensionName)
 
 			Convey("Then the expected query is sent to Neptune", func() {
 				expectedQuery := fmt.Sprintf(query.HierarchyExists, testInstanceID, testDimensionName)
 				So(len(poolMock.GetCalls()), ShouldEqual, 1)
 				So(poolMock.GetCalls()[0].Query, ShouldEqual, expectedQuery)
+			})
+
+			Convey("Then the return value should be false", func() {
+				So(hierarchyExists, ShouldBeFalse)
 			})
 
 			Convey("Then the expected error is returned", func() {
@@ -166,7 +174,7 @@ func TestNeptuneDB_HierarchyExists(t *testing.T) {
 
 func TestNeptuneDB_GetGenericHierarchyNodeIDs(t *testing.T) {
 
-	Convey("Given a mocked neptune DB that returns a list of generic hierarchy node IDs (leaves)", t, func() {
+	Convey("Given a neptune DB that returns a list of generic hierarchy node IDs (leaves)", t, func() {
 		poolMock := &internal.NeptunePoolMock{
 			GetStringListFunc: internal.ReturnGenericHierarchyLeavesIDs,
 		}
@@ -207,7 +215,7 @@ func TestNeptuneDB_GetGenericHierarchyNodeIDs(t *testing.T) {
 
 func TestNeptuneDB_GetGenericHierarchyAncestriesIDs(t *testing.T) {
 
-	Convey("Given a mocked neptune DB that returns a list of generic ancestry hierarchy node IDs, with duplicates", t, func() {
+	Convey("Given a neptune DB that returns a list of generic ancestry hierarchy node IDs, with duplicates", t, func() {
 		poolMock := &internal.NeptunePoolMock{
 			GetStringListFunc: internal.ReturnGenericHierarchyAncestryIDs,
 		}
@@ -249,7 +257,7 @@ func TestNeptuneDB_GetGenericHierarchyAncestriesIDs(t *testing.T) {
 
 func TestNeptuneDB_CloneNodesFromID(t *testing.T) {
 
-	Convey("Given a mocked neptune DB", t, func() {
+	Convey("Given a neptune DB", t, func() {
 		poolMock := &internal.NeptunePoolMock{
 			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) (responses []gremgo.Response, err error) {
 				return []gremgo.Response{}, nil
@@ -295,7 +303,7 @@ func TestNeptuneDB_CloneNodesFromID(t *testing.T) {
 
 func TestNeptuneDB_CountNodes(t *testing.T) {
 
-	Convey("Given a mocked neptune DB", t, func() {
+	Convey("Given a neptune DB", t, func() {
 		var expectedCount int64 = 123
 		poolMock := &internal.NeptunePoolMock{
 			GetCountFunc: func(q string, bindings map[string]string, rebindings map[string]string) (int64, error) {
@@ -323,7 +331,7 @@ func TestNeptuneDB_CountNodes(t *testing.T) {
 
 func TestNeptuneDB_CloneRelationshipsFromIDs(t *testing.T) {
 
-	Convey("Given a mocked neptune DB", t, func() {
+	Convey("Given a neptune DB", t, func() {
 		poolMock := &internal.NeptunePoolMock{
 			GetEFunc: func(q string, bindings, rebindings map[string]string) (resp interface{}, err error) {
 				return []graphson.Edge{}, nil
@@ -372,7 +380,7 @@ func TestNeptuneDB_CloneRelationshipsFromIDs(t *testing.T) {
 
 func TestNeptuneDB_RemoveCloneEdges(t *testing.T) {
 
-	Convey("Given a mocked neptune DB", t, func() {
+	Convey("Given a neptune DB", t, func() {
 		poolMock := &internal.NeptunePoolMock{
 			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) (responses []gremgo.Response, err error) {
 				return []gremgo.Response{}, nil
@@ -398,7 +406,7 @@ func TestNeptuneDB_RemoveCloneEdges(t *testing.T) {
 
 func TestNeptuneDB_RemoveCloneEdgesFromSourceIDs(t *testing.T) {
 
-	Convey("Given a mocked neptune DB", t, func() {
+	Convey("Given a neptune DB", t, func() {
 		poolMock := &internal.NeptunePoolMock{
 			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) (responses []gremgo.Response, err error) {
 				return []gremgo.Response{}, nil
@@ -441,7 +449,7 @@ func TestNeptuneDB_RemoveCloneEdgesFromSourceIDs(t *testing.T) {
 
 func TestNeptuneDB_GetHierarchyNodeIDs(t *testing.T) {
 
-	Convey("Given a mocked neptune DB", t, func() {
+	Convey("Given a neptune DB", t, func() {
 		poolMock := &internal.NeptunePoolMock{
 			GetStringListFunc: internal.ReturnHierarchyNodeIDs,
 		}
@@ -466,7 +474,7 @@ func TestNeptuneDB_GetHierarchyNodeIDs(t *testing.T) {
 
 func TestNeptuneDB_SetNumberOfChildren(t *testing.T) {
 
-	Convey("Given a mocked neptune DB", t, func() {
+	Convey("Given a neptune DB", t, func() {
 		poolMock := &internal.NeptunePoolMock{
 			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) (responses []gremgo.Response, err error) {
 				return []gremgo.Response{}, nil
@@ -492,7 +500,7 @@ func TestNeptuneDB_SetNumberOfChildren(t *testing.T) {
 
 func TestNeptuneDB_SetNumberOfChildrenFromIDs(t *testing.T) {
 
-	Convey("Given a mocked neptune DB", t, func() {
+	Convey("Given a neptune DB", t, func() {
 		poolMock := &internal.NeptunePoolMock{
 			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) (responses []gremgo.Response, err error) {
 				return []gremgo.Response{}, nil
@@ -535,7 +543,7 @@ func TestNeptuneDB_SetNumberOfChildrenFromIDs(t *testing.T) {
 
 func TestNeptuneDB_SetHasData(t *testing.T) {
 
-	Convey("Given a mocked neptune DB that returns a code list", t, func() {
+	Convey("Given a neptune DB that returns a code list", t, func() {
 
 		ctx := context.Background()
 		attempt := 1

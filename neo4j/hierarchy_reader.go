@@ -66,26 +66,26 @@ func (n *Neo4j) HierarchyExists(ctx context.Context, instanceID, dimension strin
 
 	if vertices, err = n.queryElements(ctx, instanceID, dimension, neoStmt, neoArgMap{}); err != nil {
 		if err == driver.ErrNotFound {
-			return false, nil
+			hierarchyExists = false
+			return hierarchyExists, nil
 		}
 
 		log.Event(ctx, "queryElements failed when attempting to get a hierarchy node", log.ERROR, logData, log.Error(err))
 		return
 	}
 
+	if len(vertices) == 1 {
+		hierarchyExists = true
+		return hierarchyExists, nil
+	}
+
 	if len(vertices) > 1 {
 		err = driver.ErrMultipleFound
 		log.Event(ctx, "expected a single hierarchy node but multiple were returned", log.ERROR, logData, log.Error(err))
-		return
+		return hierarchyExists, err
 	}
 
-	hierarchyExists = false
-
-	if len(vertices) == 1 {
-		hierarchyExists = true
-	}
-
-	return
+	return hierarchyExists, nil
 }
 
 // queryResponse performs DB query (neoStmt, neoArgs) returning Response (should be singular)

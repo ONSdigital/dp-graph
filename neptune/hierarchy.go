@@ -541,19 +541,18 @@ func (n *NeptuneDB) HierarchyExists(ctx context.Context, instanceID, dimension s
 		return
 	}
 
+	if len(vertices) == 1 {
+		hierarchyExists = true
+		return hierarchyExists, nil
+	}
+
 	if len(vertices) > 1 {
 		err = driver.ErrMultipleFound
 		log.Event(ctx, "expected a single hierarchy node but multiple were returned", log.ERROR, logData, log.Error(err))
-		return
+		return hierarchyExists, err
 	}
 
-	hierarchyExists = false
-
-	if len(vertices) == 1 {
-		hierarchyExists = true
-	}
-
-	return
+	return hierarchyExists, nil
 }
 
 func (n *NeptuneDB) GetHierarchyElement(ctx context.Context, instanceID, dimension, code string) (node *models.HierarchyResponse, err error) {
