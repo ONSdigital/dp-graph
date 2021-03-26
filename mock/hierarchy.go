@@ -30,6 +30,10 @@ func (m *Mock) CreateHasCodeEdges(ctx context.Context, attempt int, codeListID s
 	return m.checkForErrors()
 }
 
+func (m *Mock) CloneOrderFromIDs(ctx context.Context, codeListID string, ids map[string]string) (err error) {
+	return m.checkForErrors()
+}
+
 func (m *Mock) CloneNodes(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error {
 	return m.checkForErrors()
 }

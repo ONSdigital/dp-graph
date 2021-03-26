@@ -242,6 +242,40 @@ func (n *NeptuneDB) CloneNodesFromIDs(ctx context.Context, attempt int, instance
 	return nil
 }
 
+// CloneOrderFromIDs copies the order property from the 'usedBy' edge that goes from the code node to the provided codelist node
+// where the code node is the determined by the 'hasCode' edge of the generic hierarchy nodes.
+// The order property is stored as a property of the clone node (assumes a clone_of edge exists from a hierarchy node to the generic hierarchy node)
+func (n *NeptuneDB) CloneOrderFromIDs(ctx context.Context, codeListID string, ids map[string]string) (err error) {
+	logData := log.Data{"fn": "CloneOrderFromIDs",
+		"code_list_id": codeListID,
+		"num_nodes":    len(ids),
+		"max_workers":  n.maxWorkers,
+		"batch_size":   n.batchSizeWriter,
+	}
+	log.Event(ctx, "cloning order property corresponding to the code of the generic hierarchy nodes", log.INFO, logData)
+
+	processBatch := func(chunkIDs map[string]interface{}) (ret map[string]interface{}, err error) {
+		idsStr := `'` + strings.Join(createArray(chunkIDs), `','`) + `'`
+		gremStmt := fmt.Sprintf(
+			query.CloneOrderFromIDs,
+			idsStr,
+			codeListID,
+		)
+
+		if _, err = n.exec(gremStmt); err != nil {
+			log.Event(ctx, "cannot get vertices during cloning", log.ERROR, logData, log.Error(err))
+			return nil, err
+		}
+		return nil, nil
+	}
+
+	_, _, errs := processInConcurrentBatches(createInterfaceMap(ids), processBatch, n.batchSizeWriter, n.maxWorkers)
+	if len(errs) > 0 {
+		return errs[0]
+	}
+	return nil
+}
+
 // CountNodes returns the number of hierarchy nodes for the provided instanceID and dimensionName
 func (n *NeptuneDB) CountNodes(ctx context.Context, instanceID, dimensionName string) (count int64, err error) {
 	gremStmt := fmt.Sprintf(query.CountHierarchyNodes, instanceID, dimensionName)

@@ -47,6 +47,7 @@ type Hierarchy interface {
 	CloneRelationships(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error
 	CloneRelationshipsFromIDs(ctx context.Context, attempt int, instanceID, dimensionName string, ids map[string]string) error
 	CreateHasCodeEdges(ctx context.Context, attempt int, codeListID string, codesById map[string]string) (err error)
+	CloneOrderFromIDs(ctx context.Context, codeListID string, ids map[string]string) (err error)
 	SetNumberOfChildren(ctx context.Context, attempt int, instanceID, dimensionName string) (err error)
 	SetNumberOfChildrenFromIDs(ctx context.Context, attempt int, ids map[string]string) (err error)
 	RemoveCloneEdges(ctx context.Context, attempt int, instanceID, dimensionName string) (err error)

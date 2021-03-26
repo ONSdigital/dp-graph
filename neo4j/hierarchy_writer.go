@@ -247,6 +247,14 @@ func (n *Neo4j) CloneRelationshipsFromIDs(ctx context.Context, attempt int, inst
 	return driver.ErrNotImplemented
 }
 
+func (n *Neo4j) CreateHasCodeEdges(ctx context.Context, attempt int, codeListID string, codesById map[string]string) (err error) {
+	return driver.ErrNotImplemented
+}
+
+func (n *Neo4j) CloneOrderFromIDs(ctx context.Context, codeListID string, ids map[string]string) (err error) {
+	return driver.ErrNotImplemented
+}
+
 func (n *Neo4j) RemoveCloneEdges(ctx context.Context, attempt int, instanceID, dimensionName string) (err error) {
 	return driver.ErrNotImplemented
 }

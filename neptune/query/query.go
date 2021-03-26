@@ -98,6 +98,15 @@ const (
 		`.property('code_list','%s').as('new')` +
 		`.addE('clone_of').to('old')`
 
+	// CloneOrderFromIDs traverses the provided generic hierarchy nodeIDs and obtains the associated code order defined in the 'usedBy' edge
+	// then sets the order value as a property to its clones. As the 'clone_of' edge only exists during the cloning process, the performance will not degrade with the number of clones.
+	CloneOrderFromIDs = `g.V(%s).as('old')` +
+		`.out('hasCode')` +
+		`.outE('usedBy').where(otherV().hasLabel('_code_list').has('_code_list', 'listID', '%s'))` +
+		`.values('order').as('o')` +
+		`.select('old').in('clone_of')` +
+		`.property(single,'order', select('o'))`
+
 	// CountHierarchyNodes returns the number of hierarchy nodes for the provided instanceID and dimensionName
 	CountHierarchyNodes = `g.V().hasLabel('_hierarchy_node_%s_%s').count()`
 
