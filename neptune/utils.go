@@ -6,17 +6,17 @@ import (
 )
 
 // batchProcessor defines a generic function type to process a batch (array of strings) and may return a result (array of strings) and an error.
-type batchProcessor = func([]string) ([]string, error)
+type batchProcessor = func([]string) (map[string]interface{}, error)
 
 // processInConcurrentBatches splits the provided items in batches and calls processBatch for each batch batch, concurrently.
 // The results of the batch Processor functions, if provided, are aggregated as unique items and returned.
-func processInConcurrentBatches(items []string, processBatch batchProcessor, batchSize, maxWorkers int) (result map[string]struct{}, numChunks int, errs []error) {
+func processInConcurrentBatches(items []string, processBatch batchProcessor, batchSize, maxWorkers int) (result map[string]interface{}, numChunks int, errs []error) {
 	wg := sync.WaitGroup{}
 	chWait := make(chan struct{})
 	chErr := make(chan error)
 	chSemaphore := make(chan struct{}, maxWorkers)
 
-	result = make(map[string]struct{})
+	result = make(map[string]interface{})
 	lockResult := sync.Mutex{}
 
 	// worker add delta to workgroup and acquire semaphore
@@ -40,8 +40,8 @@ func processInConcurrentBatches(items []string, processBatch batchProcessor, bat
 			return
 		}
 		lockResult.Lock()
-		for _, resItem := range res {
-			result[resItem] = struct{}{}
+		for k, v := range res {
+			result[k] = v
 		}
 		lockResult.Unlock()
 	}

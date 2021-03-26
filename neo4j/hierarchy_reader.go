@@ -3,6 +3,7 @@ package neo4j
 import (
 	"context"
 	"fmt"
+
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/mapper"
@@ -161,13 +162,13 @@ func (n *Neo4j) GetCodesWithData(ctx context.Context, attempt int, instanceID, d
 }
 
 // GetGenericHierarchyNodeIDs not implemented by Neo4j (new hierarchy build algorithm)
-func (n *Neo4j) GetGenericHierarchyNodeIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs map[string]struct{}, err error) {
-	return map[string]struct{}{}, driver.ErrNotImplemented
+func (n *Neo4j) GetGenericHierarchyNodeIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs map[string]string, err error) {
+	return map[string]string{}, driver.ErrNotImplemented
 }
 
 // GetGenericHierarchyAncestriesIDs not implemented by Neo4j (new hierarchy build algorithm)
-func (n *Neo4j) GetGenericHierarchyAncestriesIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs map[string]struct{}, err error) {
-	return map[string]struct{}{}, driver.ErrNotImplemented
+func (n *Neo4j) GetGenericHierarchyAncestriesIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs map[string]string, err error) {
+	return map[string]string{}, driver.ErrNotImplemented
 }
 
 // GetHierarchyNodeIDs not implemented by Neo4j (new hierarchy build algorithm)

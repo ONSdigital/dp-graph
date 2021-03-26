@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"errors"
+
 	"github.com/ONSdigital/log.go/log"
 
 	"github.com/ONSdigital/dp-graph/v2/config"
@@ -73,7 +74,6 @@ func New(ctx context.Context, choice Subsets) (*DB, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	log.Event(ctx, "loaded graph database config", log.INFO, log.Data{"config": cfg})
 
 	var ok bool

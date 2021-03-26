@@ -87,18 +87,18 @@ func TestInConcurrentBatches(t *testing.T) {
 		chunk1 := []string{"0", "1", "2", "3", "4"}
 		chunk2 := []string{"5", "6", "7", "8", "9"}
 
-		Convey("And a successful mock chunk processor function that returns an empty array", func() {
-			processor := func(chunk []string) ([]string, error) {
+		Convey("And a successful mock chunk processor function that returns an empty map", func() {
+			processor := func(chunk []string) (map[string]interface{}, error) {
 				defer lock.Unlock()
 				lock.Lock()
 				processedChunks = append(processedChunks, chunk)
-				return []string{}, nil
+				return make(map[string]interface{}), nil
 			}
 
 			Convey("Then processing the chunks concurrently results in an aggregated empty array, "+
 				"the expected number of chunks and no error being returned", func() {
 				result, numChunks, errs := processInConcurrentBatches(items, processor, 5, 150)
-				So(result, ShouldResemble, make(map[string]struct{}))
+				So(result, ShouldResemble, make(map[string]interface{}))
 				So(numChunks, ShouldEqual, 2)
 				So(errs, ShouldBeNil)
 				So(len(processedChunks), ShouldEqual, 2)
@@ -106,43 +106,18 @@ func TestInConcurrentBatches(t *testing.T) {
 				So(processedChunks, ShouldContain, chunk2)
 			})
 
-			Convey("And a successful mock chunk processor function that returns duplicated values", func() {
-				numCall := 0
-				processor := func(chunk []string) ([]string, error) {
-					defer lock.Unlock()
-					lock.Lock()
-					processedChunks = append(processedChunks, chunk)
-					numCall++
-					if numCall == 1 {
-						return []string{"a", "b", "b", "a"}, nil
-					}
-					return []string{"a", "c", "d", "c"}, nil
-				}
-
-				Convey("Then processing the chunks concurrently results in an aggregated array of the union of returned items, "+
-					"the expected number of chunks and no error being returned", func() {
-					result, numChunks, errs := processInConcurrentBatches(items, processor, 5, 150)
-					So(result, ShouldResemble, map[string]struct{}{"a": {}, "b": {}, "c": {}, "d": {}})
-					So(numChunks, ShouldEqual, 2)
-					So(errs, ShouldBeNil)
-					So(len(processedChunks), ShouldEqual, 2)
-					So(processedChunks, ShouldContain, chunk1)
-					So(processedChunks, ShouldContain, chunk2)
-				})
-			})
-
 			Convey("And an erroring mock chunk processor function", func() {
 				testErr := errors.New("testErr")
-				processor := func(chunk []string) ([]string, error) {
+				processor := func(chunk []string) (map[string]interface{}, error) {
 					defer lock.Unlock()
 					lock.Lock()
 					processedChunks = append(processedChunks, chunk)
-					return []string{"shouldBeIgnored"}, testErr
+					return map[string]interface{}{"shouldBeIgnored": true}, testErr
 				}
 
 				Convey("Then processing the chunks concurrently results in all errors being returned", func() {
 					result, numChunks, errs := processInConcurrentBatches(items, processor, 5, 150)
-					So(result, ShouldResemble, make(map[string]struct{}))
+					So(result, ShouldResemble, make(map[string]interface{}))
 					So(numChunks, ShouldEqual, 2)
 					So(errs, ShouldResemble, []error{testErr, testErr})
 					So(len(processedChunks), ShouldEqual, 2)

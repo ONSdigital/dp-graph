@@ -18,12 +18,12 @@ func (m *Mock) GetCodesWithData(ctx context.Context, attempt int, instanceID, di
 	return []string{}, m.checkForErrors()
 }
 
-func (m *Mock) GetGenericHierarchyNodeIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs map[string]struct{}, err error) {
-	return map[string]struct{}{}, m.checkForErrors()
+func (m *Mock) GetGenericHierarchyNodeIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs map[string]string, err error) {
+	return map[string]string{}, m.checkForErrors()
 }
 
-func (m *Mock) GetGenericHierarchyAncestriesIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs map[string]struct{}, err error) {
-	return map[string]struct{}{}, m.checkForErrors()
+func (m *Mock) GetGenericHierarchyAncestriesIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs map[string]string, err error) {
+	return map[string]string{}, m.checkForErrors()
 }
 
 func (m *Mock) CloneNodes(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error {

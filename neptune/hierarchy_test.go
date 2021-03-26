@@ -2,6 +2,7 @@ package neptune
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"testing"
@@ -172,11 +173,43 @@ func TestNeptuneDB_HierarchyExists(t *testing.T) {
 	})
 }
 
+func mockGremgoResponseNodeIDCodeMap(expectedNodeIdCodeMap map[string]string) []gremgo.Response {
+	values := []json.RawMessage{}
+	for nodeId, code := range expectedNodeIdCodeMap {
+		rawMap := mockNodeIdCodeMapResponse(nodeId, code)
+		values = append(values, rawMap)
+	}
+
+	testData := graphson.RawSlice{
+		Type:  "g:List",
+		Value: values,
+	}
+	rawTestData, err := json.Marshal(testData)
+	So(err, ShouldBeNil)
+
+	return []gremgo.Response{
+		{
+			RequestID: "89ed2475-6eb8-452b-a955-7f7697de2ff9",
+			Status:    gremgo.Status{Message: "", Code: 200},
+			Result: gremgo.Result{
+				Data: rawTestData,
+			},
+		},
+	}
+}
+
 func TestNeptuneDB_GetGenericHierarchyNodeIDs(t *testing.T) {
 
 	Convey("Given a neptune DB that returns a list of generic hierarchy node IDs (leaves)", t, func() {
+		expectedResponse := map[string]string{
+			"cpih1dim1aggid--cpih1dim1S90401": "cpih1dim1S90401",
+			"cpih1dim1aggid--cpih1dim1S90402": "cpih1dim1S90402",
+		}
+		gremgoResponse := mockGremgoResponseNodeIDCodeMap(expectedResponse)
 		poolMock := &internal.NeptunePoolMock{
-			GetStringListFunc: internal.ReturnGenericHierarchyLeavesIDs,
+			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
+				return gremgoResponse, nil
+			},
 		}
 		db := mockDB(poolMock)
 
@@ -188,13 +221,11 @@ func TestNeptuneDB_GetGenericHierarchyNodeIDs(t *testing.T) {
 			})
 
 			Convey("Then the expected list of IDs is returned and the expected query is executed, in any order of IDs", func() {
-				So(ids, ShouldResemble, map[string]struct{}{
-					"cpih1dim1aggid--cpih1dim1S90401": {},
-					"cpih1dim1aggid--cpih1dim1S90402": {}})
-				expectedQueryOp1 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90401','cpih1dim1S90402'])).id()`
-				expectedQueryOp2 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90402','cpih1dim1S90401'])).id()`
-				So(len(poolMock.GetStringListCalls()), ShouldEqual, 1)
-				So(poolMock.GetStringListCalls()[0].Query, ShouldBeIn, []string{expectedQueryOp1, expectedQueryOp2})
+				So(ids, ShouldResemble, expectedResponse)
+				expectedQueryOp1 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90401','cpih1dim1S90402'])).as('gh').id().as('node_id').select('gh').values('code').as('node_code').select('gh').select('node_id', 'node_code')`
+				expectedQueryOp2 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90402','cpih1dim1S90401'])).as('gh').id().as('node_id').select('gh').values('code').as('node_code').select('gh').select('node_id', 'node_code')`
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 1)
+				So(poolMock.ExecuteCalls()[0].Query, ShouldBeIn, []string{expectedQueryOp1, expectedQueryOp2})
 			})
 		})
 
@@ -206,7 +237,7 @@ func TestNeptuneDB_GetGenericHierarchyNodeIDs(t *testing.T) {
 			})
 
 			Convey("Then an empty map of IDs is returned and no query is executed", func() {
-				So(ids, ShouldResemble, map[string]struct{}{})
+				So(ids, ShouldResemble, map[string]string{})
 				So(len(poolMock.GetStringListCalls()), ShouldEqual, 0)
 			})
 		})
@@ -216,8 +247,16 @@ func TestNeptuneDB_GetGenericHierarchyNodeIDs(t *testing.T) {
 func TestNeptuneDB_GetGenericHierarchyAncestriesIDs(t *testing.T) {
 
 	Convey("Given a neptune DB that returns a list of generic ancestry hierarchy node IDs, with duplicates", t, func() {
+		expectedResponse := map[string]string{
+			"cpih1dim1aggid--cpih1dim1G90400": "cpih1dim1G90400",
+			"cpih1dim1aggid--cpih1dim1T90000": "cpih1dim1T90000",
+			"cpih1dim1aggid--cpih1dim1A0":     "cpih1dim1A0",
+		}
+		gremgoResponse := mockGremgoResponseNodeIDCodeMap(expectedResponse)
 		poolMock := &internal.NeptunePoolMock{
-			GetStringListFunc: internal.ReturnGenericHierarchyAncestryIDs,
+			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
+				return gremgoResponse, nil
+			},
 		}
 		db := mockDB(poolMock)
 
@@ -229,14 +268,13 @@ func TestNeptuneDB_GetGenericHierarchyAncestriesIDs(t *testing.T) {
 			})
 
 			Convey("Then the expected list of unique IDs is returned and teh expected is executed, in any order of IDs", func() {
-				So(ids, ShouldResemble, map[string]struct{}{
-					"cpih1dim1aggid--cpih1dim1G90400": {},
-					"cpih1dim1aggid--cpih1dim1T90000": {},
-					"cpih1dim1aggid--cpih1dim1A0":     {}})
-				expectedQueryOp1 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90401','cpih1dim1S90402'])).repeat(out('hasParent')).emit().id()`
-				expectedQueryOp2 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90402','cpih1dim1S90401'])).repeat(out('hasParent')).emit().id()`
-				So(len(poolMock.GetStringListCalls()), ShouldEqual, 1)
-				So(poolMock.GetStringListCalls()[0].Query, ShouldBeIn, []string{expectedQueryOp1, expectedQueryOp2})
+				So(ids, ShouldResemble, expectedResponse)
+				expectedQueryOp1 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90401','cpih1dim1S90402'])).repeat(out('hasParent')).emit().as('gh')` +
+					`.id().as('node_id').select('gh').values('code').as('node_code').select('gh').select('node_id', 'node_code')`
+				expectedQueryOp2 := `g.V().hasLabel('_generic_hierarchy_node_cpih1dim1aggid').has('code',within(['cpih1dim1S90402','cpih1dim1S90401'])).repeat(out('hasParent')).emit().as('gh')` +
+					`.id().as('node_id').select('gh').values('code').as('node_code').select('gh').select('node_id', 'node_code')`
+				So(len(poolMock.ExecuteCalls()), ShouldEqual, 1)
+				So(poolMock.ExecuteCalls()[0].Query, ShouldBeIn, []string{expectedQueryOp1, expectedQueryOp2})
 			})
 		})
 
@@ -248,7 +286,7 @@ func TestNeptuneDB_GetGenericHierarchyAncestriesIDs(t *testing.T) {
 			})
 
 			Convey("Then an empty map of IDs is returned and no query is executed", func() {
-				So(ids, ShouldResemble, map[string]struct{}{})
+				So(ids, ShouldResemble, map[string]string{})
 				So(len(poolMock.GetStringListCalls()), ShouldEqual, 0)
 			})
 		})
@@ -571,4 +609,27 @@ func TestNeptuneDB_SetHasData(t *testing.T) {
 			})
 		})
 	})
+}
+
+// mockCodeEdgeMap generates a code-edge map with the expected code and order property for the usedBy edge
+func mockNodeIdCodeMap(expectedNodeId, expectedCode string) map[string]json.RawMessage {
+	rawNodeId, err := json.Marshal(expectedNodeId)
+	So(err, ShouldBeNil)
+
+	rawCode, err := json.Marshal(expectedCode)
+	So(err, ShouldBeNil)
+
+	return map[string]json.RawMessage{
+		"node_id":   rawNodeId,
+		"node_code": rawCode,
+	}
+}
+
+// mockNodeIdCodeMapResponse generates a nodeId-code map with the expected nodeId and code,
+// as returned by Neptune before being processed by graphson into a map (slice representation of the map)
+func mockNodeIdCodeMapResponse(expectedNodeId, expectedCode string) json.RawMessage {
+	m := mockNodeIdCodeMap(expectedNodeId, expectedCode)
+	rawMap, err := SerializeMap(m)
+	So(err, ShouldBeNil)
+	return rawMap
 }

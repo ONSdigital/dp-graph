@@ -61,14 +61,20 @@ const (
 		union(select('rl', 'de', 'dv', 'did')).unfold().select(values)
 	`
 
-	// GetGenericHierarchyNodeIDs gets the IDs of the generic hierarchy nodes whose 'code' is in the provided list of codes
-	GetGenericHierarchyNodeIDs = `g.V().hasLabel('_generic_hierarchy_node_%s').has('code',within(%s)).id()`
+	// GetGenericHierarchyNodeIDs gets the IDs of the generic hierarchy nodes whose 'code' is in the provided list of codes, returning a list of {node_id=<node_id> node_code=<node_code>} maps
+	GetGenericHierarchyNodeIDs = `g.V().hasLabel('_generic_hierarchy_node_%s').has('code',within(%s)).as('gh')` +
+		`.id().as('node_id').select('gh').values('code').as('node_code').select('gh').select('node_id', 'node_code')`
 
 	// GetGenericHierarchyAncestryIDs gets IDs of the ancestries (parents, grandparents, etc) of the generic hierarchy nodes
 	// whose 'code' is in the provided list of codes.
-	GetGenericHierarchyAncestryIDs = `g.V().hasLabel('_generic_hierarchy_node_%s').has('code',within(%s)).repeat(out('hasParent')).emit().id()`
+	GetGenericHierarchyAncestryIDs = `g.V().hasLabel('_generic_hierarchy_node_%s').has('code',within(%s)).repeat(out('hasParent')).emit().as('gh')` +
+		`.id().as('node_id').select('gh').values('code').as('node_code').select('gh').select('node_id', 'node_code')`
 
-	// GetHierarchyNodeIDs gets teh IDs of the cloned hierarchy nodes for a particular instanceID and dimensionName
+	// crete 'hasCode' edges from generic hierarchy nodes to corresponding code nodes, only if they do not exist already
+	CreateGenericHierarchyHasCodeEdgesFromIDs = `g.V().hasLabel('_generic_hierarchy_node_countries-and-territories').as('h').
+		coalesce(__.outE('hasCode'), __.addE('hasCode').to(g.V().hasLabel('_code').has('value', select('h').values('code'))))`
+
+	// GetHierarchyNodeIDs gets the IDs of the cloned hierarchy nodes for a particular instanceID and dimensionName
 	GetHierarchyNodeIDs = `g.V().hasLabel('_hierarchy_node_%s_%s').id()`
 
 	// hierarchy write
