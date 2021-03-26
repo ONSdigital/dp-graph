@@ -171,7 +171,12 @@ func (n *Neo4j) GetGenericHierarchyAncestriesIDs(ctx context.Context, attempt in
 	return map[string]string{}, driver.ErrNotImplemented
 }
 
+// CreateCodeEdges not implemented by Neo4j (new hierarchy build algorithm with order)
+func (n *Neo4j) CreateHasCodeEdges(ctx context.Context, attempt int, codeListID string, codesById map[string]string) (err error) {
+	return driver.ErrNotImplemented
+}
+
 // GetHierarchyNodeIDs not implemented by Neo4j (new hierarchy build algorithm)
-func (n *Neo4j) GetHierarchyNodeIDs(ctx context.Context, attempt int, instanceID, dimensionName string) (ids map[string]struct{}, err error) {
-	return map[string]struct{}{}, driver.ErrNotImplemented
+func (n *Neo4j) GetHierarchyNodeIDs(ctx context.Context, attempt int, instanceID, dimensionName string) (ids map[string]string, err error) {
+	return map[string]string{}, driver.ErrNotImplemented
 }

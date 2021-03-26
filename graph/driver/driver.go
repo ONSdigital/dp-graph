@@ -39,17 +39,18 @@ type Hierarchy interface {
 	GetGenericHierarchyNodeIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs map[string]string, err error)
 	GetGenericHierarchyAncestriesIDs(ctx context.Context, attempt int, codeListID string, codes []string) (nodeIDs map[string]string, err error)
 	CountNodes(ctx context.Context, instanceID, dimensionName string) (count int64, err error)
-	GetHierarchyNodeIDs(ctx context.Context, attempt int, instanceID, dimensionName string) (ids map[string]struct{}, err error)
+	GetHierarchyNodeIDs(ctx context.Context, attempt int, instanceID, dimensionName string) (ids map[string]string, err error)
 	// write
 	CreateInstanceHierarchyConstraints(ctx context.Context, attempt int, instanceID, dimensionName string) error
 	CloneNodes(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error
-	CloneNodesFromIDs(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids map[string]struct{}, hasData bool) (err error)
+	CloneNodesFromIDs(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids map[string]string, hasData bool) (err error)
 	CloneRelationships(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error
-	CloneRelationshipsFromIDs(ctx context.Context, attempt int, instanceID, dimensionName string, ids map[string]struct{}) error
+	CloneRelationshipsFromIDs(ctx context.Context, attempt int, instanceID, dimensionName string, ids map[string]string) error
+	CreateHasCodeEdges(ctx context.Context, attempt int, codeListID string, codesById map[string]string) (err error)
 	SetNumberOfChildren(ctx context.Context, attempt int, instanceID, dimensionName string) (err error)
-	SetNumberOfChildrenFromIDs(ctx context.Context, attempt int, ids map[string]struct{}) (err error)
+	SetNumberOfChildrenFromIDs(ctx context.Context, attempt int, ids map[string]string) (err error)
 	RemoveCloneEdges(ctx context.Context, attempt int, instanceID, dimensionName string) (err error)
-	RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt int, ids map[string]struct{}) (err error)
+	RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt int, ids map[string]string) (err error)
 	SetHasData(ctx context.Context, attempt int, instanceID, dimensionName string) error
 	MarkNodesToRemain(ctx context.Context, attempt int, instanceID, dimensionName string) error
 	RemoveNodesNotMarkedToRemain(ctx context.Context, attempt int, instanceID, dimensionName string) error

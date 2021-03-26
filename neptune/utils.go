@@ -6,11 +6,12 @@ import (
 )
 
 // batchProcessor defines a generic function type to process a batch (array of strings) and may return a result (array of strings) and an error.
-type batchProcessor = func([]string) (map[string]interface{}, error)
+type batchProcessor = func(map[string]interface{}) (map[string]interface{}, error)
 
 // processInConcurrentBatches splits the provided items in batches and calls processBatch for each batch batch, concurrently.
 // The results of the batch Processor functions, if provided, are aggregated as unique items and returned.
-func processInConcurrentBatches(items []string, processBatch batchProcessor, batchSize, maxWorkers int) (result map[string]interface{}, numChunks int, errs []error) {
+// note that the items are not processed in any deterministic order
+func processInConcurrentBatches(items map[string]interface{}, processBatch batchProcessor, batchSize, maxWorkers int) (result map[string]interface{}, numChunks int, errs []error) {
 	wg := sync.WaitGroup{}
 	chWait := make(chan struct{})
 	chErr := make(chan error)
@@ -32,7 +33,7 @@ func processInConcurrentBatches(items []string, processBatch batchProcessor, bat
 	}
 
 	// func executed in each go-routine to process the batch, aggregate results, and send errors to the error channel
-	doProcessBatch := func(chunk []string) {
+	doProcessBatch := func(chunk map[string]interface{}) {
 		defer release()
 		res, err := processBatch(chunk)
 		if err != nil {
@@ -47,7 +48,7 @@ func processInConcurrentBatches(items []string, processBatch batchProcessor, bat
 	}
 
 	// func that triggers the batch processing for a chunk, in a parallel go-routine
-	goProcessBatch := func(chunk []string) {
+	goProcessBatch := func(chunk map[string]interface{}) {
 		acquire()
 		go doProcessBatch(chunk)
 	}
@@ -73,50 +74,80 @@ func processInConcurrentBatches(items []string, processBatch batchProcessor, bat
 }
 
 // processInBatches is an aux function that splits the provided items in batches and calls processBatch for each batch
-func processInBatches(items []string, processBatch func([]string), batchSize int) (numChunks int) {
-	// Get bath splits for provided items
-	numFullChunks := len(items) / batchSize
-	remainingSize := len(items) % batchSize
-	numChunks = numFullChunks
+// note that the items are not processed in any deterministic order
+func processInBatches(items map[string]interface{}, processBatch func(map[string]interface{}), batchSize int) (numChunks int) {
+	numChunks = 0
 
-	// process full batches
-	for i := 0; i < numFullChunks; i++ {
-		chunk := items[i*batchSize : (i+1)*batchSize]
-		processBatch(chunk)
+	// process full bathes, reseting the batch at the end of each process
+	batch := make(map[string]interface{}, batchSize)
+	for k, v := range items {
+		batch[k] = v
+		if len(batch) == batchSize {
+			numChunks++
+			processBatch(batch)
+			batch = make(map[string]interface{}, batchSize)
+		}
 	}
 
-	// process any remaining
-	if remainingSize > 0 {
-		numChunks = numFullChunks + 1
-		lastChunk := items[numFullChunks*batchSize : (numFullChunks*batchSize + remainingSize)]
-		processBatch(lastChunk)
+	// process any remaining items
+	if len(batch) > 0 {
+		processBatch(batch)
+		numChunks++
 	}
 	return numChunks
 }
 
 // unique returns an array containing the unique elements of the provided array
 func unique(duplicated []string) (unique []string) {
-	return createArray(createMap(duplicated))
+	return createArray(createInterfaceMapFromArrays(duplicated))
 }
 
 // createArray creates an array of keys from the provided map
-func createArray(m map[string]struct{}) (a []string) {
+func createArray(m map[string]interface{}) (a []string) {
 	for k := range m {
 		a = append(a, k)
 	}
 	return a
 }
 
-// createMap creates a map whose keys are the unique values of the provided array(s).
+// createInterfaceMapFromArrays creates a map whose keys are the unique values of the provided array(s).
 // values are empty structs for memory efficiency reasons (no storage used)
-func createMap(a ...[]string) (m map[string]struct{}) {
-	m = make(map[string]struct{})
+func createInterfaceMapFromArrays(a ...[]string) (m map[string]interface{}) {
+	m = make(map[string]interface{})
 	for _, aa := range a {
 		for _, val := range aa {
 			m[val] = struct{}{}
 		}
 	}
 	return m
+}
+
+// createMap creates a map whose keys are the unique values of the provided array(s).
+// values are empty strings
+func createStringMapFromArrays(a ...[]string) (m map[string]string) {
+	m = make(map[string]string)
+	for _, aa := range a {
+		for _, val := range aa {
+			m[val] = ""
+		}
+	}
+	return m
+}
+
+func createStringMap(in map[string]interface{}) (out map[string]string) {
+	out = make(map[string]string, len(in))
+	for k, v := range in {
+		out[k] = v.(string)
+	}
+	return out
+}
+
+func createInterfaceMap(in map[string]string) (out map[string]interface{}) {
+	out = make(map[string]interface{}, len(in))
+	for k, v := range in {
+		out[k] = v
+	}
+	return out
 }
 
 // statementSummary returns a summarized statement for logging, removing long lists of IDs or codes

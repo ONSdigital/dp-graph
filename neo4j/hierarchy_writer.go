@@ -239,11 +239,11 @@ func (n *Neo4j) RemoveRemainMarker(ctx context.Context, attempt int, instanceID,
 	return nil
 }
 
-func (n *Neo4j) CloneNodesFromIDs(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids map[string]struct{}, hasData bool) (err error) {
+func (n *Neo4j) CloneNodesFromIDs(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids map[string]string, hasData bool) (err error) {
 	return driver.ErrNotImplemented
 }
 
-func (n *Neo4j) CloneRelationshipsFromIDs(ctx context.Context, attempt int, instanceID, dimensionName string, ids map[string]struct{}) error {
+func (n *Neo4j) CloneRelationshipsFromIDs(ctx context.Context, attempt int, instanceID, dimensionName string, ids map[string]string) error {
 	return driver.ErrNotImplemented
 }
 
@@ -251,10 +251,10 @@ func (n *Neo4j) RemoveCloneEdges(ctx context.Context, attempt int, instanceID, d
 	return driver.ErrNotImplemented
 }
 
-func (n *Neo4j) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt int, ids map[string]struct{}) (err error) {
+func (n *Neo4j) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt int, ids map[string]string) (err error) {
 	return driver.ErrNotImplemented
 }
 
-func (n *Neo4j) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int, ids map[string]struct{}) (err error) {
+func (n *Neo4j) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int, ids map[string]string) (err error) {
 	return driver.ErrNotImplemented
 }

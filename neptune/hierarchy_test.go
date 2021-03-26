@@ -23,21 +23,23 @@ var (
 	testDimensionName = "aggregate"
 	testAttempt       = 1
 	testCodes         = []string{"cpih1dim1S90401", "cpih1dim1S90402"}
-	testIds           = map[string]struct{}{
-		"cpih1dim1aggid--cpih1dim1S90401": {},
-		"cpih1dim1aggid--cpih1dim1S90402": {}}
-	testAllIds = map[string]struct{}{
-		"cpih1dim1aggid--cpih1dim1S90401": {},
-		"cpih1dim1aggid--cpih1dim1S90402": {},
-		"cpih1dim1aggid--cpih1dim1G90400": {},
-		"cpih1dim1aggid--cpih1dim1T90000": {},
-		"cpih1dim1aggid--cpih1dim1A0":     {}}
-	testClonedIds = map[string]struct{}{
-		"62bab579-e923-7cb2-3be0-34d09dc0567b": {},
-		"acbab579-e923-87df-e59a-9daf2ffed388": {},
-		"b6bab57a-604d-8a7f-59f5-1d496c9b3ca5": {},
-		"08bab57a-604d-9cd9-492f-e879cee05502": {},
-		"6cbab57a-604d-f176-9370-c60c19369801": {},
+	testIds           = map[string]string{
+		"cpih1dim1aggid--cpih1dim1S90401": "",
+		"cpih1dim1aggid--cpih1dim1S90402": "",
+	}
+	testAllIds = map[string]string{
+		"cpih1dim1aggid--cpih1dim1S90401": "",
+		"cpih1dim1aggid--cpih1dim1S90402": "",
+		"cpih1dim1aggid--cpih1dim1G90400": "",
+		"cpih1dim1aggid--cpih1dim1T90000": "",
+		"cpih1dim1aggid--cpih1dim1A0":     "",
+	}
+	testClonedIds = map[string]string{
+		"62bab579-e923-7cb2-3be0-34d09dc0567b": "",
+		"acbab579-e923-87df-e59a-9daf2ffed388": "",
+		"b6bab57a-604d-8a7f-59f5-1d496c9b3ca5": "",
+		"08bab57a-604d-9cd9-492f-e879cee05502": "",
+		"6cbab57a-604d-f176-9370-c60c19369801": "",
 	}
 )
 
@@ -326,7 +328,7 @@ func TestNeptuneDB_CloneNodesFromID(t *testing.T) {
 		})
 
 		Convey("When CloneNodes is called with an empty map of IDs", func() {
-			err := db.CloneNodesFromIDs(ctx, testAttempt, testInstanceID, testCodeListID, testDimensionName, map[string]struct{}{}, true)
+			err := db.CloneNodesFromIDs(ctx, testAttempt, testInstanceID, testCodeListID, testDimensionName, map[string]string{}, true)
 
 			Convey("Then no error is returned", func() {
 				So(err, ShouldBeNil)
@@ -403,7 +405,7 @@ func TestNeptuneDB_CloneRelationshipsFromIDs(t *testing.T) {
 		})
 
 		Convey("When CloneRelationShips is called with an empty map of IDs", func() {
-			err := db.CloneRelationshipsFromIDs(ctx, testAttempt, testInstanceID, testDimensionName, map[string]struct{}{})
+			err := db.CloneRelationshipsFromIDs(ctx, testAttempt, testInstanceID, testDimensionName, map[string]string{})
 
 			Convey("Then no error is returned", func() {
 				So(err, ShouldBeNil)
@@ -472,7 +474,7 @@ func TestNeptuneDB_RemoveCloneEdgesFromSourceIDs(t *testing.T) {
 		})
 
 		Convey("When RemoveCloneEdgesFromSourceIDs is called with an empty map of IDs", func() {
-			err := db.RemoveCloneEdgesFromSourceIDs(ctx, testAttempt, map[string]struct{}{})
+			err := db.RemoveCloneEdgesFromSourceIDs(ctx, testAttempt, map[string]string{})
 
 			Convey("Then no error is returned", func() {
 				So(err, ShouldBeNil)
@@ -566,7 +568,7 @@ func TestNeptuneDB_SetNumberOfChildrenFromIDs(t *testing.T) {
 		})
 
 		Convey("When SetNumberOfChildrenFromIDs is called with an empty map of IDs", func() {
-			err := db.SetNumberOfChildrenFromIDs(ctx, testAttempt, map[string]struct{}{})
+			err := db.SetNumberOfChildrenFromIDs(ctx, testAttempt, map[string]string{})
 
 			Convey("Then no error is returned", func() {
 				So(err, ShouldBeNil)

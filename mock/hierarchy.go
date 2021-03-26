@@ -26,11 +26,15 @@ func (m *Mock) GetGenericHierarchyAncestriesIDs(ctx context.Context, attempt int
 	return map[string]string{}, m.checkForErrors()
 }
 
+func (m *Mock) CreateHasCodeEdges(ctx context.Context, attempt int, codeListID string, codesById map[string]string) (err error) {
+	return m.checkForErrors()
+}
+
 func (m *Mock) CloneNodes(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error {
 	return m.checkForErrors()
 }
 
-func (m *Mock) CloneNodesFromIDs(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids map[string]struct{}, hasData bool) (err error) {
+func (m *Mock) CloneNodesFromIDs(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string, ids map[string]string, hasData bool) (err error) {
 	return m.checkForErrors()
 }
 
@@ -38,15 +42,15 @@ func (m *Mock) CountNodes(ctx context.Context, instanceID, dimensionName string)
 	return 0, m.checkForErrors()
 }
 
-func (m *Mock) GetHierarchyNodeIDs(ctx context.Context, attempt int, instanceID, dimensionName string) (ids map[string]struct{}, err error) {
-	return map[string]struct{}{}, m.checkForErrors()
+func (m *Mock) GetHierarchyNodeIDs(ctx context.Context, attempt int, instanceID, dimensionName string) (ids map[string]string, err error) {
+	return map[string]string{}, m.checkForErrors()
 }
 
 func (m *Mock) CloneRelationships(ctx context.Context, attempt int, instanceID, codeListID, dimensionName string) error {
 	return m.checkForErrors()
 }
 
-func (m *Mock) CloneRelationshipsFromIDs(ctx context.Context, attempt int, instanceID, dimensionName string, ids map[string]struct{}) error {
+func (m *Mock) CloneRelationshipsFromIDs(ctx context.Context, attempt int, instanceID, dimensionName string, ids map[string]string) error {
 	return m.checkForErrors()
 }
 
@@ -54,7 +58,7 @@ func (m *Mock) SetNumberOfChildren(ctx context.Context, attempt int, instanceID,
 	return m.checkForErrors()
 }
 
-func (m *Mock) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int, ids map[string]struct{}) (err error) {
+func (m *Mock) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int, ids map[string]string) (err error) {
 	return m.checkForErrors()
 }
 
@@ -62,7 +66,7 @@ func (m *Mock) RemoveCloneEdges(ctx context.Context, attempt int, instanceID, di
 	return m.checkForErrors()
 }
 
-func (m *Mock) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt int, ids map[string]struct{}) (err error) {
+func (m *Mock) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt int, ids map[string]string) (err error) {
 	return m.checkForErrors()
 }
 

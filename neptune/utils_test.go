@@ -15,8 +15,8 @@ func TestCreateMap(t *testing.T) {
 		b := []string{"0", "3", "3"}
 
 		Convey("Then createMap returns a map of empty structs where the keys are the union of all array items", func() {
-			m := createMap(a, b)
-			So(m, ShouldResemble, map[string]struct{}{"0": {}, "1": {}, "2": {}, "3": {}})
+			m := createInterfaceMapFromArrays(a, b)
+			So(m, ShouldResemble, map[string]interface{}{"0": struct{}{}, "1": struct{}{}, "2": struct{}{}, "3": struct{}{}})
 		})
 	})
 }
@@ -24,11 +24,11 @@ func TestCreateMap(t *testing.T) {
 func TestCreateArray(t *testing.T) {
 
 	Convey("Given an empty struct map", t, func() {
-		m := map[string]struct{}{"0": {}, "1": {}, "2": {}}
+		m := map[string]interface{}{"0": nil, "1": nil, "2": nil}
 
 		Convey("Then createArray returns an array of strings containing the keys, in any order", func() {
 			a := createArray(m)
-			So(len(a), ShouldEqual, 3)
+			So(a, ShouldHaveLength, 3)
 			So(a, ShouldContain, "0")
 			So(a, ShouldContain, "1")
 			So(a, ShouldContain, "2")
@@ -43,7 +43,7 @@ func TestUnique(t *testing.T) {
 
 		Convey("Then unique returns an array of unique values from the original array", func() {
 			b := unique(a)
-			So(len(b), ShouldEqual, 3)
+			So(b, ShouldHaveLength, 3)
 			So(b, ShouldContain, "0")
 			So(b, ShouldContain, "1")
 			So(b, ShouldContain, "2")
@@ -51,29 +51,39 @@ func TestUnique(t *testing.T) {
 	})
 }
 
+func validateAllItems(expectedItems map[string]interface{}, processedChunks []map[string]interface{}) {
+	for _, chunk := range processedChunks {
+		for k, v := range chunk {
+			expectedVal, found := expectedItems[k]
+			So(found, ShouldBeTrue)
+			So(expectedVal, ShouldEqual, v)
+		}
+	}
+}
+
 func TestProcessInBatches(t *testing.T) {
 
 	Convey("Given an array of 10 items and a mock chunk processor function", t, func() {
-		items := []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
-		processedChunks := [][]string{}
-		processor := func(chunk []string) { processedChunks = append(processedChunks, chunk) }
+		items := map[string]interface{}{"0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9}
+		processedChunks := []map[string]interface{}{}
+		processor := func(chunk map[string]interface{}) { processedChunks = append(processedChunks, chunk) }
 
 		Convey("Then processing in chunks of size 5 results in the function being called twice with the expected chunks", func() {
 			numChunks := processInBatches(items, processor, 5)
 			So(numChunks, ShouldEqual, 2)
-			So(processedChunks, ShouldResemble, [][]string{
-				{"0", "1", "2", "3", "4"},
-				{"5", "6", "7", "8", "9"}})
+			So(processedChunks[0], ShouldHaveLength, 5)
+			So(processedChunks[1], ShouldHaveLength, 5)
+			validateAllItems(items, processedChunks)
 		})
 
 		Convey("Then processing in chunks of size 3 results in the function being called four times with the expected chunks, the last one being containing the remaining items", func() {
 			numChunks := processInBatches(items, processor, 3)
 			So(numChunks, ShouldEqual, 4)
-			So(processedChunks, ShouldResemble, [][]string{
-				{"0", "1", "2"},
-				{"3", "4", "5"},
-				{"6", "7", "8"},
-				{"9"}})
+			So(processedChunks[0], ShouldHaveLength, 3)
+			So(processedChunks[1], ShouldHaveLength, 3)
+			So(processedChunks[2], ShouldHaveLength, 3)
+			So(processedChunks[3], ShouldHaveLength, 1)
+			validateAllItems(items, processedChunks)
 		})
 	})
 }
@@ -81,14 +91,12 @@ func TestProcessInBatches(t *testing.T) {
 func TestInConcurrentBatches(t *testing.T) {
 
 	Convey("Given an array of 10 items", t, func() {
-		items := []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
-		processedChunks := [][]string{}
+		items := map[string]interface{}{"0": 0, "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8, "9": 9}
+		processedChunks := []map[string]interface{}{}
 		lock := sync.Mutex{}
-		chunk1 := []string{"0", "1", "2", "3", "4"}
-		chunk2 := []string{"5", "6", "7", "8", "9"}
 
 		Convey("And a successful mock chunk processor function that returns an empty map", func() {
-			processor := func(chunk []string) (map[string]interface{}, error) {
+			processor := func(chunk map[string]interface{}) (map[string]interface{}, error) {
 				defer lock.Unlock()
 				lock.Lock()
 				processedChunks = append(processedChunks, chunk)
@@ -101,14 +109,15 @@ func TestInConcurrentBatches(t *testing.T) {
 				So(result, ShouldResemble, make(map[string]interface{}))
 				So(numChunks, ShouldEqual, 2)
 				So(errs, ShouldBeNil)
-				So(len(processedChunks), ShouldEqual, 2)
-				So(processedChunks, ShouldContain, chunk1)
-				So(processedChunks, ShouldContain, chunk2)
+				So(processedChunks, ShouldHaveLength, 2)
+				So(processedChunks[0], ShouldHaveLength, 5)
+				So(processedChunks[1], ShouldHaveLength, 5)
+				validateAllItems(items, processedChunks)
 			})
 
 			Convey("And an erroring mock chunk processor function", func() {
 				testErr := errors.New("testErr")
-				processor := func(chunk []string) (map[string]interface{}, error) {
+				processor := func(chunk map[string]interface{}) (map[string]interface{}, error) {
 					defer lock.Unlock()
 					lock.Lock()
 					processedChunks = append(processedChunks, chunk)
@@ -120,9 +129,10 @@ func TestInConcurrentBatches(t *testing.T) {
 					So(result, ShouldResemble, make(map[string]interface{}))
 					So(numChunks, ShouldEqual, 2)
 					So(errs, ShouldResemble, []error{testErr, testErr})
-					So(len(processedChunks), ShouldEqual, 2)
-					So(processedChunks, ShouldContain, chunk1)
-					So(processedChunks, ShouldContain, chunk2)
+					So(processedChunks, ShouldHaveLength, 2)
+					So(processedChunks[0], ShouldHaveLength, 5)
+					So(processedChunks[1], ShouldHaveLength, 5)
+					validateAllItems(items, processedChunks)
 				})
 			})
 		})
