@@ -87,9 +87,14 @@ const (
 		`.addE('clone_of').to('old')` +
 		`.select('new')`
 
-	// CloneHierarchyNodesFromIDs traverses the provided node IDs and creates a clone for each one
-	// by cloning 'code' and 'label' properties, setting 'hasData' to the provided boolean value, setting 'code_list' to the provided value,
-	// and creating a 'clone_of' edge between the new node and the original one.
+	// CloneHierarchyNodesFromIDs traverses the provided node IDs and creates a clone for each one, thus:
+	// 1. get generic hierarchy nodes from IDs
+	// 2. create a new hierarchy node for the provided 'instance' and 'dimensionName'
+	// 3. copy 'code' property from the generic hierarchy node to the new node
+	// 4. copy 'label' from the generic hierarchy node to the new node
+	// 5. set 'hasData' to true or false, according to the provided value
+	// 6. set 'code_list' property to the provided value
+	// 7. create a 'clone_of' edge between the new node and the generic node
 	CloneHierarchyNodesFromIDs = `g.V(%s).as('old')` +
 		`.addV('_hierarchy_node_%s_%s')` +
 		`.property(single,'code',select('old').values('code'))` +
@@ -98,8 +103,14 @@ const (
 		`.property('code_list','%s').as('new')` +
 		`.addE('clone_of').to('old')`
 
-	// CloneOrderFromIDs traverses the provided generic hierarchy nodeIDs and obtains the associated code order defined in the 'usedBy' edge
-	// then sets the order value as a property to its clones. As the 'clone_of' edge only exists during the cloning process, the performance will not degrade with the number of clones.
+	// CloneOrderFromIDs copies the order property from the code of a generic hierarchy node to its clone, thus:
+	// 1. get generic hierarchy nodes from IDs
+	// 2. traverse 'hasCode' edge to go to the corresponding code node
+	//    (this edge exists so that the query can run quickly, up to x1000 quicker than nested queries)
+	// 3. traverse 'usedBy' edge that points to the codeList that we are using
+	// 4. select 'order' property from the 'usedBy' edge
+	// 5. go back to the generic hierarchy node 'old', and traverse 'clone_of' edge to go to the cloned hierarchy node
+	// 6. set 'order' property to the cloned hierarchy node
 	CloneOrderFromIDs = `g.V(%s).as('old')` +
 		`.out('hasCode')` +
 		`.outE('usedBy').where(otherV().hasLabel('_code_list').has('_code_list', 'listID', '%s'))` +

@@ -70,8 +70,8 @@ func (n *NeptuneDB) doGetGenericHierarchyNodeIDs(ctx context.Context, attempt in
 		log.Event(ctx, "getting generic hierarchy node ids for the provided codes", log.INFO, logData)
 	}
 
-	processBatch := func(chunkCodes map[string]interface{}) (ret map[string]interface{}, err error) {
-		nodeIdOrders := make(map[string]interface{})
+	processBatch := func(chunkCodes map[string]string) (ret map[string]string, err error) {
+		nodeIdOrders := make(map[string]string)
 
 		codesString := `['` + strings.Join(createArray(chunkCodes), `','`) + `']`
 		var stmt string
@@ -120,13 +120,13 @@ func (n *NeptuneDB) doGetGenericHierarchyNodeIDs(ctx context.Context, attempt in
 		return nodeIdOrders, nil
 	}
 
-	r, _, errs := processInConcurrentBatches(createInterfaceMapFromArrays(codes), processBatch, n.batchSizeReader, n.maxWorkers)
+	r, _, errs := processInConcurrentBatches(createMapFromArrays(codes), processBatch, n.batchSizeReader, n.maxWorkers)
 	if len(errs) > 0 {
 		return map[string]string{}, errs[0]
 	}
 
 	// convert map of interfaces to map of strings and return
-	return createStringMap(r), nil
+	return r, nil
 }
 
 func getNodeIdCodeFromMap(nodeCodeMap map[string]json.RawMessage) (nodeID string, code string, err error) {
@@ -162,9 +162,8 @@ func (n *NeptuneDB) CreateHasCodeEdges(ctx context.Context, attempt int, codeLis
 	log.Event(ctx, "creating 'hasCode' edges between generic hierarchy nodes and their corresponding code nodes", log.INFO, logData)
 
 	// although we expect a size of one, we leave the logic to perform multiple sequential operaions per batch processor for completeness
-	processBatch := func(chunk map[string]interface{}) (ret map[string]interface{}, err error) {
-		for nodeId, c := range chunk {
-			code := c.(string)
+	processBatch := func(chunk map[string]string) (ret map[string]string, err error) {
+		for nodeId, code := range chunk {
 			stmt := fmt.Sprintf(query.CreateHasCodeEdge, code, nodeId)
 			if _, err := n.exec(stmt); err != nil {
 				return nil, errors.Wrapf(err, "Gremlin query failed: %q", stmt)
@@ -173,7 +172,7 @@ func (n *NeptuneDB) CreateHasCodeEdges(ctx context.Context, attempt int, codeLis
 		return nil, nil
 	}
 
-	_, _, errs := processInConcurrentBatches(createInterfaceMap(codesById), processBatch, 1, n.maxWorkers)
+	_, _, errs := processInConcurrentBatches(codesById, processBatch, 1, n.maxWorkers)
 	if len(errs) > 0 {
 		return errs[0]
 	}
@@ -217,7 +216,7 @@ func (n *NeptuneDB) CloneNodesFromIDs(ctx context.Context, attempt int, instance
 	}
 	log.Event(ctx, "cloning necessary nodes from the generic hierarchy", log.INFO, logData)
 
-	processBatch := func(chunkIDs map[string]interface{}) (ret map[string]interface{}, err error) {
+	processBatch := func(chunkIDs map[string]string) (ret map[string]string, err error) {
 		idsStr := `'` + strings.Join(createArray(chunkIDs), `','`) + `'`
 		gremStmt := fmt.Sprintf(
 			query.CloneHierarchyNodesFromIDs,
@@ -235,7 +234,7 @@ func (n *NeptuneDB) CloneNodesFromIDs(ctx context.Context, attempt int, instance
 		return nil, nil
 	}
 
-	_, _, errs := processInConcurrentBatches(createInterfaceMap(ids), processBatch, n.batchSizeWriter, n.maxWorkers)
+	_, _, errs := processInConcurrentBatches(ids, processBatch, n.batchSizeWriter, n.maxWorkers)
 	if len(errs) > 0 {
 		return errs[0]
 	}
@@ -254,7 +253,7 @@ func (n *NeptuneDB) CloneOrderFromIDs(ctx context.Context, codeListID string, id
 	}
 	log.Event(ctx, "cloning order property corresponding to the code of the generic hierarchy nodes", log.INFO, logData)
 
-	processBatch := func(chunkIDs map[string]interface{}) (ret map[string]interface{}, err error) {
+	processBatch := func(chunkIDs map[string]string) (ret map[string]string, err error) {
 		idsStr := `'` + strings.Join(createArray(chunkIDs), `','`) + `'`
 		gremStmt := fmt.Sprintf(
 			query.CloneOrderFromIDs,
@@ -269,7 +268,7 @@ func (n *NeptuneDB) CloneOrderFromIDs(ctx context.Context, codeListID string, id
 		return nil, nil
 	}
 
-	_, _, errs := processInConcurrentBatches(createInterfaceMap(ids), processBatch, n.batchSizeWriter, n.maxWorkers)
+	_, _, errs := processInConcurrentBatches(ids, processBatch, n.batchSizeWriter, n.maxWorkers)
 	if len(errs) > 0 {
 		return errs[0]
 	}
@@ -333,7 +332,7 @@ func (n *NeptuneDB) CloneRelationshipsFromIDs(ctx context.Context, attempt int, 
 	}
 	log.Event(ctx, "cloning relationships from the generic hierarchy", log.INFO, logData)
 
-	processBatch := func(chunkIDs map[string]interface{}) (ret map[string]interface{}, err error) {
+	processBatch := func(chunkIDs map[string]string) (ret map[string]string, err error) {
 		idsStr := `'` + strings.Join(createArray(chunkIDs), `','`) + `'`
 		gremStmt := fmt.Sprintf(
 			query.CloneHierarchyRelationshipsFromIDs,
@@ -351,7 +350,7 @@ func (n *NeptuneDB) CloneRelationshipsFromIDs(ctx context.Context, attempt int, 
 		return nil, nil
 	}
 
-	_, _, errs := processInConcurrentBatches(createInterfaceMap(ids), processBatch, n.batchSizeWriter, n.maxWorkers)
+	_, _, errs := processInConcurrentBatches(ids, processBatch, n.batchSizeWriter, n.maxWorkers)
 	if len(errs) > 0 {
 		return errs[0]
 	}
@@ -411,7 +410,7 @@ func (n *NeptuneDB) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt i
 	}
 	log.Event(ctx, "removing edges to generic hierarchy", log.INFO, logData)
 
-	processBatch := func(chunkIDs map[string]interface{}) (ret map[string]interface{}, err error) {
+	processBatch := func(chunkIDs map[string]string) (ret map[string]string, err error) {
 		idsStr := `'` + strings.Join(createArray(chunkIDs), `','`) + `'`
 		gremStmt := fmt.Sprintf(
 			query.RemoveCloneMarkersFromSourceIDs,
@@ -425,7 +424,7 @@ func (n *NeptuneDB) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt i
 		return
 	}
 
-	_, _, errs := processInConcurrentBatches(createInterfaceMap(ids), processBatch, n.batchSizeWriter, n.maxWorkers)
+	_, _, errs := processInConcurrentBatches(ids, processBatch, n.batchSizeWriter, n.maxWorkers)
 	if len(errs) > 0 {
 		return errs[0]
 	}
@@ -466,7 +465,7 @@ func (n *NeptuneDB) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int,
 	}
 	log.Event(ctx, "setting number-of-children property value on the instance hierarchy nodes", log.INFO, logData)
 
-	processBatch := func(chunkIDs map[string]interface{}) (ret map[string]interface{}, err error) {
+	processBatch := func(chunkIDs map[string]string) (ret map[string]string, err error) {
 		idsStr := `'` + strings.Join(createArray(chunkIDs), `','`) + `'`
 		gremStmt := fmt.Sprintf(
 			query.SetNumberOfChildrenFromIDs,
@@ -480,7 +479,7 @@ func (n *NeptuneDB) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int,
 		return
 	}
 
-	_, _, errs := processInConcurrentBatches(createInterfaceMap(ids), processBatch, n.batchSizeWriter, n.maxWorkers)
+	_, _, errs := processInConcurrentBatches(ids, processBatch, n.batchSizeWriter, n.maxWorkers)
 	if len(errs) > 0 {
 		return errs[0]
 	}
