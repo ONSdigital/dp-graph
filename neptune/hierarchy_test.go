@@ -12,6 +12,7 @@ import (
 	"github.com/ONSdigital/dp-graph/v2/neptune/query"
 	"github.com/ONSdigital/graphson"
 	"github.com/ONSdigital/gremgo-neptune"
+	"github.com/pkg/errors"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -241,6 +242,167 @@ func TestNeptuneDB_GetGenericHierarchyNodeIDs(t *testing.T) {
 			Convey("Then an empty map of IDs is returned and no query is executed", func() {
 				So(ids, ShouldResemble, map[string]string{})
 				So(len(poolMock.GetStringListCalls()), ShouldEqual, 0)
+			})
+		})
+	})
+}
+
+func TestNeptuneDB_GetNodeIdCodeFromMap(t *testing.T) {
+	Convey("given node_id and node_code values", t, func() {
+		expectedNodeId := "123"
+		rawNodeId, err := json.Marshal(expectedNodeId)
+		So(err, ShouldBeNil)
+
+		expectedCode := "123_code"
+		rawCode, err := json.Marshal(expectedCode)
+		So(err, ShouldBeNil)
+
+		Convey("getNodeIdCodeFromMap correctly extracts the expected values from a complete map", func() {
+			nodeCodeMap := map[string]json.RawMessage{
+				"node_id":   rawNodeId,
+				"node_code": rawCode,
+			}
+			nodeId, code, err := getNodeIdCodeFromMap(nodeCodeMap)
+			So(err, ShouldBeNil)
+			So(nodeId, ShouldResemble, expectedNodeId)
+			So(code, ShouldResemble, expectedCode)
+		})
+
+		Convey("getNodeIdCodeFromMap fails with error notFound if node_id is missing from the map", func() {
+			nodeCodeMap := map[string]json.RawMessage{
+				"node_code": rawCode,
+			}
+			_, _, err := getNodeIdCodeFromMap(nodeCodeMap)
+			So(err, ShouldResemble, driver.ErrNotFound)
+		})
+
+		Convey("getNodeIdCodeFromMap fails with error notFound if node_code is missing from the map", func() {
+			nodeCodeMap := map[string]json.RawMessage{
+				"node_id": rawNodeId,
+			}
+			_, _, err := getNodeIdCodeFromMap(nodeCodeMap)
+			So(err, ShouldResemble, driver.ErrNotFound)
+		})
+
+		Convey("getNodeIdCodeFromMap fails with the expected unmarshal error if node_id has an invalid value", func() {
+			nodeCodeMap := map[string]json.RawMessage{
+				"node_id":   []byte{0},
+				"node_code": rawCode,
+			}
+			_, _, err := getNodeIdCodeFromMap(nodeCodeMap)
+			So(err.Error(), ShouldResemble, "invalid character '\\x00' looking for beginning of value")
+		})
+
+		Convey("getNodeIdCodeFromMap fails with the expected unmarshal error if node_code has an invalid value", func() {
+			nodeCodeMap := map[string]json.RawMessage{
+				"node_id":   rawNodeId,
+				"node_code": []byte{0},
+			}
+			_, _, err := getNodeIdCodeFromMap(nodeCodeMap)
+			So(err.Error(), ShouldResemble, "invalid character '\\x00' looking for beginning of value")
+		})
+	})
+}
+
+func TestNeptuneDB_CreateHasCodeEdges(t *testing.T) {
+
+	Convey("Given a map of 3 codes by node ID", t, func() {
+		testCodesById := map[string]string{
+			"cpih1dim1aggid--cpih1dim1G90400": "cpih1dim1G90400",
+			"cpih1dim1aggid--cpih1dim1T90000": "cpih1dim1T90000",
+			"cpih1dim1aggid--cpih1dim1A0":     "cpih1dim1A0",
+		}
+		expectedQueries := []string{
+			"g.V().hasLabel('_code').has('value', 'cpih1dim1T90000').as('dest').V('cpih1dim1aggid--cpih1dim1T90000').coalesce(__.outE('hasCode'), __.addE('hasCode').to(select('dest')))",
+			"g.V().hasLabel('_code').has('value', 'cpih1dim1G90400').as('dest').V('cpih1dim1aggid--cpih1dim1G90400').coalesce(__.outE('hasCode'), __.addE('hasCode').to(select('dest')))",
+			"g.V().hasLabel('_code').has('value', 'cpih1dim1A0').as('dest').V('cpih1dim1aggid--cpih1dim1A0').coalesce(__.outE('hasCode'), __.addE('hasCode').to(select('dest')))",
+		}
+
+		Convey("when CreateHasCodeEdges is successfully called, no error is returned and the expected gremlin queries are executed, in any order", func() {
+			poolMock := &internal.NeptunePoolMock{
+				ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
+					return nil, nil
+				},
+			}
+			db := mockDB(poolMock)
+
+			err := db.CreateHasCodeEdges(ctx, 1, testCodeListID, testCodesById)
+			So(err, ShouldBeNil)
+			So(poolMock.ExecuteCalls(), ShouldHaveLength, 3)
+			So(poolMock.ExecuteCalls()[0].Query, ShouldBeIn, expectedQueries)
+			So(poolMock.ExecuteCalls()[1].Query, ShouldBeIn, expectedQueries)
+			So(poolMock.ExecuteCalls()[2].Query, ShouldBeIn, expectedQueries)
+		})
+
+		Convey("when CreateHasCodeEdges call fails with an error, then the wrapped error is returned and the execution is retried 5 times (per query)", func() {
+			testErr := errors.New("some error")
+			poolMock := &internal.NeptunePoolMock{
+				ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
+					return nil, testErr
+				},
+			}
+			db := mockDB(poolMock)
+
+			err := db.CreateHasCodeEdges(ctx, 1, testCodeListID, testCodesById)
+			So(err, ShouldNotBeNil)
+			So(poolMock.ExecuteCalls(), ShouldHaveLength, 15)
+		})
+	})
+}
+
+func TestNeptuneDB_CloneOrderFromIDs(t *testing.T) {
+
+	Convey("Given a map of 3 codes by node ID", t, func() {
+		testCodesById := map[string]string{
+			"cpih1dim1aggid--cpih1dim1G90400": "cpih1dim1G90400",
+			"cpih1dim1aggid--cpih1dim1T90000": "cpih1dim1T90000",
+			"cpih1dim1aggid--cpih1dim1A0":     "cpih1dim1A0",
+		}
+
+		Convey("And a mocked DB that succeeds to execute queries", func() {
+
+			poolMock := &internal.NeptunePoolMock{
+				ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
+					return nil, nil
+				},
+			}
+			db := mockDB(poolMock)
+
+			Convey("when CloneOrderFromIDs is called, no error is returned and the expected gremlin query is executed for the 3 nodes", func() {
+				err := db.CloneOrderFromIDs(ctx, testCodeListID, testCodesById)
+				So(err, ShouldBeNil)
+				So(poolMock.ExecuteCalls(), ShouldHaveLength, 1)
+				So(poolMock.ExecuteCalls()[0].Query[:5], ShouldEqual, "g.V('")
+				So(poolMock.ExecuteCalls()[0].Query[5:100], ShouldContainSubstring, "cpih1dim1aggid--cpih1dim1T90000")
+				So(poolMock.ExecuteCalls()[0].Query[5:100], ShouldContainSubstring, "cpih1dim1aggid--cpih1dim1G90400")
+				So(poolMock.ExecuteCalls()[0].Query[5:100], ShouldContainSubstring, "cpih1dim1aggid--cpih1dim1A0")
+				So(poolMock.ExecuteCalls()[0].Query[100:], ShouldEqual, "').as('old').out('hasCode').outE('usedBy').where(otherV().hasLabel('_code_list').has('_code_list', 'listID', 'cpih1dim1aggid')).values('order').as('o').select('old').in('clone_of').property(single,'order', select('o'))")
+			})
+
+			Convey("when CloneOrderFromIDs is called with more nodes than the batch size, no error is returned and the expected gremlin queries are executed for the batches", func() {
+				db.batchSizeWriter = 2
+				err := db.CloneOrderFromIDs(ctx, testCodeListID, testCodesById)
+				So(err, ShouldBeNil)
+				So(poolMock.ExecuteCalls(), ShouldHaveLength, 2)
+				So(poolMock.ExecuteCalls()[0].Query, ShouldStartWith, "g.V('")
+				So(poolMock.ExecuteCalls()[0].Query, ShouldEndWith, "').as('old').out('hasCode').outE('usedBy').where(otherV().hasLabel('_code_list').has('_code_list', 'listID', 'cpih1dim1aggid')).values('order').as('o').select('old').in('clone_of').property(single,'order', select('o'))")
+				So(poolMock.ExecuteCalls()[1].Query, ShouldStartWith, "g.V('")
+				So(poolMock.ExecuteCalls()[1].Query, ShouldEndWith, "').as('old').out('hasCode').outE('usedBy').where(otherV().hasLabel('_code_list').has('_code_list', 'listID', 'cpih1dim1aggid')).values('order').as('o').select('old').in('clone_of').property(single,'order', select('o'))")
+			})
+		})
+
+		Convey("And a mocked DB that fails to execute queries", func() {
+			testErr := errors.New("some error")
+			poolMock := &internal.NeptunePoolMock{
+				ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
+					return nil, testErr
+				},
+			}
+			db := mockDB(poolMock)
+
+			Convey("when CloneOrderFromIDs is called, the expected error is returned", func() {
+				err := db.CloneOrderFromIDs(ctx, testCodeListID, testCodesById)
+				So(err.Error(), ShouldContainSubstring, testErr.Error())
 			})
 		})
 	})
