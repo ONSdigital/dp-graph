@@ -131,7 +131,7 @@ func (n *Neo4j) GetCodeDatasets(ctx context.Context, codeListID, edition string,
 		return nil, driver.ErrNotFound
 	}
 
-	datasets := make(mapper.Datasets, 0)
+	datasets := make(mapper.Datasets)
 	query := fmt.Sprintf(query.GetCodeDatasets, codeListID, edition, code)
 	if err := n.Read(query, mapper.CodesDatasets(datasets), false); err != nil {
 		return nil, err

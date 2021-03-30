@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"testing"
+
 	"github.com/ONSdigital/dp-graph/v2/neo4j/mapper"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/query"
-	"testing"
 
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	graph "github.com/ONSdigital/dp-graph/v2/graph/driver"
@@ -20,7 +21,6 @@ import (
 )
 
 var (
-	q             string
 	instanceID    = "instanceID"
 	dimensionName = "dimensionName"
 	codeListID    = "codeListID"
@@ -79,7 +79,7 @@ func Test_CreateInstanceHierarchyConstraints_NeoErrExec(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
+				So(err, ShouldResemble, graph.ErrNonRetriable{WrappedErr: errExec})
 			})
 		})
 	})
@@ -105,7 +105,7 @@ func TestStore_CreateInstanceHierarchyConstraints_NeoExecRetry(t *testing.T) {
 			})
 
 			Convey("Then the returned error should wrap that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrAttemptsExceededLimit{transientNeoErr})
+				So(err, ShouldResemble, graph.ErrAttemptsExceededLimit{WrappedErr: transientNeoErr})
 			})
 		})
 	})
@@ -164,7 +164,7 @@ func TestStore_CloneNodes_NeoerrExec(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
+				So(err, ShouldResemble, graph.ErrNonRetriable{WrappedErr: errExec})
 			})
 		})
 	})
@@ -230,7 +230,7 @@ func TestStore_CloneRelationships_NeoErrExec(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
+				So(err, ShouldResemble, graph.ErrNonRetriable{WrappedErr: errExec})
 			})
 		})
 	})
@@ -290,7 +290,7 @@ func TestStore_SetNumberOfChildren_NeoErrExec(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
+				So(err, ShouldResemble, graph.ErrNonRetriable{WrappedErr: errExec})
 			})
 		})
 	})
@@ -349,7 +349,7 @@ func TestStore_SetHasData_NeoErrExec(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
+				So(err, ShouldResemble, graph.ErrNonRetriable{WrappedErr: errExec})
 			})
 		})
 	})
@@ -408,7 +408,7 @@ func TestStore_MarkNodesToRemain_NeoErrExec(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
+				So(err, ShouldResemble, graph.ErrNonRetriable{WrappedErr: errExec})
 			})
 		})
 	})
@@ -464,7 +464,7 @@ func TestStore_RemoveNodesNotMarkedToRemain_NeoErrExec(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
+				So(err, ShouldResemble, graph.ErrNonRetriable{WrappedErr: errExec})
 			})
 		})
 	})
@@ -520,7 +520,7 @@ func TestStore_RemoveRemainMarker_NeoErrExec(t *testing.T) {
 			})
 
 			Convey("Then the returned error should be that returned from the exec call", func() {
-				So(err, ShouldResemble, graph.ErrNonRetriable{errExec})
+				So(err, ShouldResemble, graph.ErrNonRetriable{WrappedErr: errExec})
 			})
 		})
 	})

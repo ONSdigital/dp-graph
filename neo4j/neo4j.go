@@ -59,13 +59,13 @@ func (n *Neo4j) checkAttempts(err error, instanceID string, attempt int) error {
 		log.Event(ctx, "received an error from neo4j that cannot be retried", log.ERROR,
 			log.Data{"instance_id": instanceID, "error": err})
 
-		return graph.ErrNonRetriable{err}
+		return graph.ErrNonRetriable{WrappedErr: err}
 	}
 
 	time.Sleep(getSleepTime(attempt, 20*time.Millisecond))
 
 	if attempt >= n.maxRetries {
-		return graph.ErrAttemptsExceededLimit{err}
+		return graph.ErrAttemptsExceededLimit{WrappedErr: err}
 	}
 
 	return nil

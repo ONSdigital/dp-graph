@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/ONSdigital/dp-graph/v2/models"
 	"strings"
 	"testing"
+
+	"github.com/ONSdigital/dp-graph/v2/models"
 
 	"github.com/ONSdigital/dp-graph/v2/neptune/internal"
 	"github.com/ONSdigital/dp-graph/v2/neptune/query"
@@ -79,7 +80,7 @@ func Test_StreamCSVRows(t *testing.T) {
 		db := mockDB(poolMock)
 
 		Convey("When StreamCSVRows is called", func() {
-			stream, err := db.StreamCSVRows(nil, "", "", nil, nil)
+			stream, err := db.StreamCSVRows(ctx, "", "", nil, nil)
 
 			Convey("Then an error is returned", func() {
 				So(stream, ShouldBeNil)
@@ -106,7 +107,7 @@ func Test_StreamCSVRows(t *testing.T) {
 		}
 
 		Convey("When StreamCSVRows is called", func() {
-			stream, err := db.StreamCSVRows(nil, instanceID, "", filter, nil)
+			stream, err := db.StreamCSVRows(ctx, instanceID, "", filter, nil)
 
 			Convey("Then no error should be returned", func() {
 				So(stream, ShouldNotBeNil)

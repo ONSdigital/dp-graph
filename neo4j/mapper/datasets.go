@@ -59,7 +59,7 @@ func CodesDatasets(datasets Datasets) ResultMapper {
 		if !ok {
 			dataset = DatasetData{
 				DimensionLabel: dimensionLabel,
-				Editions:       make(DatasetEditions, 0),
+				Editions:       make(DatasetEditions),
 			}
 		}
 

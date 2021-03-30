@@ -71,7 +71,7 @@ func Do(
 // sleep waits for a calculated time. The time increases based on the attempt number. The function returns
 // immediately if the given context is cancelled.
 func sleep(ctx context.Context, attempt int, retryTime time.Duration) error {
-	pingChan := make(chan struct{}, 0)
+	pingChan := make(chan struct{})
 
 	go func() {
 		time.Sleep(getSleepTime(attempt, retryTime))

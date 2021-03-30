@@ -6,7 +6,6 @@ import (
 
 	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/graph"
-	"github.com/pkg/errors"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -14,7 +13,6 @@ var (
 	testCodeListID        = "666" // the number of the best \m/
 	testEdition           = "2018"
 	testCode              = "99"
-	errTest               = errors.New("error happened yo")
 	testNodeIdentity      = int64(666) // the number of the best \m/
 	testNodeValue         = "node-value"
 	testRelationshipLabel = "relationship label"
