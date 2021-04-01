@@ -50,10 +50,9 @@ func (n *NeptuneDB) buildHierarchyNode(v graphson.Vertex, instanceID, dimension 
 		if err != nil {
 			return nil, errors.Wrapf(err, "Gremlin query failed: %q", gremStmt)
 		}
-		hasOrder := orderCount > 0
 
 		// query depending on the presence of order property in child nodes
-		if hasOrder {
+		if orderCount > 0 {
 			gremStmt = fmt.Sprintf(query.GetChildrenWithOrder, instanceID, dimension, res.ID)
 		} else {
 			gremStmt = fmt.Sprintf(query.GetChildrenAlphabetically, instanceID, dimension, res.ID)
