@@ -36,7 +36,7 @@ func TestChannelConsumer_CloseContext(t *testing.T) {
 	errorChan := make(chan error, 1)
 
 	consume := func(error) {
-		time.Sleep(time.Second)
+		time.Sleep(10 * time.Second)
 	}
 
 	Convey("Given a channel consumer on a long running function", t, func() {
