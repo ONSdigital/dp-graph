@@ -12,6 +12,7 @@ import (
 	"github.com/ONSdigital/dp-graph/v2/neptune/query"
 	"github.com/ONSdigital/graphson"
 	"github.com/ONSdigital/log.go/log"
+	"github.com/pkg/errors"
 )
 
 func (n *NeptuneDB) buildHierarchyNode(v graphson.Vertex, instanceID, dimension string, wantBreadcrumbs bool) (res *models.HierarchyResponse, err error) {
@@ -41,7 +42,22 @@ func (n *NeptuneDB) buildHierarchyNode(v graphson.Vertex, instanceID, dimension 
 	}
 	// Fetch new data from the database concerned with the node's children.
 	if res.NoOfChildren > 0 && instanceID != "" {
-		gremStmt := fmt.Sprintf(query.GetChildren, instanceID, dimension, res.ID)
+
+		// Check if order is defined
+		var orderCount int64
+		gremStmt := fmt.Sprintf(query.CountChildrenWithOrder, instanceID, dimension, res.ID)
+		orderCount, err = n.getNumber(gremStmt)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Gremlin query failed: %q", gremStmt)
+		}
+		hasOrder := orderCount > 0
+
+		// query depending on the presence of order property in child nodes
+		if hasOrder {
+			gremStmt = fmt.Sprintf(query.GetChildrenWithOrder, instanceID, dimension, res.ID)
+		} else {
+			gremStmt = fmt.Sprintf(query.GetChildrenAlphabetically, instanceID, dimension, res.ID)
+		}
 		logData["statement"] = gremStmt
 
 		var childVertices []graphson.Vertex

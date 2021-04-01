@@ -152,10 +152,12 @@ const (
 	RemoveRemainMarker           = `g.V().hasLabel('_hierarchy_node_%s_%s').has('remain').properties('remain').drop()`
 
 	// hierarchy read
-	HierarchyExists     = `g.V().hasLabel('_hierarchy_node_%s_%s').limit(1)`
-	GetHierarchyRoot    = `g.V().hasLabel('_hierarchy_node_%s_%s').not(outE('hasParent'))`
-	GetHierarchyElement = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s')`
-	GetChildren         = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s').in('hasParent').order().by('label')`
+	HierarchyExists           = `g.V().hasLabel('_hierarchy_node_%s_%s').limit(1)`
+	GetHierarchyRoot          = `g.V().hasLabel('_hierarchy_node_%s_%s').not(outE('hasParent'))`
+	GetHierarchyElement       = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s')`
+	CountChildrenWithOrder    = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s').in('hasParent').has('order').count()`
+	GetChildrenAlphabetically = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s').in('hasParent').order().by('label')`
+	GetChildrenWithOrder      = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s').in('hasParent').order().by('order',incr)`
 	// Note this query is recursive
 	GetAncestry = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code', '%s').repeat(out('hasParent')).emit()`
 
