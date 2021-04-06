@@ -26,6 +26,11 @@ func TestChannelConsumer_Close(t *testing.T) {
 			Convey("Then no error is returned", func() {
 				So(err, ShouldBeNil)
 			})
+
+			Convey("Then no error is returned if close is called again", func() {
+				err = errorConsumer.Close(ctx)
+				So(err, ShouldBeNil)
+			})
 		})
 	})
 }
@@ -35,8 +40,12 @@ func TestChannelConsumer_CloseContext(t *testing.T) {
 	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*10)
 	errorChan := make(chan error, 1)
 
+	chConsumingTest := make(chan struct{})
 	consume := func(error) {
-		time.Sleep(10 * time.Second)
+		// consume function closes the testing channel to notify that the consumer function has started
+		close(chConsumingTest)
+		// then sleep for an amount of time substantially greater than the timeout
+		time.Sleep(time.Second)
 	}
 
 	Convey("Given a channel consumer on a long running function", t, func() {
@@ -46,6 +55,9 @@ func TestChannelConsumer_CloseContext(t *testing.T) {
 
 		Convey("When close is called", func() {
 
+			// block until chConsumingTest is closed,
+			// to be sure that the consume function has been triggered before trying to close it.
+			<-chConsumingTest
 			err := errorConsumer.Close(ctx)
 
 			Convey("Then a context timeout error is returned", func() {

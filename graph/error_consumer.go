@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"errors"
+
 	"github.com/ONSdigital/log.go/log"
 )
 
@@ -46,8 +47,16 @@ func NewErrorConsumer(errors chan error, consume func(error)) *ErrorConsumer {
 
 // Close blocks until the go routine has finished
 func (c *ErrorConsumer) Close(ctx context.Context) error {
-	close(c.closing)
 
+	// close closing channel, safely return if it is already closed
+	select {
+	case <-c.closing:
+		return nil
+	default:
+		close(c.closing)
+	}
+
+	// wait for closed channel to be closed by the go routine
 	select {
 	case <-c.closed:
 		return nil
