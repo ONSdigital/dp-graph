@@ -73,7 +73,7 @@ func Test_buildHierarchyNode(t *testing.T) {
 
 		Convey("Where the hierarchy node contains an 'order' property", func() {
 			poolMock.GetCountFunc = func(q string, bindings map[string]string, rebindings map[string]string) (int64, error) {
-				return 1, nil
+				return 1, nil // '1' selects GetChildrenWithOrder()
 			}
 			db := mockDB(poolMock)
 
@@ -87,13 +87,13 @@ func Test_buildHierarchyNode(t *testing.T) {
 
 				Convey("Then CountChildrenWithOrder query is executed", func() {
 					So(poolMock.GetCountCalls(), ShouldHaveLength, 1)
-					So(poolMock.GetCountCalls()[0].Q, ShouldResemble, expectedCountQuery)
+					So(poolMock.GetCountCalls()[0].Q, ShouldEqual, expectedCountQuery)
 				})
 
 				Convey("Then the children are queried to be sorted according to their order property, before getting ancestry", func() {
 					So(poolMock.GetCalls(), ShouldHaveLength, 2)
-					So(poolMock.GetCalls()[0].Query, ShouldResemble, expectedGetWithOrderQuery)
-					So(poolMock.GetCalls()[1].Query, ShouldResemble, expectedGetAncestryQuery)
+					So(poolMock.GetCalls()[0].Query, ShouldEqual, expectedGetWithOrderQuery)
+					So(poolMock.GetCalls()[1].Query, ShouldEqual, expectedGetAncestryQuery)
 				})
 
 				Convey("Then the expected values are mapped onto the returned child nodes", func() {
@@ -108,7 +108,7 @@ func Test_buildHierarchyNode(t *testing.T) {
 
 		Convey("Where the hierarchy node does not contain an 'order' property", func() {
 			poolMock.GetCountFunc = func(q string, bindings map[string]string, rebindings map[string]string) (int64, error) {
-				return 0, nil
+				return 0, nil // '0' selects GetChildrenAlphabetically()
 			}
 			db := mockDB(poolMock)
 
@@ -122,13 +122,13 @@ func Test_buildHierarchyNode(t *testing.T) {
 
 				Convey("Then CountChildrenWithOrder query is executed", func() {
 					So(poolMock.GetCountCalls(), ShouldHaveLength, 1)
-					So(poolMock.GetCountCalls()[0].Q, ShouldResemble, expectedCountQuery)
+					So(poolMock.GetCountCalls()[0].Q, ShouldEqual, expectedCountQuery)
 				})
 
 				Convey("Then the children are queried to be sorted alphabetically according to their label, before getting ancestry", func() {
 					So(poolMock.GetCalls(), ShouldHaveLength, 2)
-					So(poolMock.GetCalls()[0].Query, ShouldResemble, expectedGetAlphabeticallyQuery)
-					So(poolMock.GetCalls()[1].Query, ShouldResemble, expectedGetAncestryQuery)
+					So(poolMock.GetCalls()[0].Query, ShouldEqual, expectedGetAlphabeticallyQuery)
+					So(poolMock.GetCalls()[1].Query, ShouldEqual, expectedGetAncestryQuery)
 				})
 
 				Convey("Then the expected values are mapped onto the returned child nodes", func() {
