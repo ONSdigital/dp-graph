@@ -270,31 +270,33 @@ func (n *NeptuneDB) GetCodesOrder(ctx context.Context, codeListID string, codes 
 		return codeOrders, err
 	}
 
-	results := res[0].Result.Data
+	// responses are batched by gremgo library, hence we need to iterate them
+	for _, result := range res {
 
-	// get list of order to edge maps from the response
-	orderEdgesMaps, err := graphson.DeserializeListFromBytes(results)
-	if err != nil {
-		return codeOrders, err
-	}
-
-	// each item is a map of {'code': <code>, 'usedBy': <usedBy edge>}, obtain the order from all the code edges
-	for _, val := range orderEdgesMaps {
-		codeEdgeMap, err := graphson.DeserializeMapFromBytes(val)
+		// get list of order to edge maps from the response
+		orderEdgesMaps, err := graphson.DeserializeListFromBytes(result.Result.Data)
 		if err != nil {
-			return make(map[string]*int), err
+			return codeOrders, err
 		}
 
-		code, order, err := getCodeOrderFromMap(codeEdgeMap)
-		if err != nil {
-			return make(map[string]*int), err
-		}
-		codeOrders[code] = order
-	}
+		// each item is a map of {'code': <code>, 'usedBy': <usedBy edge>}, obtain the order from all the code edges
+		for _, val := range orderEdgesMaps {
+			codeEdgeMap, err := graphson.DeserializeMapFromBytes(val)
+			if err != nil {
+				return make(map[string]*int), err
+			}
 
-	// if not all 'usedBy' edges were found, we need to return ErrNotFound
-	if len(orderEdgesMaps) < len(codes) {
-		return codeOrders, driver.ErrNotFound
+			code, order, err := getCodeOrderFromMap(codeEdgeMap)
+			if err != nil {
+				return make(map[string]*int), err
+			}
+			codeOrders[code] = order
+		}
+
+		// if not all 'usedBy' edges were found, we need to return ErrNotFound
+		if len(orderEdgesMaps) < len(codes) {
+			return codeOrders, driver.ErrNotFound
+		}
 	}
 
 	return codeOrders, nil

@@ -95,28 +95,29 @@ func (n *NeptuneDB) doGetGenericHierarchyNodeIDs(ctx context.Context, attempt in
 			return nil, errors.Wrapf(err, "Gremlin query failed: %q", stmt)
 		}
 
-		results := res[0].Result.Data
+		// responses are batched by gremgo library, hence we need to iterate them
+		for _, result := range res {
 
-		// get list of node_id to node_code maps from the response
-		idCodeMap, err := graphson.DeserializeListFromBytes(results)
-		if err != nil {
-			return nil, err
-		}
-
-		// each item is a map of {'node_id': <id>, 'node_code': <code>}
-		for _, val := range idCodeMap {
-			nodeIdCodeMap, err := graphson.DeserializeMapFromBytes(val)
+			// get list of node_id to node_code maps from the response
+			idCodeMap, err := graphson.DeserializeListFromBytes(result.Result.Data)
 			if err != nil {
 				return nil, err
 			}
 
-			nodeId, code, err := getNodeIdCodeFromMap(nodeIdCodeMap)
-			if err != nil {
-				return nil, err
-			}
-			nodeIdOrders[nodeId] = code
-		}
+			// each item is a map of {'node_id': <id>, 'node_code': <code>}
+			for _, val := range idCodeMap {
+				nodeIdCodeMap, err := graphson.DeserializeMapFromBytes(val)
+				if err != nil {
+					return nil, err
+				}
 
+				nodeId, code, err := getNodeIdCodeFromMap(nodeIdCodeMap)
+				if err != nil {
+					return nil, err
+				}
+				nodeIdOrders[nodeId] = code
+			}
+		}
 		return nodeIdOrders, nil
 	}
 
