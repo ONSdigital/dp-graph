@@ -71,7 +71,7 @@ const (
 		`.id().as('node_id').select('gh').values('code').as('node_code').select('gh').select('node_id', 'node_code')`
 
 	// crete 'hasCode' edge from a generic hierarchy node to the provided code node, only if it does not exist already
-	CreateHasCodeEdge = `g.V().hasLabel('_code').has('value', '%s').as('dest')` +
+	CreateHasCodeEdge = `g.V().hasLabel('_code').has('value', '%s').has('listID', '%s').as('dest')` +
 		`.V('%s').coalesce(__.outE('hasCode'), __.addE('hasCode').to(select('dest')))`
 
 	// GetHierarchyNodeIDs gets the IDs of the cloned hierarchy nodes for a particular instanceID and dimensionName

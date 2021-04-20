@@ -313,9 +313,9 @@ func TestNeptuneDB_CreateHasCodeEdges(t *testing.T) {
 			"cpih1dim1aggid--cpih1dim1A0":     "cpih1dim1A0",
 		}
 		expectedQueries := []string{
-			"g.V().hasLabel('_code').has('value', 'cpih1dim1T90000').as('dest').V('cpih1dim1aggid--cpih1dim1T90000').coalesce(__.outE('hasCode'), __.addE('hasCode').to(select('dest')))",
-			"g.V().hasLabel('_code').has('value', 'cpih1dim1G90400').as('dest').V('cpih1dim1aggid--cpih1dim1G90400').coalesce(__.outE('hasCode'), __.addE('hasCode').to(select('dest')))",
-			"g.V().hasLabel('_code').has('value', 'cpih1dim1A0').as('dest').V('cpih1dim1aggid--cpih1dim1A0').coalesce(__.outE('hasCode'), __.addE('hasCode').to(select('dest')))",
+			"g.V().hasLabel('_code').has('value', 'cpih1dim1T90000').has('listID', 'cpih1dim1aggid').as('dest').V('cpih1dim1aggid--cpih1dim1T90000').coalesce(__.outE('hasCode'), __.addE('hasCode').to(select('dest')))",
+			"g.V().hasLabel('_code').has('value', 'cpih1dim1G90400').has('listID', 'cpih1dim1aggid').as('dest').V('cpih1dim1aggid--cpih1dim1G90400').coalesce(__.outE('hasCode'), __.addE('hasCode').to(select('dest')))",
+			"g.V().hasLabel('_code').has('value', 'cpih1dim1A0').has('listID', 'cpih1dim1aggid').as('dest').V('cpih1dim1aggid--cpih1dim1A0').coalesce(__.outE('hasCode'), __.addE('hasCode').to(select('dest')))",
 		}
 
 		Convey("when CreateHasCodeEdges is successfully called, no error is returned and the expected gremlin queries are executed, in any order", func() {

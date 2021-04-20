@@ -165,7 +165,7 @@ func (n *NeptuneDB) CreateHasCodeEdges(ctx context.Context, attempt int, codeLis
 	// although we expect a size of one, we leave the logic to perform multiple sequential operaions per batch processor for completeness
 	processBatch := func(chunk map[string]string) (ret map[string]string, err error) {
 		for nodeId, code := range chunk {
-			stmt := fmt.Sprintf(query.CreateHasCodeEdge, code, nodeId)
+			stmt := fmt.Sprintf(query.CreateHasCodeEdge, code, codeListID, nodeId)
 			if _, err := n.exec(stmt); err != nil {
 				return nil, errors.Wrapf(err, "Gremlin query failed: %q", stmt)
 			}
