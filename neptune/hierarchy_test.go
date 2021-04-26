@@ -73,7 +73,10 @@ func TestNeptuneDB_GetCodesWithData(t *testing.T) {
 
 func TestNeptuneDB_HierarchyExists(t *testing.T) {
 
-	vertex := internal.MakeHierarchyVertex("vertex-label", "code", "label", 1, true)
+	vertex, err := internal.MakeHierarchyVertex("vertex-label", "code", "label", 1, true)
+	if err != nil {
+		t.Fail()
+	}
 
 	Convey("Given a neptune DB that returns a single hierarchy node", t, func() {
 

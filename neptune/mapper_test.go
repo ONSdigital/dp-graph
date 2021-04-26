@@ -19,8 +19,11 @@ func Test_buildHierarchyNode(t *testing.T) {
 		expectedLabel := "code-label"
 		expectedCode := "code"
 		expectedHasData := true
-		expectedNumberOfChildren := 0
-		vertex := internal.MakeHierarchyVertex("vertex-label", expectedCode, expectedLabel, expectedNumberOfChildren, expectedHasData)
+		var expectedNumberOfChildren float64 = 0
+		vertex, err := internal.MakeHierarchyVertex("vertex-label", expectedCode, expectedLabel, expectedNumberOfChildren, expectedHasData)
+		if err != nil {
+			t.Fail()
+		}
 
 		wantBreadcrumbs := false
 		dimension := "dimension"
@@ -42,8 +45,10 @@ func Test_buildHierarchyNode(t *testing.T) {
 		})
 
 		Convey("Where the hierarchy node has an order property", func() {
-			expectedOrder := 123
-			internal.SetOrder(&vertex, expectedOrder)
+			var expectedOrder float64 = 123
+			if err := internal.SetOrder(&vertex, expectedOrder); err != nil {
+				t.Fail()
+			}
 
 			Convey("When buildHierarchyNode is called", func() {
 				hierarchyNode, err := db.buildHierarchyNode(vertex, instanceID, dimension, wantBreadcrumbs)
@@ -64,10 +69,10 @@ func Test_buildHierarchyNode(t *testing.T) {
 	Convey("Given a hierarchy node with child nodes", t, func() {
 		// expected paramters for neptune pool mock
 		var (
-			expectedLabel            = "child-label"
-			expectedCode             = "child-code"
-			expectedHasData          = true
-			expectedNumberOfChildren = 1
+			expectedLabel                    = "child-label"
+			expectedCode                     = "child-code"
+			expectedHasData                  = true
+			expectedNumberOfChildren float64 = 1
 		)
 
 		// expected gremlin queries
@@ -81,13 +86,18 @@ func Test_buildHierarchyNode(t *testing.T) {
 		// mock the database to return a single child node
 		poolMock := &internal.NeptunePoolMock{
 			GetFunc: func(query string, bindings map[string]string, rebindings map[string]string) (vertices []graphson.Vertex, err error) {
-				return []graphson.Vertex{
-					internal.MakeHierarchyVertex("vertex-label", expectedCode, expectedLabel, expectedNumberOfChildren, expectedHasData),
-				}, nil
+				vertex, err := internal.MakeHierarchyVertex("vertex-label", expectedCode, expectedLabel, expectedNumberOfChildren, expectedHasData)
+				if err != nil {
+					t.Fail()
+				}
+				return []graphson.Vertex{vertex}, nil
 			},
 		}
 
-		vertex := internal.MakeHierarchyVertex("vertex-label", "code", "label", 1, true)
+		vertex, err := internal.MakeHierarchyVertex("vertex-label", "code", "label", 1, true)
+		if err != nil {
+			t.Fail()
+		}
 
 		wantBreadcrumbs := true
 		dimension := "dimension"

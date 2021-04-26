@@ -195,17 +195,32 @@ var ReturnNodeAncestryIDs = func(query string, bindings map[string]string, rebin
 	return ids, nil
 }
 
-func MakeHierarchyVertex(vertexLabel, code, codeLabel string, numberOfChildren int, hasData bool) graphson.Vertex {
+func MakeHierarchyVertex(vertexLabel, code, codeLabel string, numberOfChildren float64, hasData bool) (graphson.Vertex, error) {
+	if numberOfChildren < 0 {
+		return graphson.Vertex{}, errors.New("numberOfChildren should be positive")
+	}
+	if numberOfChildren != float64(int64(numberOfChildren)) {
+		return graphson.Vertex{}, errors.New("numberOfChildren should not have decimals")
+	}
+
 	vertex := makeVertex(vertexLabel)
 	setVertexStringProperty(&vertex, "code", code)
 	setVertexStringProperty(&vertex, "label", codeLabel)
-	setVertexTypedProperty("g:Int64", &vertex, "numberOfChildren", map[string]interface{}{"@type": "g:Int64", "@value": float64(numberOfChildren)})
+	setVertexTypedProperty("g:Int64", &vertex, "numberOfChildren", map[string]interface{}{"@type": "g:Int64", "@value": numberOfChildren})
 	setVertexTypedProperty("bool", &vertex, "hasData", hasData)
-	return vertex
+	return vertex, nil
 }
 
-func SetOrder(vertex *graphson.Vertex, order int) {
-	setVertexTypedProperty("g:Int64", vertex, "order", map[string]interface{}{"@type": "g:Int64", "@value": float64(order)})
+func SetOrder(vertex *graphson.Vertex, order float64) error {
+	if order < 0 {
+		return errors.New("order should be positive")
+	}
+	if order != float64(int64(order)) {
+		return errors.New("order should not have decimals")
+	}
+
+	setVertexTypedProperty("g:Int64", vertex, "order", map[string]interface{}{"@type": "g:Int64", "@value": order})
+	return nil
 }
 
 /*
