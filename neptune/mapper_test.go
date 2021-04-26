@@ -16,11 +16,14 @@ func Test_buildHierarchyNode(t *testing.T) {
 		poolMock := &internal.NeptunePoolMock{}
 		db := mockDB(poolMock)
 
-		expectedLabel := "code-label"
-		expectedCode := "code"
-		expectedHasData := true
-		var expectedNumberOfChildren float64 = 0
-		vertex, err := internal.MakeHierarchyVertex("vertex-label", expectedCode, expectedLabel, expectedNumberOfChildren, expectedHasData)
+		var (
+			expectedLabel                    = "code-label"
+			expectedCode                     = "code"
+			expectedHasData                  = true
+			numberOfChildren         float64 = 0
+			expectedNumberOfChildren int64   = 0
+		)
+		vertex, err := internal.MakeHierarchyVertex("vertex-label", expectedCode, expectedLabel, numberOfChildren, expectedHasData)
 		if err != nil {
 			t.Fail()
 		}
@@ -37,7 +40,7 @@ func Test_buildHierarchyNode(t *testing.T) {
 					So(*hierarchyNode, ShouldResemble, models.HierarchyResponse{
 						ID:           expectedCode,
 						Label:        expectedLabel,
-						NoOfChildren: int64(expectedNumberOfChildren),
+						NoOfChildren: expectedNumberOfChildren,
 						HasData:      expectedHasData,
 					})
 				})
@@ -45,8 +48,12 @@ func Test_buildHierarchyNode(t *testing.T) {
 		})
 
 		Convey("Where the hierarchy node has an order property", func() {
-			var expectedOrder float64 = 123
-			if err := internal.SetOrder(&vertex, expectedOrder); err != nil {
+			var (
+				order         float64 = 123
+				expectedOrder int64   = 123
+			)
+
+			if err := internal.SetOrder(&vertex, order); err != nil {
 				t.Fail()
 			}
 
@@ -57,9 +64,9 @@ func Test_buildHierarchyNode(t *testing.T) {
 					So(*hierarchyNode, ShouldResemble, models.HierarchyResponse{
 						ID:           expectedCode,
 						Label:        expectedLabel,
-						NoOfChildren: int64(expectedNumberOfChildren),
+						NoOfChildren: expectedNumberOfChildren,
 						HasData:      expectedHasData,
-						Order:        int64(expectedOrder),
+						Order:        &expectedOrder,
 					})
 				})
 			})

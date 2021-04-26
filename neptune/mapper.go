@@ -40,13 +40,9 @@ func (n *NeptuneDB) buildHierarchyNode(v graphson.Vertex, instanceID, dimension 
 		log.Event(ctx, "bad hasData", log.ERROR, logData, log.Error(err))
 		return
 	}
-	if res.Order, err = v.GetPropertyInt64("order"); err != nil {
-		if err != graphson.ErrorPropertyNotFound {
-			log.Event(ctx, "bad order", log.ERROR, logData, log.Error(err))
-			return
-		}
-		log.Event(ctx, "order not defined for this hierarchy node", log.INFO, logData)
-		err = nil
+	if res.Order, err = getOptionalPropertyInt64(v, "order"); err != nil {
+		log.Event(ctx, "bad order", log.ERROR, logData, log.Error(err))
+		return
 	}
 	// Fetch new data from the database concerned with the node's children.
 	if res.NoOfChildren > 0 && instanceID != "" {
@@ -149,13 +145,20 @@ func convertVertexToElement(v graphson.Vertex) (res *models.HierarchyElement, er
 		log.Event(ctx, "bad hasData", log.ERROR, logData, log.Error(err))
 		return
 	}
-	if res.Order, err = v.GetPropertyInt64("order"); err != nil {
-		if err != graphson.ErrorPropertyNotFound {
-			log.Event(ctx, "bad order", log.ERROR, logData, log.Error(err))
-			return
-		}
-		log.Event(ctx, "order not defined for this hierarchy node", log.INFO, logData)
-		err = nil
+	if res.Order, err = getOptionalPropertyInt64(v, "order"); err != nil {
+		log.Event(ctx, "bad order", log.ERROR, logData, log.Error(err))
+		return
 	}
 	return
+}
+
+// getOptionalPropertyInt64 returns the single *int64 value for a given property `key`
+// will return nil if the property is not found
+// will return an error if the property exists and is not a single string
+func getOptionalPropertyInt64(v graphson.Vertex, key string) (*int64, error) {
+	val, err := v.GetPropertyInt64(key)
+	if err == graphson.ErrorPropertyNotFound {
+		return nil, nil
+	}
+	return &val, err
 }
