@@ -3,6 +3,7 @@ package neptune
 import (
 	"testing"
 
+	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/dp-graph/v2/neptune/internal"
 	"github.com/ONSdigital/graphson"
 	. "github.com/smartystreets/goconvey/convey"
@@ -25,16 +26,37 @@ func Test_buildHierarchyNode(t *testing.T) {
 		dimension := "dimension"
 		instanceID := "instance-id"
 
-		Convey("When buildHierarchyNode is called", func() {
+		Convey("Where the hierarchy node does not have an order property", func() {
+			Convey("When buildHierarchyNode is called", func() {
+				hierarchyNode, err := db.buildHierarchyNode(vertex, instanceID, dimension, wantBreadcrumbs)
+				Convey("Then the expected values are mapped onto the returned hierarchy response", func() {
+					So(err, ShouldBeNil)
+					So(*hierarchyNode, ShouldResemble, models.HierarchyResponse{
+						ID:           expectedCode,
+						Label:        expectedLabel,
+						NoOfChildren: int64(expectedNumberOfChildren),
+						HasData:      expectedHasData,
+					})
+				})
+			})
+		})
 
-			hierarchyNode, err := db.buildHierarchyNode(vertex, instanceID, dimension, wantBreadcrumbs)
+		Convey("Where the hierarchy node has an order property", func() {
+			expectedOrder := 123
+			internal.SetOrder(&vertex, expectedOrder)
 
-			Convey("Then the expected values are mapped onto the returned hierarchy response", func() {
-				So(err, ShouldBeNil)
-				So(hierarchyNode.ID, ShouldEqual, expectedCode)
-				So(hierarchyNode.Label, ShouldEqual, expectedLabel)
-				So(hierarchyNode.NoOfChildren, ShouldEqual, expectedNumberOfChildren)
-				So(hierarchyNode.HasData, ShouldEqual, expectedHasData)
+			Convey("When buildHierarchyNode is called", func() {
+				hierarchyNode, err := db.buildHierarchyNode(vertex, instanceID, dimension, wantBreadcrumbs)
+				Convey("Then the expected values are mapped onto the returned hierarchy response", func() {
+					So(err, ShouldBeNil)
+					So(*hierarchyNode, ShouldResemble, models.HierarchyResponse{
+						ID:           expectedCode,
+						Label:        expectedLabel,
+						NoOfChildren: int64(expectedNumberOfChildren),
+						HasData:      expectedHasData,
+						Order:        int64(expectedOrder),
+					})
+				})
 			})
 		})
 	})
@@ -97,11 +119,13 @@ func Test_buildHierarchyNode(t *testing.T) {
 				})
 
 				Convey("Then the expected values are mapped onto the returned child nodes", func() {
-					So(len(hierarchyNode.Children), ShouldEqual, 1)
-					So(hierarchyNode.Children[0].NoOfChildren, ShouldEqual, expectedNumberOfChildren)
-					So(hierarchyNode.Children[0].ID, ShouldEqual, expectedCode)
-					So(hierarchyNode.Children[0].Label, ShouldEqual, expectedLabel)
-					So(hierarchyNode.Children[0].HasData, ShouldEqual, expectedHasData)
+					So(hierarchyNode.Children, ShouldHaveLength, 1)
+					So(*hierarchyNode.Children[0], ShouldResemble, models.HierarchyElement{
+						NoOfChildren: int64(expectedNumberOfChildren),
+						ID:           expectedCode,
+						Label:        expectedLabel,
+						HasData:      expectedHasData,
+					})
 				})
 			})
 		})
@@ -132,11 +156,13 @@ func Test_buildHierarchyNode(t *testing.T) {
 				})
 
 				Convey("Then the expected values are mapped onto the returned child nodes", func() {
-					So(len(hierarchyNode.Children), ShouldEqual, 1)
-					So(hierarchyNode.Children[0].NoOfChildren, ShouldEqual, expectedNumberOfChildren)
-					So(hierarchyNode.Children[0].ID, ShouldEqual, expectedCode)
-					So(hierarchyNode.Children[0].Label, ShouldEqual, expectedLabel)
-					So(hierarchyNode.Children[0].HasData, ShouldEqual, expectedHasData)
+					So(hierarchyNode.Children, ShouldHaveLength, 1)
+					So(*hierarchyNode.Children[0], ShouldResemble, models.HierarchyElement{
+						NoOfChildren: int64(expectedNumberOfChildren),
+						ID:           expectedCode,
+						Label:        expectedLabel,
+						HasData:      expectedHasData,
+					})
 				})
 			})
 		})

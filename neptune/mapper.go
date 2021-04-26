@@ -40,6 +40,14 @@ func (n *NeptuneDB) buildHierarchyNode(v graphson.Vertex, instanceID, dimension 
 		log.Event(ctx, "bad hasData", log.ERROR, logData, log.Error(err))
 		return
 	}
+	if res.Order, err = v.GetPropertyInt64("order"); err != nil {
+		if err != graphson.ErrorPropertyNotFound {
+			log.Event(ctx, "bad order", log.ERROR, logData, log.Error(err))
+			return
+		}
+		log.Event(ctx, "order not defined for this hierarchy node", log.INFO, logData)
+		err = nil
+	}
 	// Fetch new data from the database concerned with the node's children.
 	if res.NoOfChildren > 0 && instanceID != "" {
 
@@ -140,6 +148,14 @@ func convertVertexToElement(v graphson.Vertex) (res *models.HierarchyElement, er
 	if res.HasData, err = v.GetPropertyBool("hasData"); err != nil {
 		log.Event(ctx, "bad hasData", log.ERROR, logData, log.Error(err))
 		return
+	}
+	if res.Order, err = v.GetPropertyInt64("order"); err != nil {
+		if err != graphson.ErrorPropertyNotFound {
+			log.Event(ctx, "bad order", log.ERROR, logData, log.Error(err))
+			return
+		}
+		log.Event(ctx, "order not defined for this hierarchy node", log.INFO, logData)
+		err = nil
 	}
 	return
 }

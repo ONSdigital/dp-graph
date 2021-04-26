@@ -204,6 +204,10 @@ func MakeHierarchyVertex(vertexLabel, code, codeLabel string, numberOfChildren i
 	return vertex
 }
 
+func SetOrder(vertex *graphson.Vertex, order int) {
+	setVertexTypedProperty("g:Int64", vertex, "order", map[string]interface{}{"@type": "g:Int64", "@value": float64(order)})
+}
+
 /*
 makeVertex makes a graphson.Vertex of a given type (e.g. "_code_list").
 */

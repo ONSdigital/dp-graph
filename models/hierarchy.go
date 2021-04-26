@@ -6,6 +6,7 @@ type HierarchyResponse struct {
 	Label        string
 	Children     []*HierarchyElement
 	NoOfChildren int64
+	Order        int64
 	HasData      bool
 	Breadcrumbs  []*HierarchyElement
 }
@@ -15,5 +16,6 @@ type HierarchyElement struct {
 	ID           string
 	Label        string
 	NoOfChildren int64
+	Order        int64
 	HasData      bool
 }
