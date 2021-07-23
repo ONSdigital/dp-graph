@@ -9,7 +9,7 @@ import (
 
 	"github.com/ONSdigital/dp-graph/v2/neo4j/query"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
 )
 
@@ -28,7 +28,7 @@ func (n *Neo4j) CreateInstanceConstraint(ctx context.Context, instanceID string)
 		return errors.Wrap(err, "neo4j.Exec returned an error when creating observation constraint")
 	}
 
-	log.Event(ctx, "created observation constraint", log.INFO, log.Data{"instance_id": instanceID, "statement": createStmt})
+	log.Info(ctx, "created observation constraint", log.Data{"instance_id": instanceID, "statement": createStmt})
 	return nil
 }
 
@@ -44,7 +44,7 @@ func (n *Neo4j) CreateInstance(ctx context.Context, instanceID string, csvHeader
 		return errors.Wrap(err, "neo4j.Exec returned an error")
 	}
 
-	log.Event(ctx, "create instance success", log.INFO, log.Data{"instance_id": instanceID, "statement": createStmt})
+	log.Info(ctx, "create instance success", log.Data{"instance_id": instanceID, "statement": createStmt})
 	return nil
 }
 
@@ -61,7 +61,7 @@ func (n *Neo4j) AddDimensions(ctx context.Context, instanceID string, dimensions
 		return errors.Wrap(err, "neo4j.Exec returned an error")
 	}
 
-	log.Event(ctx, "add instance dimensions success", log.INFO, log.Data{
+	log.Info(ctx, "add instance dimensions success", log.Data{
 		"statement":   stmt,
 		"params":      params,
 		"instance_id": instanceID,
@@ -105,7 +105,7 @@ func (n *Neo4j) CreateCodeRelationship(ctx context.Context, instanceID, codeList
 		return errors.New("unexpected number of rows affected. expected 1 but was " + strconv.FormatInt(rowsAffected, 10))
 	}
 
-	log.Event(ctx, "create code relationship success", log.INFO, logData)
+	log.Info(ctx, "create code relationship success", logData)
 	return nil
 }
 
@@ -152,7 +152,7 @@ func (n *Neo4j) AddVersionDetailsToInstance(ctx context.Context, instanceID, dat
 		return errors.WithMessage(err, "neoClient AddVersionDetailsToInstance: invalid results")
 	}
 
-	log.Event(ctx, "neoClient AddVersionDetailsToInstance: update successful", log.INFO, data)
+	log.Info(ctx, "neoClient AddVersionDetailsToInstance: update successful", data)
 	return nil
 }
 
@@ -162,7 +162,7 @@ func (n *Neo4j) SetInstanceIsPublished(ctx context.Context, instanceID string) e
 		"instance_id": instanceID,
 	}
 
-	log.Event(ctx, "neoClient SetInstanceIsPublished: attempting to set is_published property on instance node", log.INFO, data)
+	log.Info(ctx, "neoClient SetInstanceIsPublished: attempting to set is_published property on instance node", data)
 
 	q := fmt.Sprintf(query.SetInstanceIsPublished, instanceID)
 
@@ -175,7 +175,7 @@ func (n *Neo4j) SetInstanceIsPublished(ctx context.Context, instanceID string) e
 		return errors.WithMessage(err, "neoClient SetInstanceIsPublished: invalid results")
 	}
 
-	log.Event(ctx, "neoClient SetInstanceIsPublished: update successful", log.INFO, data)
+	log.Info(ctx, "neoClient SetInstanceIsPublished: update successful", data)
 	return nil
 }
 

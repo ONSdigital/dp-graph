@@ -12,7 +12,7 @@ import (
 	"github.com/ONSdigital/dp-graph/v2/retry"
 	"github.com/ONSdigital/graphson"
 	gremgo "github.com/ONSdigital/gremgo-neptune"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 )
 
 type NeptuneDB struct {
@@ -86,7 +86,7 @@ func (n *NeptuneDB) getVertices(gremStmt string) (vertices []graphson.Vertex, er
 	var ok bool
 	if vertices, ok = res.([]graphson.Vertex); !ok {
 		err = errors.New("cannot cast Get results to []Vertex")
-		log.Event(ctx, "cast", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "cast", err, logData)
 	}
 	return
 }
@@ -107,7 +107,7 @@ func (n *NeptuneDB) getStringList(gremStmt string) (strings []string, err error)
 	var ok bool
 	if strings, ok = res.([]string); !ok {
 		err = errors.New("cannot cast GetStringList results to []String")
-		log.Event(ctx, "cast", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "cast", err, logData)
 	}
 	return
 }
@@ -118,17 +118,17 @@ func (n *NeptuneDB) getVertex(gremStmt string) (vertex graphson.Vertex, err erro
 
 	var vertices []graphson.Vertex
 	if vertices, err = n.getVertices(gremStmt); err != nil {
-		log.Event(ctx, "get", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "get", err, logData)
 		return
 	}
 	if len(vertices) == 0 {
 		err = driver.ErrNotFound
-		log.Event(ctx, "vertex not found", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "vertex not found", err, logData)
 		return
 	}
 	if len(vertices) != 1 {
 		err = errors.New("expected only one vertex")
-		log.Event(ctx, "more than one vertex found when only 1 is expected", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "more than one vertex found when only 1 is expected", err, logData)
 		return
 	}
 	return vertices[0], nil
@@ -150,7 +150,7 @@ func (n *NeptuneDB) getEdges(gremStmt string) (edges []graphson.Edge, err error)
 	var ok bool
 	if edges, ok = res.([]graphson.Edge); !ok {
 		err = errors.New("cannot cast GetE results to []Edge")
-		log.Event(ctx, "cast", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "cast", err, logData)
 	}
 	return
 }
@@ -171,7 +171,7 @@ func (n *NeptuneDB) exec(gremStmt string) (gremgoRes []gremgo.Response, err erro
 	var ok bool
 	if gremgoRes, ok = res.([]gremgo.Response); !ok {
 		err = errors.New("cannot cast results to []gremgo.Response")
-		log.Event(ctx, "cast", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "cast", err, logData)
 	}
 
 	return
@@ -193,7 +193,7 @@ func (n *NeptuneDB) getNumber(gremStmt string) (count int64, err error) {
 	var ok bool
 	if count, ok = res.(int64); !ok {
 		err = errors.New("cannot cast count results to int64")
-		log.Event(ctx, "cast", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "cast", err, logData)
 	}
 
 	return
@@ -208,7 +208,7 @@ func (n *NeptuneDB) attemptNeptuneRequest(ctx context.Context, doer retry.Doer, 
 		n.retryTime,
 	)
 	if err != nil {
-		log.Event(ctx, "maxAttempts reached", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "maxAttempts reached", err, logData)
 		return nil, err
 	}
 	return

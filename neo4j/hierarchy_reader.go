@@ -8,7 +8,7 @@ import (
 	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/mapper"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/query"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 )
 
 // Type check to ensure that Neo4j implements the driver.Hierarchy interface
@@ -25,7 +25,7 @@ func (n *Neo4j) GetHierarchyCodelist(ctx context.Context, instanceID, dimension 
 	codelistID := new(string)
 
 	if err := n.Read(neoStmt, mapper.HierarchyCodelist(codelistID), false); err != nil {
-		log.Event(ctx, "getProps query", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "getProps query", err, logData)
 		return "", err
 	}
 
@@ -71,7 +71,7 @@ func (n *Neo4j) HierarchyExists(ctx context.Context, instanceID, dimension strin
 			return hierarchyExists, nil
 		}
 
-		log.Event(ctx, "queryElements failed when attempting to get a hierarchy node", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "queryElements failed when attempting to get a hierarchy node", err, logData)
 		return
 	}
 
@@ -83,7 +83,7 @@ func (n *Neo4j) HierarchyExists(ctx context.Context, instanceID, dimension strin
 	if len(vertices) > 1 {
 		hierarchyExists = true
 		err = driver.ErrMultipleFound
-		log.Event(ctx, "expected a single hierarchy node but multiple were returned", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "expected a single hierarchy node but multiple were returned", err, logData)
 		return hierarchyExists, err
 	}
 
@@ -93,7 +93,7 @@ func (n *Neo4j) HierarchyExists(ctx context.Context, instanceID, dimension strin
 // queryResponse performs DB query (neoStmt, neoArgs) returning Response (should be singular)
 func (n *Neo4j) queryResponse(ctx context.Context, instanceID, dimension string, neoStmt string, neoArgs neoArgMap) (*models.HierarchyResponse, error) {
 	logData := log.Data{"statement": neoStmt, "neo_args": neoArgs}
-	log.Event(ctx, "QueryResponse executing get query", log.INFO, logData)
+	log.Info(ctx, "QueryResponse executing get query", logData)
 
 	res := &models.HierarchyResponse{}
 	var err error
@@ -110,7 +110,7 @@ func (n *Neo4j) queryResponse(ctx context.Context, instanceID, dimension string,
 }
 
 func (n *Neo4j) getChildren(ctx context.Context, instanceID, dimension, code string) ([]*models.HierarchyElement, error) {
-	log.Event(ctx, "get children", log.INFO, log.Data{"instance": instanceID, "dimension": dimension, "code": code})
+	log.Info(ctx, "get children", log.Data{"instance": instanceID, "dimension": dimension, "code": code})
 	neoStmt := fmt.Sprintf(query.GetChildren, instanceID, dimension)
 
 	return n.queryElements(ctx, instanceID, dimension, neoStmt, neoArgMap{"code": code})
@@ -118,7 +118,7 @@ func (n *Neo4j) getChildren(ctx context.Context, instanceID, dimension, code str
 
 // getAncestry retrieves a list of ancestors for this code - as breadcrumbs (ordered, nearest first)
 func (n *Neo4j) getAncestry(ctx context.Context, instanceID, dimension, code string) ([]*models.HierarchyElement, error) {
-	log.Event(ctx, "get ancestry", log.INFO, log.Data{"instance_id": instanceID, "dimension": dimension, "code": code})
+	log.Info(ctx, "get ancestry", log.Data{"instance_id": instanceID, "dimension": dimension, "code": code})
 	neoStmt := fmt.Sprintf(query.GetAncestry, instanceID, dimension)
 
 	return n.queryElements(ctx, instanceID, dimension, neoStmt, neoArgMap{"code": code})
@@ -127,7 +127,7 @@ func (n *Neo4j) getAncestry(ctx context.Context, instanceID, dimension, code str
 // queryElements returns a list of models.Elements from the database
 func (n *Neo4j) queryElements(ctx context.Context, instanceID, dimension, neoStmt string, neoArgs neoArgMap) ([]*models.HierarchyElement, error) {
 	logData := log.Data{"db_statement": neoStmt, "db_args": neoArgs}
-	log.Event(ctx, "QueryElements: executing get query", log.INFO, logData)
+	log.Info(ctx, "QueryElements: executing get query", logData)
 
 	res := &mapper.HierarchyElements{}
 	if err := n.ReadWithParams(neoStmt, neoArgs, mapper.HierarchyElement(res), false); err != nil {
@@ -151,7 +151,7 @@ func (n *Neo4j) CountNodes(ctx context.Context, instanceID, dimensionName string
 		"query":          q,
 	}
 
-	log.Event(ctx, "counting nodes in the new instance hierarchy", log.INFO, logData)
+	log.Info(ctx, "counting nodes in the new instance hierarchy", logData)
 
 	return n.Count(q)
 }
