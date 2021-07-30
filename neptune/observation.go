@@ -13,7 +13,7 @@ import (
 	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/dp-graph/v2/neptune/query"
 	"github.com/ONSdigital/dp-graph/v2/observation"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 )
 
 // Type check to ensure that NeptuneDB implements the driver.Observation interface
@@ -100,7 +100,7 @@ func buildObservationsQuery(instanceID string, f *observation.DimensionFilters) 
 // observations and attempts to insert them by bulk to the database
 func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, instanceID string, observations []*models.Observation, dimensionNodeIDs map[string]string) error {
 	if len(observations) == 0 {
-		log.Event(ctx, "no observations in batch", log.INFO, log.Data{"instance_ID": instanceID})
+		log.Info(ctx, "no observations in batch", log.Data{"instance_ID": instanceID})
 		return nil
 	}
 
@@ -110,7 +110,7 @@ func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, ins
 	if totalTime.IsZero() {
 		totalTime = batchStart
 	} else {
-		log.Event(ctx, "opening batch", log.INFO, log.Data{"size": len(observations), "batchID": bID})
+		log.Info(ctx, "opening batch", log.Data{"size": len(observations), "batchID": bID})
 	}
 
 	var obsIDs []string
@@ -151,7 +151,7 @@ func (n *NeptuneDB) InsertObservationBatch(ctx context.Context, attempt int, ins
 		return errors.Wrap(err, "failed to add observation edges")
 	}
 
-	log.Event(ctx, "batch complete", log.INFO, log.Data{"batchID": bID, "elapsed": time.Since(totalTime), "batchTime": time.Since(batchStart)})
+	log.Info(ctx, "batch complete", log.Data{"batchID": bID, "elapsed": time.Since(totalTime), "batchTime": time.Since(batchStart)})
 	return nil
 }
 

@@ -8,7 +8,7 @@ import (
 	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/mapper"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/query"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
 )
 
@@ -49,7 +49,7 @@ func (n *Neo4j) createUniqueConstraint(ctx context.Context, instanceID, dimensio
 		return errors.Wrap(err, "neoClient.Exec returned an error")
 	}
 
-	log.Event(ctx, "successfully created unique constraint on dimension", log.INFO, log.Data{"dimension_id": dimensionID})
+	log.Info(ctx, "successfully created unique constraint on dimension", log.Data{"dimension_id": dimensionID})
 	return nil
 }
 

@@ -3,11 +3,12 @@ package neptune
 import (
 	"context"
 	"fmt"
-	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 	"strings"
 
+	"github.com/ONSdigital/dp-graph/v2/graph/driver"
+
 	"github.com/ONSdigital/dp-graph/v2/neptune/query"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 	"github.com/pkg/errors"
 )
 
@@ -32,7 +33,7 @@ func (n *NeptuneDB) AddVersionDetailsToInstance(ctx context.Context, instanceID 
 	q := fmt.Sprintf(query.AddVersionDetailsToInstance, instanceID, datasetID, edition, version)
 
 	if _, err := n.exec(q); err != nil {
-		log.Event(ctx, "neptune exec failed on AddVersionDetailsToInstance", log.ERROR, data, log.Error(err))
+		log.Error(ctx, "neptune exec failed on AddVersionDetailsToInstance", err, data)
 		return err
 	}
 	return nil
@@ -47,7 +48,7 @@ func (n *NeptuneDB) SetInstanceIsPublished(ctx context.Context, instanceID strin
 	q := fmt.Sprintf(query.SetInstanceIsPublished, instanceID)
 
 	if _, err := n.exec(q); err != nil {
-		log.Event(ctx, "neptune exec failed on SetInstanceIsPublished", log.ERROR, data, log.Error(err))
+		log.Error(ctx, "neptune exec failed on SetInstanceIsPublished", err, data)
 		return err
 	}
 	return nil
@@ -76,13 +77,13 @@ func (n *NeptuneDB) CreateInstance(ctx context.Context, instanceID string, csvHe
 	}
 
 	if exists {
-		log.Event(ctx, "instance already exists in neptune", log.WARN, data)
+		log.Warn(ctx, "instance already exists in neptune", data)
 		return nil
 	}
 
 	create := fmt.Sprintf(query.CreateInstance, instanceID, instanceID, strings.Join(csvHeaders, ","))
 	if _, err := n.exec(create); err != nil {
-		log.Event(ctx, "neptune exec failed on CreateInstance", log.ERROR, data, log.Error(err))
+		log.Error(ctx, "neptune exec failed on CreateInstance", err, data)
 		return err
 	}
 	return nil
@@ -101,7 +102,7 @@ func (n *NeptuneDB) AddDimensions(ctx context.Context, instanceID string, dimens
 	}
 
 	if _, err := n.exec(q); err != nil {
-		log.Event(ctx, "neptune exec failed on AddDimensions", log.ERROR, data, log.Error(err))
+		log.Error(ctx, "neptune exec failed on AddDimensions", err, data)
 		return err
 	}
 
@@ -137,7 +138,7 @@ func (n *NeptuneDB) CreateCodeRelationship(ctx context.Context, instanceID, code
 
 	createRelationships := fmt.Sprintf(query.CreateInstanceToCodeRelationship, instanceID, codeNodeID)
 	if _, err := n.exec(createRelationships); err != nil {
-		log.Event(ctx, "neptune exec failed on CreateCodeRelationship", log.ERROR, data, log.Error(err))
+		log.Error(ctx, "neptune exec failed on CreateCodeRelationship", err, data)
 		return err
 	}
 
@@ -153,7 +154,7 @@ func (n *NeptuneDB) InstanceExists(ctx context.Context, instanceID string) (bool
 	exists := fmt.Sprintf(query.CheckInstance, instanceID)
 	count, err := n.getNumber(exists)
 	if err != nil {
-		log.Event(ctx, "neptune getNumber failed to check if instance exists", log.ERROR, data, log.Error(err))
+		log.Error(ctx, "neptune getNumber failed to check if instance exists", err, data)
 		return false, err
 	}
 

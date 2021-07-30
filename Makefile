@@ -12,3 +12,7 @@ test:
 .PHONY: build
 build:
 	go build ./...
+
+lint:
+	exit
+.PHONY: lint

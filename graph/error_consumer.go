@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 )
 
 var ErrContextDone = errors.New("context done while closing error consumer")
@@ -17,7 +17,7 @@ type ErrorConsumer struct {
 
 func NewLoggingErrorConsumer(ctx context.Context, errors chan error) *ErrorConsumer {
 	return NewErrorConsumer(errors, func(err error) {
-		log.Event(ctx, "error from graph DB", log.ERROR, log.Error(err))
+		log.Error(ctx, "error from graph DB", err)
 	})
 }
 

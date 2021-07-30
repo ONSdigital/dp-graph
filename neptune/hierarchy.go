@@ -12,7 +12,7 @@ import (
 	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/dp-graph/v2/neptune/query"
 	"github.com/ONSdigital/graphson"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 )
 
 // Type check to ensure that NeptuneDB implements the driver.Hierarchy interface
@@ -35,7 +35,7 @@ func (n *NeptuneDB) GetCodesWithData(ctx context.Context, attempt int, instanceI
 		"dimension_name": dimensionName,
 	}
 
-	log.Event(ctx, "getting instance dimension codes that have data", log.INFO, logData)
+	log.Info(ctx, "getting instance dimension codes that have data", logData)
 
 	codes, err = n.getStringList(codesWithDataStmt)
 	if err != nil {
@@ -65,9 +65,9 @@ func (n *NeptuneDB) doGetGenericHierarchyNodeIDs(ctx context.Context, attempt in
 	}
 
 	if ancestries {
-		log.Event(ctx, "getting generic hierarchy node ancestry ids for the provided codes", log.INFO, logData)
+		log.Info(ctx, "getting generic hierarchy node ancestry ids for the provided codes", logData)
 	} else {
-		log.Event(ctx, "getting generic hierarchy node ids for the provided codes", log.INFO, logData)
+		log.Info(ctx, "getting generic hierarchy node ids for the provided codes", logData)
 	}
 
 	processBatch := func(chunkCodes map[string]string) (ret map[string]string, err error) {
@@ -160,7 +160,7 @@ func (n *NeptuneDB) CreateHasCodeEdges(ctx context.Context, attempt int, codeLis
 		"max_workers":  n.maxWorkers,
 		"batch_size":   n.batchSizeReader,
 	}
-	log.Event(ctx, "creating 'hasCode' edges between generic hierarchy nodes and their corresponding code nodes", log.INFO, logData)
+	log.Info(ctx, "creating 'hasCode' edges between generic hierarchy nodes and their corresponding code nodes", logData)
 
 	// although we expect a size of one, we leave the logic to perform multiple sequential operaions per batch processor for completeness
 	processBatch := func(chunk map[string]string) (ret map[string]string, err error) {
@@ -194,10 +194,10 @@ func (n *NeptuneDB) CloneNodes(ctx context.Context, attempt int, instanceID, cod
 		"code_list_id":   codeListID,
 		"dimension_name": dimensionName,
 	}
-	log.Event(ctx, "cloning all nodes from the generic hierarchy", log.INFO, logData)
+	log.Info(ctx, "cloning all nodes from the generic hierarchy", logData)
 
 	if _, err = n.exec(gremStmt); err != nil {
-		log.Event(ctx, "cannot get vertices during cloning", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "cannot get vertices during cloning", err, logData)
 		return
 	}
 
@@ -215,7 +215,7 @@ func (n *NeptuneDB) CloneNodesFromIDs(ctx context.Context, attempt int, instance
 		"max_workers":    n.maxWorkers,
 		"batch_size":     n.batchSizeWriter,
 	}
-	log.Event(ctx, "cloning necessary nodes from the generic hierarchy", log.INFO, logData)
+	log.Info(ctx, "cloning necessary nodes from the generic hierarchy", logData)
 
 	processBatch := func(chunkIDs map[string]string) (ret map[string]string, err error) {
 		idsStr := `'` + strings.Join(createArray(chunkIDs), `','`) + `'`
@@ -229,7 +229,7 @@ func (n *NeptuneDB) CloneNodesFromIDs(ctx context.Context, attempt int, instance
 		)
 
 		if _, err = n.exec(gremStmt); err != nil {
-			log.Event(ctx, "cannot get vertices during cloning", log.ERROR, logData, log.Error(err))
+			log.Error(ctx, "cannot get vertices during cloning", err, logData)
 			return nil, err
 		}
 		return nil, nil
@@ -252,7 +252,7 @@ func (n *NeptuneDB) CloneOrderFromIDs(ctx context.Context, codeListID string, id
 		"max_workers":  n.maxWorkers,
 		"batch_size":   n.batchSizeWriter,
 	}
-	log.Event(ctx, "cloning order property corresponding to the code of the generic hierarchy nodes", log.INFO, logData)
+	log.Info(ctx, "cloning order property corresponding to the code of the generic hierarchy nodes", logData)
 
 	processBatch := func(chunkIDs map[string]string) (ret map[string]string, err error) {
 		idsStr := `'` + strings.Join(createArray(chunkIDs), `','`) + `'`
@@ -263,7 +263,7 @@ func (n *NeptuneDB) CloneOrderFromIDs(ctx context.Context, codeListID string, id
 		)
 
 		if _, err = n.exec(gremStmt); err != nil {
-			log.Event(ctx, "cannot get vertices during cloning", log.ERROR, logData, log.Error(err))
+			log.Error(ctx, "cannot get vertices during cloning", err, logData)
 			return nil, err
 		}
 		return nil, nil
@@ -285,10 +285,10 @@ func (n *NeptuneDB) CountNodes(ctx context.Context, instanceID, dimensionName st
 		"instance_id":    instanceID,
 		"dimension_name": dimensionName,
 	}
-	log.Event(ctx, "counting nodes in the new instance hierarchy", log.INFO, logData)
+	log.Info(ctx, "counting nodes in the new instance hierarchy", logData)
 
 	if count, err = n.getNumber(gremStmt); err != nil {
-		log.Event(ctx, "cannot count nodes in a hierarchy", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "cannot count nodes in a hierarchy", err, logData)
 		return
 	}
 	return
@@ -311,10 +311,10 @@ func (n *NeptuneDB) CloneRelationships(ctx context.Context, attempt int, instanc
 		"dimension_name": dimensionName,
 		"gremlin":        gremStmt,
 	}
-	log.Event(ctx, "cloning relationships from the generic hierarchy", log.INFO, logData)
+	log.Info(ctx, "cloning relationships from the generic hierarchy", logData)
 
 	if _, err = n.getEdges(gremStmt); err != nil {
-		log.Event(ctx, "cannot find edges while cloning relationships", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "cannot find edges while cloning relationships", err, logData)
 		return
 	}
 
@@ -331,7 +331,7 @@ func (n *NeptuneDB) CloneRelationshipsFromIDs(ctx context.Context, attempt int, 
 		"max_workers":    n.maxWorkers,
 		"batch_size":     n.batchSizeWriter,
 	}
-	log.Event(ctx, "cloning relationships from the generic hierarchy", log.INFO, logData)
+	log.Info(ctx, "cloning relationships from the generic hierarchy", logData)
 
 	processBatch := func(chunkIDs map[string]string) (ret map[string]string, err error) {
 		idsStr := `'` + strings.Join(createArray(chunkIDs), `','`) + `'`
@@ -345,7 +345,7 @@ func (n *NeptuneDB) CloneRelationshipsFromIDs(ctx context.Context, attempt int, 
 		)
 
 		if _, err := n.getEdges(gremStmt); err != nil {
-			log.Event(ctx, "cannot find edges while cloning relationships", log.ERROR, logData, log.Error(err))
+			log.Error(ctx, "cannot find edges while cloning relationships", err, logData)
 			return nil, err
 		}
 		return nil, nil
@@ -371,7 +371,7 @@ func (n *NeptuneDB) GetHierarchyNodeIDs(ctx context.Context, attempt int, instan
 		"dimension_name": dimensionName,
 		"gremlin":        stmt,
 	}
-	log.Event(ctx, "getting ids of cloned hierarchy nodes", log.INFO, logData)
+	log.Info(ctx, "getting ids of cloned hierarchy nodes", logData)
 
 	idList, err := n.getStringList(stmt)
 	if err != nil {
@@ -392,10 +392,10 @@ func (n *NeptuneDB) RemoveCloneEdges(ctx context.Context, attempt int, instanceI
 		"dimension_name": dimensionName,
 		"gremlin":        gremStmt,
 	}
-	log.Event(ctx, "removing edges to generic hierarchy", log.INFO, logData)
+	log.Info(ctx, "removing edges to generic hierarchy", logData)
 
 	if _, err = n.exec(gremStmt); err != nil {
-		log.Event(ctx, "exec failed while removing edges during removal of unwanted cloned edges", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "exec failed while removing edges during removal of unwanted cloned edges", err, logData)
 		return
 	}
 	return
@@ -409,7 +409,7 @@ func (n *NeptuneDB) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt i
 		"max_workers": n.maxWorkers,
 		"batch_size":  n.batchSizeWriter,
 	}
-	log.Event(ctx, "removing edges to generic hierarchy", log.INFO, logData)
+	log.Info(ctx, "removing edges to generic hierarchy", logData)
 
 	processBatch := func(chunkIDs map[string]string) (ret map[string]string, err error) {
 		idsStr := `'` + strings.Join(createArray(chunkIDs), `','`) + `'`
@@ -419,7 +419,7 @@ func (n *NeptuneDB) RemoveCloneEdgesFromSourceIDs(ctx context.Context, attempt i
 		)
 
 		if _, err = n.exec(gremStmt); err != nil {
-			log.Event(ctx, "exec failed while removing edges during removal of unwanted cloned edges", log.ERROR, logData, log.Error(err))
+			log.Error(ctx, "exec failed while removing edges during removal of unwanted cloned edges", err, logData)
 			return
 		}
 		return
@@ -446,10 +446,10 @@ func (n *NeptuneDB) SetNumberOfChildren(ctx context.Context, attempt int, instan
 		"gremlin":        gremStmt,
 	}
 
-	log.Event(ctx, "setting number-of-children property value on the instance hierarchy nodes", log.INFO, logData)
+	log.Info(ctx, "setting number-of-children property value on the instance hierarchy nodes", logData)
 
 	if _, err = n.exec(gremStmt); err != nil {
-		log.Event(ctx, "cannot find vertices while setting nChildren on hierarchy nodes", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "cannot find vertices while setting nChildren on hierarchy nodes", err, logData)
 		return
 	}
 
@@ -464,7 +464,7 @@ func (n *NeptuneDB) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int,
 		"max_workers": n.maxWorkers,
 		"batch_size":  n.batchSizeWriter,
 	}
-	log.Event(ctx, "setting number-of-children property value on the instance hierarchy nodes", log.INFO, logData)
+	log.Info(ctx, "setting number-of-children property value on the instance hierarchy nodes", logData)
 
 	processBatch := func(chunkIDs map[string]string) (ret map[string]string, err error) {
 		idsStr := `'` + strings.Join(createArray(chunkIDs), `','`) + `'`
@@ -474,7 +474,7 @@ func (n *NeptuneDB) SetNumberOfChildrenFromIDs(ctx context.Context, attempt int,
 		)
 
 		if _, err = n.exec(gremStmt); err != nil {
-			log.Event(ctx, "cannot find vertices while setting nChildren on hierarchy nodes", log.ERROR, logData, log.Error(err))
+			log.Error(ctx, "cannot find vertices while setting nChildren on hierarchy nodes", err, logData)
 			return
 		}
 		return
@@ -500,7 +500,7 @@ func (n *NeptuneDB) SetHasData(ctx context.Context, attempt int, instanceID, dim
 		"dimension_name": dimensionName,
 	}
 
-	log.Event(ctx, "getting instance dimension codes that have data", log.INFO, logData)
+	log.Info(ctx, "getting instance dimension codes that have data", logData)
 
 	codes, err := n.getStringList(codesWithDataStmt)
 	if err != nil {
@@ -516,10 +516,10 @@ func (n *NeptuneDB) SetHasData(ctx context.Context, attempt int, instanceID, dim
 		codesString,
 	)
 
-	log.Event(ctx, "setting has-data property on the instance hierarchy", log.INFO, logData)
+	log.Info(ctx, "setting has-data property on the instance hierarchy", logData)
 
 	if _, err = n.exec(gremStmt); err != nil {
-		log.Event(ctx, "cannot find vertices while setting hasData on hierarchy nodes", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "cannot find vertices while setting hasData on hierarchy nodes", err, logData)
 		return
 	}
 
@@ -538,10 +538,10 @@ func (n *NeptuneDB) MarkNodesToRemain(ctx context.Context, attempt int, instance
 		"gremlin":        gremStmt,
 	}
 
-	log.Event(ctx, "marking nodes to remain after trimming sparse branches", log.INFO, logData)
+	log.Info(ctx, "marking nodes to remain after trimming sparse branches", logData)
 
 	if _, err = n.exec(gremStmt); err != nil {
-		log.Event(ctx, "cannot find vertices while marking hierarchy nodes to keep", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "cannot find vertices while marking hierarchy nodes to keep", err, logData)
 		return
 	}
 
@@ -556,10 +556,10 @@ func (n *NeptuneDB) RemoveNodesNotMarkedToRemain(ctx context.Context, attempt in
 		"gremlin":        gremStmt,
 	}
 
-	log.Event(ctx, "removing nodes not marked to remain after trimming sparse branches", log.INFO, logData)
+	log.Info(ctx, "removing nodes not marked to remain after trimming sparse branches", logData)
 
 	if _, err = n.exec(gremStmt); err != nil {
-		log.Event(ctx, "exec query failed while removing hierarchy nodes to cull", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "exec query failed while removing hierarchy nodes to cull", err, logData)
 		return
 	}
 	return
@@ -573,10 +573,10 @@ func (n *NeptuneDB) RemoveRemainMarker(ctx context.Context, attempt int, instanc
 		"instance_id":    instanceID,
 		"dimension_name": dimensionName,
 	}
-	log.Event(ctx, "removing the remain property from the nodes that remain", log.INFO, logData)
+	log.Info(ctx, "removing the remain property from the nodes that remain", logData)
 
 	if _, err = n.exec(gremStmt); err != nil {
-		log.Event(ctx, "exec query failed while removing spent remain markers from hierarchy nodes", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "exec query failed while removing spent remain markers from hierarchy nodes", err, logData)
 		return
 	}
 	return
@@ -593,11 +593,11 @@ func (n *NeptuneDB) GetHierarchyCodelist(ctx context.Context, instanceID, dimens
 
 	var vertex graphson.Vertex
 	if vertex, err = n.getVertex(gremStmt); err != nil {
-		log.Event(ctx, "cannot get vertices  while searching for code list node related to hierarchy node", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "cannot get vertices  while searching for code list node related to hierarchy node", err, logData)
 		return
 	}
 	if codelistID, err = vertex.GetProperty("code_list"); err != nil {
-		log.Event(ctx, "cannot read code_list property from node", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "cannot read code_list property from node", err, logData)
 		return
 	}
 	return
@@ -614,17 +614,17 @@ func (n *NeptuneDB) GetHierarchyRoot(ctx context.Context, instanceID, dimension 
 
 	var vertices []graphson.Vertex
 	if vertices, err = n.getVertices(gremStmt); err != nil {
-		log.Event(ctx, "getVertices failed: cannot find hierarchy root node candidates ", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "getVertices failed: cannot find hierarchy root node candidates ", err, logData)
 		return
 	}
 	if len(vertices) == 0 {
 		err = driver.ErrNotFound
-		log.Event(ctx, "Cannot find hierarchy root node", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "Cannot find hierarchy root node", err, logData)
 		return
 	}
 	if len(vertices) > 1 {
 		err = driver.ErrMultipleFound
-		log.Event(ctx, "Cannot identify hierarchy root node because are multiple candidates", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "Cannot identify hierarchy root node because are multiple candidates", err, logData)
 		return
 	}
 	vertex := vertices[0]
@@ -633,7 +633,7 @@ func (n *NeptuneDB) GetHierarchyRoot(ctx context.Context, instanceID, dimension 
 	// breadcrumb nodes.
 	wantBreadcrumbs := false // Because meaningless for a root node
 	if node, err = n.buildHierarchyNode(vertex, instanceID, dimension, wantBreadcrumbs); err != nil {
-		log.Event(ctx, "Cannot extract related information needed from hierarchy node", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "Cannot extract related information needed from hierarchy node", err, logData)
 		return
 	}
 	return
@@ -650,7 +650,7 @@ func (n *NeptuneDB) HierarchyExists(ctx context.Context, instanceID, dimension s
 
 	var vertices []graphson.Vertex
 	if vertices, err = n.getVertices(gremStmt); err != nil {
-		log.Event(ctx, "getVertices failed when attempting to get a hierarchy node", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "getVertices failed when attempting to get a hierarchy node", err, logData)
 		return
 	}
 
@@ -662,7 +662,7 @@ func (n *NeptuneDB) HierarchyExists(ctx context.Context, instanceID, dimension s
 	if len(vertices) > 1 {
 		hierarchyExists = true
 		err = driver.ErrMultipleFound
-		log.Event(ctx, "expected a single hierarchy node but multiple were returned", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "expected a single hierarchy node but multiple were returned", err, logData)
 		return hierarchyExists, err
 	}
 
@@ -681,7 +681,7 @@ func (n *NeptuneDB) GetHierarchyElement(ctx context.Context, instanceID, dimensi
 
 	var vertex graphson.Vertex
 	if vertex, err = n.getVertex(gremStmt); err != nil {
-		log.Event(ctx, "Cannot find vertex when looking for specific hierarchy node", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "Cannot find vertex when looking for specific hierarchy node", err, logData)
 		return
 	}
 	// Note the call to buildHierarchyNode below does much more than meets the eye,
@@ -689,7 +689,7 @@ func (n *NeptuneDB) GetHierarchyElement(ctx context.Context, instanceID, dimensi
 	// breadcrumb nodes.
 	wantBreadcrumbs := true // Because we are at depth in the hierarchy
 	if node, err = n.buildHierarchyNode(vertex, instanceID, dimension, wantBreadcrumbs); err != nil {
-		log.Event(ctx, "Cannot extract related information needed from hierarchy node", log.ERROR, logData, log.Error(err))
+		log.Error(ctx, "Cannot extract related information needed from hierarchy node", err, logData)
 		return
 	}
 	return

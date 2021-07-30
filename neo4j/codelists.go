@@ -8,7 +8,7 @@ import (
 	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/mapper"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/query"
-	"github.com/ONSdigital/log.go/log"
+	"github.com/ONSdigital/log.go/v2/log"
 )
 
 // Type check to ensure that Neo4j implements the driver.CodeList interface
@@ -21,7 +21,7 @@ func (n *Neo4j) GetCodeLists(ctx context.Context, filterBy string) (*models.Code
 		logData["filter_by"] = filterBy
 		filterBy = ":_" + filterBy
 	}
-	log.Event(ctx, "about to query neo4j for code lists", log.INFO, logData)
+	log.Info(ctx, "about to query neo4j for code lists", logData)
 
 	query := fmt.Sprintf(query.GetCodeLists, filterBy)
 	codeListResults := &models.CodeListResults{}
@@ -36,7 +36,7 @@ func (n *Neo4j) GetCodeLists(ctx context.Context, filterBy string) (*models.Code
 
 // GetCodeList returns the specified codelist
 func (n *Neo4j) GetCodeList(ctx context.Context, code string) (*models.CodeList, error) {
-	log.Event(ctx, "about to query neo4j for code list", log.INFO, log.Data{"code_list_id": code})
+	log.Info(ctx, "about to query neo4j for code list", log.Data{"code_list_id": code})
 
 	query := fmt.Sprintf(query.GetCodeList, code)
 	codeListResult := &models.CodeList{}
@@ -51,7 +51,7 @@ func (n *Neo4j) GetCodeList(ctx context.Context, code string) (*models.CodeList,
 
 // GetEditions returns a list of editions for a specified code list
 func (n *Neo4j) GetEditions(ctx context.Context, codeListID string) (*models.Editions, error) {
-	log.Event(ctx, "about to query neo4j for code list editions", log.INFO, log.Data{"code_list_id": codeListID})
+	log.Info(ctx, "about to query neo4j for code list editions", log.Data{"code_list_id": codeListID})
 
 	query := fmt.Sprintf(query.GetCodeList, codeListID)
 	editions := &models.Editions{}
@@ -65,7 +65,7 @@ func (n *Neo4j) GetEditions(ctx context.Context, codeListID string) (*models.Edi
 
 // GetEdition returns the specified edition for a code list
 func (n *Neo4j) GetEdition(ctx context.Context, codeListID, editionID string) (*models.Edition, error) {
-	log.Event(ctx, "about to query neo4j for code list edition", log.INFO, log.Data{"code_list_id": codeListID, "edition": editionID})
+	log.Info(ctx, "about to query neo4j for code list edition", log.Data{"code_list_id": codeListID, "edition": editionID})
 
 	query := fmt.Sprintf(query.GetCodeListEdition, codeListID, editionID)
 	edition := &models.Edition{}
@@ -83,7 +83,7 @@ func (n *Neo4j) CountCodes(ctx context.Context, codeListID, edition string) (int
 
 // GetCodes returns a list of codes for a specified edition of a code list
 func (n *Neo4j) GetCodes(ctx context.Context, codeListID, editionID string) (*models.CodeResults, error) {
-	log.Event(ctx, "about to query neo4j for codes", log.INFO, log.Data{"code_list_id": codeListID, "edition": editionID})
+	log.Info(ctx, "about to query neo4j for codes", log.Data{"code_list_id": codeListID, "edition": editionID})
 
 	exists, err := n.GetEdition(ctx, codeListID, editionID)
 	if err != nil || exists == nil {
@@ -101,7 +101,7 @@ func (n *Neo4j) GetCodes(ctx context.Context, codeListID, editionID string) (*mo
 
 // GetCode returns the specified code for an edition of a code list
 func (n *Neo4j) GetCode(ctx context.Context, codeListID, editionID string, codeID string) (*models.Code, error) {
-	log.Event(ctx, "about to query neo4j for specific code", log.INFO, log.Data{"code_list_id": codeListID, "edition": editionID, "code": codeID})
+	log.Info(ctx, "about to query neo4j for specific code", log.Data{"code_list_id": codeListID, "edition": editionID, "code": codeID})
 
 	exists, err := n.GetEdition(ctx, codeListID, editionID)
 	if err != nil || exists == nil {
@@ -124,7 +124,7 @@ func (n *Neo4j) GetCodesOrder(ctx context.Context, codeListID string, codes []st
 
 // GetCodeDatasets returns a list of datasets where the code is used
 func (n *Neo4j) GetCodeDatasets(ctx context.Context, codeListID, edition string, code string) (*models.Datasets, error) {
-	log.Event(ctx, "about to query neo4j for datasets by code", log.INFO, log.Data{"code_list_id": codeListID, "edition": edition, "code": code})
+	log.Info(ctx, "about to query neo4j for datasets by code", log.Data{"code_list_id": codeListID, "edition": edition, "code": code})
 
 	exists, err := n.GetEdition(ctx, codeListID, edition)
 	if err != nil || exists == nil {
