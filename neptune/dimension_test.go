@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
+	"testing"
+
 	"github.com/ONSdigital/dp-graph/v2/models"
 	"github.com/ONSdigital/dp-graph/v2/neptune/internal"
 	"github.com/ONSdigital/graphson"
 	"github.com/ONSdigital/gremgo-neptune"
-	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -57,9 +59,51 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 	expectedCreateDimStmt := "g.addV('_instanceID_dimID').property(id, '_instanceID_dimID_option').property('value',\"option\")"
 	expectedCreateDimEdgeStmt := "g.V('_instanceID_Instance').as('inst').V('_instanceID_dimID_option').addE('HAS_DIMENSION').to('inst')"
 
+	Convey("Given an empty Neptune mock", t, func() {
+		db := mockDB(nil)
+		dimension := createDimension()
+
+		Convey("When Insert is invoked with an empty instanceID", func() {
+			dim, err := db.InsertDimension(context.Background(), map[string]string{}, &sync.Mutex{}, "", dimension)
+
+			Convey("Then the expected error is returned with a nil dimension", func() {
+				So(err.Error(), ShouldEqual, "instance id is required but was empty")
+				So(dim, ShouldBeNil)
+			})
+		})
+
+		Convey("When Insert is invoked with a nil cache map", func() {
+			dim, err := db.InsertDimension(context.Background(), nil, &sync.Mutex{}, instanceID, dimension)
+
+			Convey("Then the expected error is returned with a nil dimension", func() {
+				So(err.Error(), ShouldEqual, "no uniqueDimensions (cache) map provided to InsertDimension")
+				So(dim, ShouldBeNil)
+			})
+		})
+
+		Convey("When Insert is invoked with a nil cache mutex", func() {
+			dim, err := db.InsertDimension(context.Background(), map[string]string{}, nil, instanceID, dimension)
+
+			Convey("Then the expected error is returned with a nil dimension", func() {
+				So(err.Error(), ShouldEqual, "no uniqueDimensions (cache) mutex provided to InsertDimension")
+				So(dim, ShouldBeNil)
+			})
+		})
+
+		Convey("When Insert is invoked with a nil dimension", func() {
+			dim, err := db.InsertDimension(context.Background(), map[string]string{}, &sync.Mutex{}, instanceID, nil)
+
+			Convey("Then the expected error is returned with a nil dimension", func() {
+				So(err.Error(), ShouldEqual, "dimension is required but was nil")
+				So(dim, ShouldBeNil)
+			})
+		})
+	})
+
 	Convey("Given a empty instance ID value", t, func() {
 
 		uniqueDimensions := map[string]string{}
+		uniqueDimensionsMutex := &sync.Mutex{}
 		dimension := createDimension()
 		poolMock := createPoolMock(createVertices())
 		db := mockDB(poolMock)
@@ -67,7 +111,7 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 
 		Convey("When InsertDimension is called", func() {
 
-			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, instanceID, dimension)
+			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, uniqueDimensionsMutex, instanceID, dimension)
 
 			Convey("Then the expected error is returned", func() {
 				So(err, ShouldNotBeNil)
@@ -84,13 +128,14 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 
 	Convey("Given a nil dimension value", t, func() {
 		uniqueDimensions := map[string]string{}
+		uniqueDimensionsMutex := &sync.Mutex{}
 		poolMock := createPoolMock(createVertices())
 		db := mockDB(poolMock)
 		var dimension *models.Dimension
 
 		Convey("When InsertDimension is called", func() {
 
-			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, instanceID, dimension)
+			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, uniqueDimensionsMutex, instanceID, dimension)
 
 			Convey("Then the expected error is returned", func() {
 				So(err, ShouldNotBeNil)
@@ -107,6 +152,7 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 
 	Convey("Given an empty dimension ID", t, func() {
 		uniqueDimensions := map[string]string{}
+		uniqueDimensionsMutex := &sync.Mutex{}
 		dimension := createDimension()
 		poolMock := createPoolMock(createVertices())
 		db := mockDB(poolMock)
@@ -114,7 +160,7 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 		dimension.DimensionID = ""
 
 		Convey("When InsertDimension is called", func() {
-			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, instanceID, dimension)
+			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, uniqueDimensionsMutex, instanceID, dimension)
 
 			Convey("Then the expected error is returned", func() {
 				So(err, ShouldNotBeNil)
@@ -131,6 +177,7 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 
 	Convey("Given an empty dimension option value", t, func() {
 		uniqueDimensions := map[string]string{}
+		uniqueDimensionsMutex := &sync.Mutex{}
 		dimension := createDimension()
 		poolMock := createPoolMock(createVertices())
 		db := mockDB(poolMock)
@@ -138,7 +185,7 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 		dimension.Option = ""
 
 		Convey("When InsertDimension is called", func() {
-			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, instanceID, dimension)
+			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, uniqueDimensionsMutex, instanceID, dimension)
 
 			Convey("Then the expected error is returned", func() {
 				So(err, ShouldNotBeNil)
@@ -155,6 +202,7 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 
 	Convey("Given an empty dimension ID and option value", t, func() {
 		uniqueDimensions := map[string]string{}
+		uniqueDimensionsMutex := &sync.Mutex{}
 		dimension := createDimension()
 		poolMock := createPoolMock(createVertices())
 		db := mockDB(poolMock)
@@ -163,7 +211,7 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 		dimension.Option = ""
 
 		Convey("When InsertDimension is called", func() {
-			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, instanceID, dimension)
+			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, uniqueDimensionsMutex, instanceID, dimension)
 
 			Convey("Then the expected error is returned", func() {
 				So(err, ShouldNotBeNil)
@@ -179,8 +227,8 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 	})
 
 	Convey("Given a dimension already exists", t, func() {
-
 		uniqueDimensions := map[string]string{}
+		uniqueDimensionsMutex := &sync.Mutex{}
 		dimension := createDimension()
 		expectedDimID := fmt.Sprintf("_%s_%s_%s", instanceID, dimension.DimensionID, dimension.Option)
 		poolMock := createPoolMock(createVertices())
@@ -191,7 +239,7 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 
 		Convey("When InsertDimension is called", func() {
 
-			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, instanceID, dimension)
+			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, uniqueDimensionsMutex, instanceID, dimension)
 
 			Convey("Then the existing dimension is deleted from the graph DB", func() {
 				So(len(poolMock.ExecuteCalls()), ShouldEqual, 3)
@@ -217,6 +265,7 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 		expectedErr := errors.New(" INVALID REQUEST ARGUMENTS ")
 
 		uniqueDimensions := map[string]string{}
+		uniqueDimensionsMutex := &sync.Mutex{}
 		dimension := createDimension()
 		poolMock := createPoolMock(createVertices())
 		poolMock.GetStringListFunc = func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
@@ -226,7 +275,7 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 
 		Convey("When InsertDimension is called", func() {
 
-			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, instanceID, dimension)
+			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, uniqueDimensionsMutex, instanceID, dimension)
 
 			Convey("Then the graph DB is queried to see if the dimension exists", func() {
 				So(len(poolMock.GetStringListCalls()), ShouldEqual, 1)
@@ -246,15 +295,15 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 	})
 
 	Convey("Given a dimension to insert", t, func() {
-
 		uniqueDimensions := map[string]string{}
+		uniqueDimensionsMutex := &sync.Mutex{}
 		dimension := createDimension()
 		poolMock := createPoolMock(createVertices())
 		db := mockDB(poolMock)
 
 		Convey("When InsertDimension is called", func() {
 
-			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, instanceID, dimension)
+			insertedDimension, err := db.InsertDimension(ctx, uniqueDimensions, uniqueDimensionsMutex, instanceID, dimension)
 
 			Convey("Then the graph DB is queried to see if the dimension exists", func() {
 				So(len(poolMock.GetStringListCalls()), ShouldEqual, 1)
@@ -273,6 +322,42 @@ func TestNeptuneDB_InsertDimension(t *testing.T) {
 				expectedDimID := "_instanceID_dimID_option"
 				So(insertedDimension.NodeID, ShouldEqual, expectedDimID)
 			})
+		})
+	})
+}
+
+func TestCacheDimension(t *testing.T) {
+	ctx := context.Background()
+	dimensionLabel := "_inst_dim"
+
+	Convey("Given 2 concurrent go-routines that try to cache a dimension", t, func() {
+		cache := make(map[string]string)
+		cacheMutex := &sync.Mutex{}
+
+		wg := &sync.WaitGroup{}
+		created1 := false
+		created2 := false
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			created1 = cacheDimension(ctx, cache, cacheMutex, dimensionLabel)
+		}()
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			created2 = cacheDimension(ctx, cache, cacheMutex, dimensionLabel)
+		}()
+
+		wg.Wait()
+
+		Convey("Then the dimension was cached, created only by one of the two callers", func() {
+			So(cache, ShouldResemble, map[string]string{
+				dimensionLabel: dimensionLabel,
+			})
+			So(created1 || created2, ShouldBeTrue) // at least one created the value
+			So(created1, ShouldNotEqual, created2) // only one created the value
 		})
 	})
 }

@@ -3,6 +3,8 @@ package neptune
 import (
 	"context"
 	"fmt"
+	"sync"
+
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 
 	"github.com/ONSdigital/dp-graph/v2/models"
@@ -15,9 +17,15 @@ var _ driver.Dimension = (*NeptuneDB)(nil)
 
 // InsertDimension node to neptune and create relationships to the instance node.
 // Where nodes and relationships already exist, ensure they are upserted.
-func (n *NeptuneDB) InsertDimension(ctx context.Context, uniqueDimensions map[string]string, instanceID string, d *models.Dimension) (*models.Dimension, error) {
+func (n *NeptuneDB) InsertDimension(ctx context.Context, uniqueDimensions map[string]string, uniqueDimensionsMutex *sync.Mutex, instanceID string, d *models.Dimension) (*models.Dimension, error) {
 	if len(instanceID) == 0 {
 		return nil, errors.New("instance id is required but was empty")
+	}
+	if uniqueDimensions == nil {
+		return nil, errors.New("no uniqueDimensions (cache) map provided to InsertDimension")
+	}
+	if uniqueDimensionsMutex == nil {
+		return nil, errors.New("no uniqueDimensions (cache) mutex provided to InsertDimension")
 	}
 	if err := d.Validate(); err != nil {
 		return nil, err
@@ -36,13 +44,23 @@ func (n *NeptuneDB) InsertDimension(ctx context.Context, uniqueDimensions map[st
 	}
 
 	d.NodeID = dimID
-	dimensionLabel := fmt.Sprintf("_%s_%s", instanceID, d.DimensionID)
 
-	if _, ok := uniqueDimensions[dimensionLabel]; !ok {
-		uniqueDimensions[dimensionLabel] = dimensionLabel
-	}
+	dimensionLabel := fmt.Sprintf("_%s_%s", instanceID, d.DimensionID)
+	cacheDimension(ctx, uniqueDimensions, uniqueDimensionsMutex, dimensionLabel)
 
 	return d, nil
+}
+
+// cacheDimension adds an entry to the cache for the provided instance and dimension, only if it does not exist
+// This method is concurrency safe, as it does the check+update after acquiring an exclusive lock
+func cacheDimension(ctx context.Context, cache map[string]string, cacheMutex *sync.Mutex, dimensionLabel string) bool {
+	cacheMutex.Lock()
+	defer cacheMutex.Unlock()
+	if _, exists := cache[dimensionLabel]; !exists {
+		cache[dimensionLabel] = dimensionLabel
+		return true
+	}
+	return false
 }
 
 func (n *NeptuneDB) createDimension(instanceID string, d *models.Dimension, dimID string) error {
