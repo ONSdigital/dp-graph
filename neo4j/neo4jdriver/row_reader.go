@@ -4,7 +4,7 @@ import (
 	"context"
 	"io"
 
-	"github.com/ONSdigital/dp-graph/v2/observation"
+	"github.com/ONSdigital/dp-graph/v3/observation"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 )
 

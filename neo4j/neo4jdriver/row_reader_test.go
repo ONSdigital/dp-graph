@@ -4,9 +4,9 @@ import (
 	"io"
 	"testing"
 
-	"github.com/ONSdigital/dp-graph/v2/neo4j/internal"
-	driver "github.com/ONSdigital/dp-graph/v2/neo4j/neo4jdriver"
-	"github.com/ONSdigital/dp-graph/v2/observation"
+	"github.com/ONSdigital/dp-graph/v3/neo4j/internal"
+	driver "github.com/ONSdigital/dp-graph/v3/neo4j/neo4jdriver"
+	"github.com/ONSdigital/dp-graph/v3/observation"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

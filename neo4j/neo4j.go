@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	graph "github.com/ONSdigital/dp-graph/v2/graph/driver"
-	driver "github.com/ONSdigital/dp-graph/v2/neo4j/neo4jdriver"
+	graph "github.com/ONSdigital/dp-graph/v3/graph/driver"
+	driver "github.com/ONSdigital/dp-graph/v3/neo4j/neo4jdriver"
 	neoErrors "github.com/ONSdigital/golang-neo4j-bolt-driver/errors"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver/structures/messages"
 	"github.com/ONSdigital/log.go/v2/log"

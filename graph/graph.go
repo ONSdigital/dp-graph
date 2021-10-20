@@ -6,9 +6,9 @@ import (
 
 	"github.com/ONSdigital/log.go/v2/log"
 
-	"github.com/ONSdigital/dp-graph/v2/config"
-	"github.com/ONSdigital/dp-graph/v2/graph/driver"
-	"github.com/ONSdigital/dp-graph/v2/mock"
+	"github.com/ONSdigital/dp-graph/v3/config"
+	"github.com/ONSdigital/dp-graph/v3/graph/driver"
+	"github.com/ONSdigital/dp-graph/v3/mock"
 )
 
 // DB contains the widest possible selection of functionality provided by any

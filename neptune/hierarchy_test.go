@@ -7,9 +7,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/ONSdigital/dp-graph/v2/graph/driver"
-	"github.com/ONSdigital/dp-graph/v2/neptune/internal"
-	"github.com/ONSdigital/dp-graph/v2/neptune/query"
+	"github.com/ONSdigital/dp-graph/v3/graph/driver"
+	"github.com/ONSdigital/dp-graph/v3/neptune/internal"
+	"github.com/ONSdigital/dp-graph/v3/neptune/query"
 	"github.com/ONSdigital/graphson"
 	"github.com/ONSdigital/gremgo-neptune"
 	"github.com/pkg/errors"

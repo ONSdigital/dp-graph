@@ -3,7 +3,7 @@ package mock
 import (
 	"context"
 
-	"github.com/ONSdigital/dp-graph/v2/models"
+	"github.com/ONSdigital/dp-graph/v3/models"
 )
 
 func (m *Mock) GetCodeLists(ctx context.Context, filterBy string) (*models.CodeListResults, error) {

@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ONSdigital/dp-graph/v2/neo4j/mapper"
-	"github.com/ONSdigital/dp-graph/v2/neo4j/query"
+	"github.com/ONSdigital/dp-graph/v3/neo4j/mapper"
+	"github.com/ONSdigital/dp-graph/v3/neo4j/query"
 
-	"github.com/ONSdigital/dp-graph/v2/graph/driver"
-	graph "github.com/ONSdigital/dp-graph/v2/graph/driver"
-	"github.com/ONSdigital/dp-graph/v2/neo4j/internal"
+	"github.com/ONSdigital/dp-graph/v3/graph/driver"
+	graph "github.com/ONSdigital/dp-graph/v3/graph/driver"
+	"github.com/ONSdigital/dp-graph/v3/neo4j/internal"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	neoErrors "github.com/ONSdigital/golang-neo4j-bolt-driver/errors"
 	boltstructures "github.com/ONSdigital/golang-neo4j-bolt-driver/structures/graph"

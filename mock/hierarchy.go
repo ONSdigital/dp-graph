@@ -3,7 +3,7 @@ package mock
 import (
 	"context"
 
-	"github.com/ONSdigital/dp-graph/v2/models"
+	"github.com/ONSdigital/dp-graph/v3/models"
 )
 
 func (m *Mock) HierarchyExists(ctx context.Context, instanceID, dimension string) (hierarchyExists bool, err error) {

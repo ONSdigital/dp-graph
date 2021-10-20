@@ -1,11 +1,12 @@
 package observation_test
 
 import (
-	"github.com/ONSdigital/dp-graph/v2/observation"
-	"github.com/ONSdigital/dp-graph/v2/observation/observationtest"
-	. "github.com/smartystreets/goconvey/convey"
 	"io"
 	"testing"
+
+	"github.com/ONSdigital/dp-graph/v3/observation"
+	"github.com/ONSdigital/dp-graph/v3/observation/observationtest"
+	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestCompositeRowReader_Read(t *testing.T) {

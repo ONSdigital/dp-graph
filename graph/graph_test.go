@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/ONSdigital/dp-graph/v2/graph/driver"
+	"github.com/ONSdigital/dp-graph/v3/graph/driver"
 
 	. "github.com/smartystreets/goconvey/convey"
 )

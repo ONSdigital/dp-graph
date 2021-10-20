@@ -6,13 +6,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ONSdigital/dp-graph/v2/graph/driver"
+	"github.com/ONSdigital/dp-graph/v3/graph/driver"
 
 	"github.com/pkg/errors"
 
-	"github.com/ONSdigital/dp-graph/v2/models"
-	"github.com/ONSdigital/dp-graph/v2/neptune/query"
-	"github.com/ONSdigital/dp-graph/v2/observation"
+	"github.com/ONSdigital/dp-graph/v3/models"
+	"github.com/ONSdigital/dp-graph/v3/neptune/query"
+	"github.com/ONSdigital/dp-graph/v3/observation"
 	"github.com/ONSdigital/log.go/v2/log"
 )
 

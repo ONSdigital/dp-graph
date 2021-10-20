@@ -5,7 +5,7 @@ package internal
 
 import (
 	"database/sql/driver"
-	"github.com/ONSdigital/dp-graph/v2/neo4j/neo4jdriver"
+	"github.com/ONSdigital/dp-graph/v3/neo4j/neo4jdriver"
 	"github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"sync"
 	"time"

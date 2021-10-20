@@ -1,9 +1,10 @@
 package neptune
 
 import (
-	"github.com/ONSdigital/dp-graph/v2/neptune/driver"
-	"github.com/ONSdigital/dp-graph/v2/neptune/internal"
 	"time"
+
+	"github.com/ONSdigital/dp-graph/v3/neptune/driver"
+	"github.com/ONSdigital/dp-graph/v3/neptune/internal"
 )
 
 // mockDB provides a NeptuneDB, into which you can pass a mocked

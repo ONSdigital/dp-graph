@@ -3,8 +3,8 @@ package mapper
 import (
 	"strings"
 
-	"github.com/ONSdigital/dp-graph/v2/graph/driver"
-	"github.com/ONSdigital/dp-graph/v2/models"
+	"github.com/ONSdigital/dp-graph/v3/graph/driver"
+	"github.com/ONSdigital/dp-graph/v3/models"
 )
 
 //CodeLists returns a dpbolt.ResultMapper which converts a dpbolt.Result to models.CodeLists

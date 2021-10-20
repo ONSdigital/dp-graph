@@ -1,9 +1,10 @@
 package neptune
 
 import (
-	"github.com/ONSdigital/dp-graph/v2/graph/driver"
-	"github.com/ONSdigital/dp-graph/v2/neptune/internal"
 	"testing"
+
+	"github.com/ONSdigital/dp-graph/v3/graph/driver"
+	"github.com/ONSdigital/dp-graph/v3/neptune/internal"
 
 	. "github.com/smartystreets/goconvey/convey"
 )

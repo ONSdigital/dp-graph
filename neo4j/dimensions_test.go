@@ -8,10 +8,10 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/ONSdigital/dp-graph/v2/models"
-	"github.com/ONSdigital/dp-graph/v2/neo4j/internal"
-	"github.com/ONSdigital/dp-graph/v2/neo4j/mapper"
-	"github.com/ONSdigital/dp-graph/v2/neo4j/query"
+	"github.com/ONSdigital/dp-graph/v3/models"
+	"github.com/ONSdigital/dp-graph/v3/neo4j/internal"
+	"github.com/ONSdigital/dp-graph/v3/neo4j/mapper"
+	"github.com/ONSdigital/dp-graph/v3/neo4j/query"
 	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	. "github.com/smartystreets/goconvey/convey"
 )

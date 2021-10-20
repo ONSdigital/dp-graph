@@ -4,10 +4,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/ONSdigital/dp-graph/v2/graph/driver"
-	"github.com/ONSdigital/dp-graph/v2/mock"
-	"github.com/ONSdigital/dp-graph/v2/neo4j"
-	"github.com/ONSdigital/dp-graph/v2/neptune"
+	"github.com/ONSdigital/dp-graph/v3/graph/driver"
+	"github.com/ONSdigital/dp-graph/v3/mock"
+	"github.com/ONSdigital/dp-graph/v3/neo4j"
+	"github.com/ONSdigital/dp-graph/v3/neptune"
 	"github.com/kelseyhightower/envconfig"
 )
 

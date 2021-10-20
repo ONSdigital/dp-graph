@@ -4,9 +4,9 @@ import (
 	"context"
 	"sync"
 
-	"github.com/ONSdigital/dp-graph/v2/models"
-	"github.com/ONSdigital/dp-graph/v2/observation"
-	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
+	"github.com/ONSdigital/dp-graph/v3/models"
+	"github.com/ONSdigital/dp-graph/v3/observation"
+	health "github.com/ONSdigital/dp-healthcheck/v2/healthcheck"
 )
 
 // Driver is the base interface any driver implementation must satisfy

@@ -2,11 +2,12 @@ package retry_test
 
 import (
 	"context"
-	"github.com/pkg/errors"
 	"testing"
 	"time"
 
-	"github.com/ONSdigital/dp-graph/v2/retry"
+	"github.com/pkg/errors"
+
+	"github.com/ONSdigital/dp-graph/v3/retry"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

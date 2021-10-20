@@ -3,7 +3,7 @@ package neo4jdriver
 import (
 	"context"
 
-	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
+	health "github.com/ONSdigital/dp-healthcheck/v2/healthcheck"
 )
 
 // ServiceName : neo4j

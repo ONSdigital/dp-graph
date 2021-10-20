@@ -5,7 +5,7 @@ package internal
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-graph/v2/neptune/driver"
+	"github.com/ONSdigital/dp-graph/v3/neptune/driver"
 	"github.com/ONSdigital/graphson"
 	"github.com/ONSdigital/gremgo-neptune"
 	"sync"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
+	health "github.com/ONSdigital/dp-healthcheck/v2/healthcheck"
 )
 
 type Mock struct {

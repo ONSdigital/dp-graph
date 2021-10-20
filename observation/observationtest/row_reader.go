@@ -5,7 +5,7 @@ package observationtest
 
 import (
 	"context"
-	"github.com/ONSdigital/dp-graph/v2/observation"
+	"github.com/ONSdigital/dp-graph/v3/observation"
 	"sync"
 )
 

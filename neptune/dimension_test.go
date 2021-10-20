@@ -7,8 +7,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/ONSdigital/dp-graph/v2/models"
-	"github.com/ONSdigital/dp-graph/v2/neptune/internal"
+	"github.com/ONSdigital/dp-graph/v3/models"
+	"github.com/ONSdigital/dp-graph/v3/neptune/internal"
 	"github.com/ONSdigital/graphson"
 	"github.com/ONSdigital/gremgo-neptune"
 
