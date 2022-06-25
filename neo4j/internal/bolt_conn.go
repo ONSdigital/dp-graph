@@ -6,24 +6,9 @@ package internal
 import (
 	"database/sql/driver"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/neo4jdriver"
-	"github.com/ONSdigital/golang-neo4j-bolt-driver"
+	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"sync"
 	"time"
-)
-
-var (
-	lockBoltConnMockBegin           sync.RWMutex
-	lockBoltConnMockClose           sync.RWMutex
-	lockBoltConnMockExecNeo         sync.RWMutex
-	lockBoltConnMockExecPipeline    sync.RWMutex
-	lockBoltConnMockGetTimeout      sync.RWMutex
-	lockBoltConnMockPrepareNeo      sync.RWMutex
-	lockBoltConnMockPreparePipeline sync.RWMutex
-	lockBoltConnMockQueryNeo        sync.RWMutex
-	lockBoltConnMockQueryNeoAll     sync.RWMutex
-	lockBoltConnMockQueryPipeline   sync.RWMutex
-	lockBoltConnMockSetChunkSize    sync.RWMutex
-	lockBoltConnMockSetTimeout      sync.RWMutex
 )
 
 // Ensure, that BoltConnMock does implement neo4jdriver.BoltConn.
@@ -32,52 +17,52 @@ var _ neo4jdriver.BoltConn = &BoltConnMock{}
 
 // BoltConnMock is a mock implementation of neo4jdriver.BoltConn.
 //
-//     func TestSomethingThatUsesBoltConn(t *testing.T) {
+// 	func TestSomethingThatUsesBoltConn(t *testing.T) {
 //
-//         // make and configure a mocked neo4jdriver.BoltConn
-//         mockedBoltConn := &BoltConnMock{
-//             BeginFunc: func() (driver.Tx, error) {
-// 	               panic("mock out the Begin method")
-//             },
-//             CloseFunc: func() error {
-// 	               panic("mock out the Close method")
-//             },
-//             ExecNeoFunc: func(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Result, error) {
-// 	               panic("mock out the ExecNeo method")
-//             },
-//             ExecPipelineFunc: func(query []string, params ...map[string]interface{}) ([]golangNeo4jBoltDriver.Result, error) {
-// 	               panic("mock out the ExecPipeline method")
-//             },
-//             GetTimeoutFunc: func() time.Duration {
-// 	               panic("mock out the GetTimeout method")
-//             },
-//             PrepareNeoFunc: func(query string) (golangNeo4jBoltDriver.Stmt, error) {
-// 	               panic("mock out the PrepareNeo method")
-//             },
-//             PreparePipelineFunc: func(query ...string) (golangNeo4jBoltDriver.PipelineStmt, error) {
-// 	               panic("mock out the PreparePipeline method")
-//             },
-//             QueryNeoFunc: func(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Rows, error) {
-// 	               panic("mock out the QueryNeo method")
-//             },
-//             QueryNeoAllFunc: func(query string, params map[string]interface{}) ([][]interface{}, map[string]interface{}, map[string]interface{}, error) {
-// 	               panic("mock out the QueryNeoAll method")
-//             },
-//             QueryPipelineFunc: func(query []string, params ...map[string]interface{}) (golangNeo4jBoltDriver.PipelineRows, error) {
-// 	               panic("mock out the QueryPipeline method")
-//             },
-//             SetChunkSizeFunc: func(in1 uint16)  {
-// 	               panic("mock out the SetChunkSize method")
-//             },
-//             SetTimeoutFunc: func(in1 time.Duration)  {
-// 	               panic("mock out the SetTimeout method")
-//             },
-//         }
+// 		// make and configure a mocked neo4jdriver.BoltConn
+// 		mockedBoltConn := &BoltConnMock{
+// 			BeginFunc: func() (driver.Tx, error) {
+// 				panic("mock out the Begin method")
+// 			},
+// 			CloseFunc: func() error {
+// 				panic("mock out the Close method")
+// 			},
+// 			ExecNeoFunc: func(query string, params map[string]interface{}) (bolt.Result, error) {
+// 				panic("mock out the ExecNeo method")
+// 			},
+// 			ExecPipelineFunc: func(query []string, params ...map[string]interface{}) ([]bolt.Result, error) {
+// 				panic("mock out the ExecPipeline method")
+// 			},
+// 			GetTimeoutFunc: func() time.Duration {
+// 				panic("mock out the GetTimeout method")
+// 			},
+// 			PrepareNeoFunc: func(query string) (bolt.Stmt, error) {
+// 				panic("mock out the PrepareNeo method")
+// 			},
+// 			PreparePipelineFunc: func(query ...string) (bolt.PipelineStmt, error) {
+// 				panic("mock out the PreparePipeline method")
+// 			},
+// 			QueryNeoFunc: func(query string, params map[string]interface{}) (bolt.Rows, error) {
+// 				panic("mock out the QueryNeo method")
+// 			},
+// 			QueryNeoAllFunc: func(query string, params map[string]interface{}) ([][]interface{}, map[string]interface{}, map[string]interface{}, error) {
+// 				panic("mock out the QueryNeoAll method")
+// 			},
+// 			QueryPipelineFunc: func(query []string, params ...map[string]interface{}) (bolt.PipelineRows, error) {
+// 				panic("mock out the QueryPipeline method")
+// 			},
+// 			SetChunkSizeFunc: func(v uint16)  {
+// 				panic("mock out the SetChunkSize method")
+// 			},
+// 			SetTimeoutFunc: func(duration time.Duration)  {
+// 				panic("mock out the SetTimeout method")
+// 			},
+// 		}
 //
-//         // use mockedBoltConn in code that requires neo4jdriver.BoltConn
-//         // and then make assertions.
+// 		// use mockedBoltConn in code that requires neo4jdriver.BoltConn
+// 		// and then make assertions.
 //
-//     }
+// 	}
 type BoltConnMock struct {
 	// BeginFunc mocks the Begin method.
 	BeginFunc func() (driver.Tx, error)
@@ -86,34 +71,34 @@ type BoltConnMock struct {
 	CloseFunc func() error
 
 	// ExecNeoFunc mocks the ExecNeo method.
-	ExecNeoFunc func(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Result, error)
+	ExecNeoFunc func(query string, params map[string]interface{}) (bolt.Result, error)
 
 	// ExecPipelineFunc mocks the ExecPipeline method.
-	ExecPipelineFunc func(query []string, params ...map[string]interface{}) ([]golangNeo4jBoltDriver.Result, error)
+	ExecPipelineFunc func(query []string, params ...map[string]interface{}) ([]bolt.Result, error)
 
 	// GetTimeoutFunc mocks the GetTimeout method.
 	GetTimeoutFunc func() time.Duration
 
 	// PrepareNeoFunc mocks the PrepareNeo method.
-	PrepareNeoFunc func(query string) (golangNeo4jBoltDriver.Stmt, error)
+	PrepareNeoFunc func(query string) (bolt.Stmt, error)
 
 	// PreparePipelineFunc mocks the PreparePipeline method.
-	PreparePipelineFunc func(query ...string) (golangNeo4jBoltDriver.PipelineStmt, error)
+	PreparePipelineFunc func(query ...string) (bolt.PipelineStmt, error)
 
 	// QueryNeoFunc mocks the QueryNeo method.
-	QueryNeoFunc func(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Rows, error)
+	QueryNeoFunc func(query string, params map[string]interface{}) (bolt.Rows, error)
 
 	// QueryNeoAllFunc mocks the QueryNeoAll method.
 	QueryNeoAllFunc func(query string, params map[string]interface{}) ([][]interface{}, map[string]interface{}, map[string]interface{}, error)
 
 	// QueryPipelineFunc mocks the QueryPipeline method.
-	QueryPipelineFunc func(query []string, params ...map[string]interface{}) (golangNeo4jBoltDriver.PipelineRows, error)
+	QueryPipelineFunc func(query []string, params ...map[string]interface{}) (bolt.PipelineRows, error)
 
 	// SetChunkSizeFunc mocks the SetChunkSize method.
-	SetChunkSizeFunc func(in1 uint16)
+	SetChunkSizeFunc func(v uint16)
 
 	// SetTimeoutFunc mocks the SetTimeout method.
-	SetTimeoutFunc func(in1 time.Duration)
+	SetTimeoutFunc func(duration time.Duration)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -173,15 +158,27 @@ type BoltConnMock struct {
 		}
 		// SetChunkSize holds details about calls to the SetChunkSize method.
 		SetChunkSize []struct {
-			// In1 is the in1 argument value.
-			In1 uint16
+			// V is the v argument value.
+			V uint16
 		}
 		// SetTimeout holds details about calls to the SetTimeout method.
 		SetTimeout []struct {
-			// In1 is the in1 argument value.
-			In1 time.Duration
+			// Duration is the duration argument value.
+			Duration time.Duration
 		}
 	}
+	lockBegin           sync.RWMutex
+	lockClose           sync.RWMutex
+	lockExecNeo         sync.RWMutex
+	lockExecPipeline    sync.RWMutex
+	lockGetTimeout      sync.RWMutex
+	lockPrepareNeo      sync.RWMutex
+	lockPreparePipeline sync.RWMutex
+	lockQueryNeo        sync.RWMutex
+	lockQueryNeoAll     sync.RWMutex
+	lockQueryPipeline   sync.RWMutex
+	lockSetChunkSize    sync.RWMutex
+	lockSetTimeout      sync.RWMutex
 }
 
 // Begin calls BeginFunc.
@@ -191,9 +188,9 @@ func (mock *BoltConnMock) Begin() (driver.Tx, error) {
 	}
 	callInfo := struct {
 	}{}
-	lockBoltConnMockBegin.Lock()
+	mock.lockBegin.Lock()
 	mock.calls.Begin = append(mock.calls.Begin, callInfo)
-	lockBoltConnMockBegin.Unlock()
+	mock.lockBegin.Unlock()
 	return mock.BeginFunc()
 }
 
@@ -204,9 +201,9 @@ func (mock *BoltConnMock) BeginCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockBoltConnMockBegin.RLock()
+	mock.lockBegin.RLock()
 	calls = mock.calls.Begin
-	lockBoltConnMockBegin.RUnlock()
+	mock.lockBegin.RUnlock()
 	return calls
 }
 
@@ -217,9 +214,9 @@ func (mock *BoltConnMock) Close() error {
 	}
 	callInfo := struct {
 	}{}
-	lockBoltConnMockClose.Lock()
+	mock.lockClose.Lock()
 	mock.calls.Close = append(mock.calls.Close, callInfo)
-	lockBoltConnMockClose.Unlock()
+	mock.lockClose.Unlock()
 	return mock.CloseFunc()
 }
 
@@ -230,14 +227,14 @@ func (mock *BoltConnMock) CloseCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockBoltConnMockClose.RLock()
+	mock.lockClose.RLock()
 	calls = mock.calls.Close
-	lockBoltConnMockClose.RUnlock()
+	mock.lockClose.RUnlock()
 	return calls
 }
 
 // ExecNeo calls ExecNeoFunc.
-func (mock *BoltConnMock) ExecNeo(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Result, error) {
+func (mock *BoltConnMock) ExecNeo(query string, params map[string]interface{}) (bolt.Result, error) {
 	if mock.ExecNeoFunc == nil {
 		panic("BoltConnMock.ExecNeoFunc: method is nil but BoltConn.ExecNeo was just called")
 	}
@@ -248,9 +245,9 @@ func (mock *BoltConnMock) ExecNeo(query string, params map[string]interface{}) (
 		Query:  query,
 		Params: params,
 	}
-	lockBoltConnMockExecNeo.Lock()
+	mock.lockExecNeo.Lock()
 	mock.calls.ExecNeo = append(mock.calls.ExecNeo, callInfo)
-	lockBoltConnMockExecNeo.Unlock()
+	mock.lockExecNeo.Unlock()
 	return mock.ExecNeoFunc(query, params)
 }
 
@@ -265,14 +262,14 @@ func (mock *BoltConnMock) ExecNeoCalls() []struct {
 		Query  string
 		Params map[string]interface{}
 	}
-	lockBoltConnMockExecNeo.RLock()
+	mock.lockExecNeo.RLock()
 	calls = mock.calls.ExecNeo
-	lockBoltConnMockExecNeo.RUnlock()
+	mock.lockExecNeo.RUnlock()
 	return calls
 }
 
 // ExecPipeline calls ExecPipelineFunc.
-func (mock *BoltConnMock) ExecPipeline(query []string, params ...map[string]interface{}) ([]golangNeo4jBoltDriver.Result, error) {
+func (mock *BoltConnMock) ExecPipeline(query []string, params ...map[string]interface{}) ([]bolt.Result, error) {
 	if mock.ExecPipelineFunc == nil {
 		panic("BoltConnMock.ExecPipelineFunc: method is nil but BoltConn.ExecPipeline was just called")
 	}
@@ -283,9 +280,9 @@ func (mock *BoltConnMock) ExecPipeline(query []string, params ...map[string]inte
 		Query:  query,
 		Params: params,
 	}
-	lockBoltConnMockExecPipeline.Lock()
+	mock.lockExecPipeline.Lock()
 	mock.calls.ExecPipeline = append(mock.calls.ExecPipeline, callInfo)
-	lockBoltConnMockExecPipeline.Unlock()
+	mock.lockExecPipeline.Unlock()
 	return mock.ExecPipelineFunc(query, params...)
 }
 
@@ -300,9 +297,9 @@ func (mock *BoltConnMock) ExecPipelineCalls() []struct {
 		Query  []string
 		Params []map[string]interface{}
 	}
-	lockBoltConnMockExecPipeline.RLock()
+	mock.lockExecPipeline.RLock()
 	calls = mock.calls.ExecPipeline
-	lockBoltConnMockExecPipeline.RUnlock()
+	mock.lockExecPipeline.RUnlock()
 	return calls
 }
 
@@ -313,9 +310,9 @@ func (mock *BoltConnMock) GetTimeout() time.Duration {
 	}
 	callInfo := struct {
 	}{}
-	lockBoltConnMockGetTimeout.Lock()
+	mock.lockGetTimeout.Lock()
 	mock.calls.GetTimeout = append(mock.calls.GetTimeout, callInfo)
-	lockBoltConnMockGetTimeout.Unlock()
+	mock.lockGetTimeout.Unlock()
 	return mock.GetTimeoutFunc()
 }
 
@@ -326,14 +323,14 @@ func (mock *BoltConnMock) GetTimeoutCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockBoltConnMockGetTimeout.RLock()
+	mock.lockGetTimeout.RLock()
 	calls = mock.calls.GetTimeout
-	lockBoltConnMockGetTimeout.RUnlock()
+	mock.lockGetTimeout.RUnlock()
 	return calls
 }
 
 // PrepareNeo calls PrepareNeoFunc.
-func (mock *BoltConnMock) PrepareNeo(query string) (golangNeo4jBoltDriver.Stmt, error) {
+func (mock *BoltConnMock) PrepareNeo(query string) (bolt.Stmt, error) {
 	if mock.PrepareNeoFunc == nil {
 		panic("BoltConnMock.PrepareNeoFunc: method is nil but BoltConn.PrepareNeo was just called")
 	}
@@ -342,9 +339,9 @@ func (mock *BoltConnMock) PrepareNeo(query string) (golangNeo4jBoltDriver.Stmt, 
 	}{
 		Query: query,
 	}
-	lockBoltConnMockPrepareNeo.Lock()
+	mock.lockPrepareNeo.Lock()
 	mock.calls.PrepareNeo = append(mock.calls.PrepareNeo, callInfo)
-	lockBoltConnMockPrepareNeo.Unlock()
+	mock.lockPrepareNeo.Unlock()
 	return mock.PrepareNeoFunc(query)
 }
 
@@ -357,14 +354,14 @@ func (mock *BoltConnMock) PrepareNeoCalls() []struct {
 	var calls []struct {
 		Query string
 	}
-	lockBoltConnMockPrepareNeo.RLock()
+	mock.lockPrepareNeo.RLock()
 	calls = mock.calls.PrepareNeo
-	lockBoltConnMockPrepareNeo.RUnlock()
+	mock.lockPrepareNeo.RUnlock()
 	return calls
 }
 
 // PreparePipeline calls PreparePipelineFunc.
-func (mock *BoltConnMock) PreparePipeline(query ...string) (golangNeo4jBoltDriver.PipelineStmt, error) {
+func (mock *BoltConnMock) PreparePipeline(query ...string) (bolt.PipelineStmt, error) {
 	if mock.PreparePipelineFunc == nil {
 		panic("BoltConnMock.PreparePipelineFunc: method is nil but BoltConn.PreparePipeline was just called")
 	}
@@ -373,9 +370,9 @@ func (mock *BoltConnMock) PreparePipeline(query ...string) (golangNeo4jBoltDrive
 	}{
 		Query: query,
 	}
-	lockBoltConnMockPreparePipeline.Lock()
+	mock.lockPreparePipeline.Lock()
 	mock.calls.PreparePipeline = append(mock.calls.PreparePipeline, callInfo)
-	lockBoltConnMockPreparePipeline.Unlock()
+	mock.lockPreparePipeline.Unlock()
 	return mock.PreparePipelineFunc(query...)
 }
 
@@ -388,14 +385,14 @@ func (mock *BoltConnMock) PreparePipelineCalls() []struct {
 	var calls []struct {
 		Query []string
 	}
-	lockBoltConnMockPreparePipeline.RLock()
+	mock.lockPreparePipeline.RLock()
 	calls = mock.calls.PreparePipeline
-	lockBoltConnMockPreparePipeline.RUnlock()
+	mock.lockPreparePipeline.RUnlock()
 	return calls
 }
 
 // QueryNeo calls QueryNeoFunc.
-func (mock *BoltConnMock) QueryNeo(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Rows, error) {
+func (mock *BoltConnMock) QueryNeo(query string, params map[string]interface{}) (bolt.Rows, error) {
 	if mock.QueryNeoFunc == nil {
 		panic("BoltConnMock.QueryNeoFunc: method is nil but BoltConn.QueryNeo was just called")
 	}
@@ -406,9 +403,9 @@ func (mock *BoltConnMock) QueryNeo(query string, params map[string]interface{}) 
 		Query:  query,
 		Params: params,
 	}
-	lockBoltConnMockQueryNeo.Lock()
+	mock.lockQueryNeo.Lock()
 	mock.calls.QueryNeo = append(mock.calls.QueryNeo, callInfo)
-	lockBoltConnMockQueryNeo.Unlock()
+	mock.lockQueryNeo.Unlock()
 	return mock.QueryNeoFunc(query, params)
 }
 
@@ -423,9 +420,9 @@ func (mock *BoltConnMock) QueryNeoCalls() []struct {
 		Query  string
 		Params map[string]interface{}
 	}
-	lockBoltConnMockQueryNeo.RLock()
+	mock.lockQueryNeo.RLock()
 	calls = mock.calls.QueryNeo
-	lockBoltConnMockQueryNeo.RUnlock()
+	mock.lockQueryNeo.RUnlock()
 	return calls
 }
 
@@ -441,9 +438,9 @@ func (mock *BoltConnMock) QueryNeoAll(query string, params map[string]interface{
 		Query:  query,
 		Params: params,
 	}
-	lockBoltConnMockQueryNeoAll.Lock()
+	mock.lockQueryNeoAll.Lock()
 	mock.calls.QueryNeoAll = append(mock.calls.QueryNeoAll, callInfo)
-	lockBoltConnMockQueryNeoAll.Unlock()
+	mock.lockQueryNeoAll.Unlock()
 	return mock.QueryNeoAllFunc(query, params)
 }
 
@@ -458,14 +455,14 @@ func (mock *BoltConnMock) QueryNeoAllCalls() []struct {
 		Query  string
 		Params map[string]interface{}
 	}
-	lockBoltConnMockQueryNeoAll.RLock()
+	mock.lockQueryNeoAll.RLock()
 	calls = mock.calls.QueryNeoAll
-	lockBoltConnMockQueryNeoAll.RUnlock()
+	mock.lockQueryNeoAll.RUnlock()
 	return calls
 }
 
 // QueryPipeline calls QueryPipelineFunc.
-func (mock *BoltConnMock) QueryPipeline(query []string, params ...map[string]interface{}) (golangNeo4jBoltDriver.PipelineRows, error) {
+func (mock *BoltConnMock) QueryPipeline(query []string, params ...map[string]interface{}) (bolt.PipelineRows, error) {
 	if mock.QueryPipelineFunc == nil {
 		panic("BoltConnMock.QueryPipelineFunc: method is nil but BoltConn.QueryPipeline was just called")
 	}
@@ -476,9 +473,9 @@ func (mock *BoltConnMock) QueryPipeline(query []string, params ...map[string]int
 		Query:  query,
 		Params: params,
 	}
-	lockBoltConnMockQueryPipeline.Lock()
+	mock.lockQueryPipeline.Lock()
 	mock.calls.QueryPipeline = append(mock.calls.QueryPipeline, callInfo)
-	lockBoltConnMockQueryPipeline.Unlock()
+	mock.lockQueryPipeline.Unlock()
 	return mock.QueryPipelineFunc(query, params...)
 }
 
@@ -493,70 +490,70 @@ func (mock *BoltConnMock) QueryPipelineCalls() []struct {
 		Query  []string
 		Params []map[string]interface{}
 	}
-	lockBoltConnMockQueryPipeline.RLock()
+	mock.lockQueryPipeline.RLock()
 	calls = mock.calls.QueryPipeline
-	lockBoltConnMockQueryPipeline.RUnlock()
+	mock.lockQueryPipeline.RUnlock()
 	return calls
 }
 
 // SetChunkSize calls SetChunkSizeFunc.
-func (mock *BoltConnMock) SetChunkSize(in1 uint16) {
+func (mock *BoltConnMock) SetChunkSize(v uint16) {
 	if mock.SetChunkSizeFunc == nil {
 		panic("BoltConnMock.SetChunkSizeFunc: method is nil but BoltConn.SetChunkSize was just called")
 	}
 	callInfo := struct {
-		In1 uint16
+		V uint16
 	}{
-		In1: in1,
+		V: v,
 	}
-	lockBoltConnMockSetChunkSize.Lock()
+	mock.lockSetChunkSize.Lock()
 	mock.calls.SetChunkSize = append(mock.calls.SetChunkSize, callInfo)
-	lockBoltConnMockSetChunkSize.Unlock()
-	mock.SetChunkSizeFunc(in1)
+	mock.lockSetChunkSize.Unlock()
+	mock.SetChunkSizeFunc(v)
 }
 
 // SetChunkSizeCalls gets all the calls that were made to SetChunkSize.
 // Check the length with:
 //     len(mockedBoltConn.SetChunkSizeCalls())
 func (mock *BoltConnMock) SetChunkSizeCalls() []struct {
-	In1 uint16
+	V uint16
 } {
 	var calls []struct {
-		In1 uint16
+		V uint16
 	}
-	lockBoltConnMockSetChunkSize.RLock()
+	mock.lockSetChunkSize.RLock()
 	calls = mock.calls.SetChunkSize
-	lockBoltConnMockSetChunkSize.RUnlock()
+	mock.lockSetChunkSize.RUnlock()
 	return calls
 }
 
 // SetTimeout calls SetTimeoutFunc.
-func (mock *BoltConnMock) SetTimeout(in1 time.Duration) {
+func (mock *BoltConnMock) SetTimeout(duration time.Duration) {
 	if mock.SetTimeoutFunc == nil {
 		panic("BoltConnMock.SetTimeoutFunc: method is nil but BoltConn.SetTimeout was just called")
 	}
 	callInfo := struct {
-		In1 time.Duration
+		Duration time.Duration
 	}{
-		In1: in1,
+		Duration: duration,
 	}
-	lockBoltConnMockSetTimeout.Lock()
+	mock.lockSetTimeout.Lock()
 	mock.calls.SetTimeout = append(mock.calls.SetTimeout, callInfo)
-	lockBoltConnMockSetTimeout.Unlock()
-	mock.SetTimeoutFunc(in1)
+	mock.lockSetTimeout.Unlock()
+	mock.SetTimeoutFunc(duration)
 }
 
 // SetTimeoutCalls gets all the calls that were made to SetTimeout.
 // Check the length with:
 //     len(mockedBoltConn.SetTimeoutCalls())
 func (mock *BoltConnMock) SetTimeoutCalls() []struct {
-	In1 time.Duration
+	Duration time.Duration
 } {
 	var calls []struct {
-		In1 time.Duration
+		Duration time.Duration
 	}
-	lockBoltConnMockSetTimeout.RLock()
+	mock.lockSetTimeout.RLock()
 	calls = mock.calls.SetTimeout
-	lockBoltConnMockSetTimeout.RUnlock()
+	mock.lockSetTimeout.RUnlock()
 	return calls
 }

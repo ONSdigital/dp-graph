@@ -7,20 +7,9 @@ import (
 	"context"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/mapper"
 	"github.com/ONSdigital/dp-graph/v2/neo4j/neo4jdriver"
-	"github.com/ONSdigital/dp-healthcheck/healthcheck"
-	"github.com/ONSdigital/golang-neo4j-bolt-driver"
+	health "github.com/ONSdigital/dp-healthcheck/healthcheck"
+	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"sync"
-)
-
-var (
-	lockNeo4jDriverMockChecker        sync.RWMutex
-	lockNeo4jDriverMockClose          sync.RWMutex
-	lockNeo4jDriverMockCount          sync.RWMutex
-	lockNeo4jDriverMockExec           sync.RWMutex
-	lockNeo4jDriverMockHealthcheck    sync.RWMutex
-	lockNeo4jDriverMockRead           sync.RWMutex
-	lockNeo4jDriverMockReadWithParams sync.RWMutex
-	lockNeo4jDriverMockStreamRows     sync.RWMutex
 )
 
 // Ensure, that Neo4jDriverMock does implement neo4jdriver.Neo4jDriver.
@@ -29,43 +18,43 @@ var _ neo4jdriver.Neo4jDriver = &Neo4jDriverMock{}
 
 // Neo4jDriverMock is a mock implementation of neo4jdriver.Neo4jDriver.
 //
-//     func TestSomethingThatUsesNeo4jDriver(t *testing.T) {
+// 	func TestSomethingThatUsesNeo4jDriver(t *testing.T) {
 //
-//         // make and configure a mocked neo4jdriver.Neo4jDriver
-//         mockedNeo4jDriver := &Neo4jDriverMock{
-//             CheckerFunc: func(ctx context.Context, state *healthcheck.CheckState) error {
-// 	               panic("mock out the Checker method")
-//             },
-//             CloseFunc: func(ctx context.Context) error {
-// 	               panic("mock out the Close method")
-//             },
-//             CountFunc: func(query string) (int64, error) {
-// 	               panic("mock out the Count method")
-//             },
-//             ExecFunc: func(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Result, error) {
-// 	               panic("mock out the Exec method")
-//             },
-//             HealthcheckFunc: func() (string, error) {
-// 	               panic("mock out the Healthcheck method")
-//             },
-//             ReadFunc: func(query string, mapp mapper.ResultMapper, single bool) error {
-// 	               panic("mock out the Read method")
-//             },
-//             ReadWithParamsFunc: func(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error {
-// 	               panic("mock out the ReadWithParams method")
-//             },
-//             StreamRowsFunc: func(query string) (*neo4jdriver.BoltRowReader, error) {
-// 	               panic("mock out the StreamRows method")
-//             },
-//         }
+// 		// make and configure a mocked neo4jdriver.Neo4jDriver
+// 		mockedNeo4jDriver := &Neo4jDriverMock{
+// 			CheckerFunc: func(ctx context.Context, state *health.CheckState) error {
+// 				panic("mock out the Checker method")
+// 			},
+// 			CloseFunc: func(ctx context.Context) error {
+// 				panic("mock out the Close method")
+// 			},
+// 			CountFunc: func(query string) (int64, error) {
+// 				panic("mock out the Count method")
+// 			},
+// 			ExecFunc: func(query string, params map[string]interface{}) (bolt.Result, error) {
+// 				panic("mock out the Exec method")
+// 			},
+// 			HealthcheckFunc: func() (string, error) {
+// 				panic("mock out the Healthcheck method")
+// 			},
+// 			ReadFunc: func(query string, mapp mapper.ResultMapper, single bool) error {
+// 				panic("mock out the Read method")
+// 			},
+// 			ReadWithParamsFunc: func(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error {
+// 				panic("mock out the ReadWithParams method")
+// 			},
+// 			StreamRowsFunc: func(query string) (*neo4jdriver.BoltRowReader, error) {
+// 				panic("mock out the StreamRows method")
+// 			},
+// 		}
 //
-//         // use mockedNeo4jDriver in code that requires neo4jdriver.Neo4jDriver
-//         // and then make assertions.
+// 		// use mockedNeo4jDriver in code that requires neo4jdriver.Neo4jDriver
+// 		// and then make assertions.
 //
-//     }
+// 	}
 type Neo4jDriverMock struct {
 	// CheckerFunc mocks the Checker method.
-	CheckerFunc func(ctx context.Context, state *healthcheck.CheckState) error
+	CheckerFunc func(ctx context.Context, state *health.CheckState) error
 
 	// CloseFunc mocks the Close method.
 	CloseFunc func(ctx context.Context) error
@@ -74,7 +63,7 @@ type Neo4jDriverMock struct {
 	CountFunc func(query string) (int64, error)
 
 	// ExecFunc mocks the Exec method.
-	ExecFunc func(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Result, error)
+	ExecFunc func(query string, params map[string]interface{}) (bolt.Result, error)
 
 	// HealthcheckFunc mocks the Healthcheck method.
 	HealthcheckFunc func() (string, error)
@@ -95,7 +84,7 @@ type Neo4jDriverMock struct {
 			// Ctx is the ctx argument value.
 			Ctx context.Context
 			// State is the state argument value.
-			State *healthcheck.CheckState
+			State *health.CheckState
 		}
 		// Close holds details about calls to the Close method.
 		Close []struct {
@@ -143,23 +132,31 @@ type Neo4jDriverMock struct {
 			Query string
 		}
 	}
+	lockChecker        sync.RWMutex
+	lockClose          sync.RWMutex
+	lockCount          sync.RWMutex
+	lockExec           sync.RWMutex
+	lockHealthcheck    sync.RWMutex
+	lockRead           sync.RWMutex
+	lockReadWithParams sync.RWMutex
+	lockStreamRows     sync.RWMutex
 }
 
 // Checker calls CheckerFunc.
-func (mock *Neo4jDriverMock) Checker(ctx context.Context, state *healthcheck.CheckState) error {
+func (mock *Neo4jDriverMock) Checker(ctx context.Context, state *health.CheckState) error {
 	if mock.CheckerFunc == nil {
 		panic("Neo4jDriverMock.CheckerFunc: method is nil but Neo4jDriver.Checker was just called")
 	}
 	callInfo := struct {
 		Ctx   context.Context
-		State *healthcheck.CheckState
+		State *health.CheckState
 	}{
 		Ctx:   ctx,
 		State: state,
 	}
-	lockNeo4jDriverMockChecker.Lock()
+	mock.lockChecker.Lock()
 	mock.calls.Checker = append(mock.calls.Checker, callInfo)
-	lockNeo4jDriverMockChecker.Unlock()
+	mock.lockChecker.Unlock()
 	return mock.CheckerFunc(ctx, state)
 }
 
@@ -168,15 +165,15 @@ func (mock *Neo4jDriverMock) Checker(ctx context.Context, state *healthcheck.Che
 //     len(mockedNeo4jDriver.CheckerCalls())
 func (mock *Neo4jDriverMock) CheckerCalls() []struct {
 	Ctx   context.Context
-	State *healthcheck.CheckState
+	State *health.CheckState
 } {
 	var calls []struct {
 		Ctx   context.Context
-		State *healthcheck.CheckState
+		State *health.CheckState
 	}
-	lockNeo4jDriverMockChecker.RLock()
+	mock.lockChecker.RLock()
 	calls = mock.calls.Checker
-	lockNeo4jDriverMockChecker.RUnlock()
+	mock.lockChecker.RUnlock()
 	return calls
 }
 
@@ -190,9 +187,9 @@ func (mock *Neo4jDriverMock) Close(ctx context.Context) error {
 	}{
 		Ctx: ctx,
 	}
-	lockNeo4jDriverMockClose.Lock()
+	mock.lockClose.Lock()
 	mock.calls.Close = append(mock.calls.Close, callInfo)
-	lockNeo4jDriverMockClose.Unlock()
+	mock.lockClose.Unlock()
 	return mock.CloseFunc(ctx)
 }
 
@@ -205,9 +202,9 @@ func (mock *Neo4jDriverMock) CloseCalls() []struct {
 	var calls []struct {
 		Ctx context.Context
 	}
-	lockNeo4jDriverMockClose.RLock()
+	mock.lockClose.RLock()
 	calls = mock.calls.Close
-	lockNeo4jDriverMockClose.RUnlock()
+	mock.lockClose.RUnlock()
 	return calls
 }
 
@@ -221,9 +218,9 @@ func (mock *Neo4jDriverMock) Count(query string) (int64, error) {
 	}{
 		Query: query,
 	}
-	lockNeo4jDriverMockCount.Lock()
+	mock.lockCount.Lock()
 	mock.calls.Count = append(mock.calls.Count, callInfo)
-	lockNeo4jDriverMockCount.Unlock()
+	mock.lockCount.Unlock()
 	return mock.CountFunc(query)
 }
 
@@ -236,14 +233,14 @@ func (mock *Neo4jDriverMock) CountCalls() []struct {
 	var calls []struct {
 		Query string
 	}
-	lockNeo4jDriverMockCount.RLock()
+	mock.lockCount.RLock()
 	calls = mock.calls.Count
-	lockNeo4jDriverMockCount.RUnlock()
+	mock.lockCount.RUnlock()
 	return calls
 }
 
 // Exec calls ExecFunc.
-func (mock *Neo4jDriverMock) Exec(query string, params map[string]interface{}) (golangNeo4jBoltDriver.Result, error) {
+func (mock *Neo4jDriverMock) Exec(query string, params map[string]interface{}) (bolt.Result, error) {
 	if mock.ExecFunc == nil {
 		panic("Neo4jDriverMock.ExecFunc: method is nil but Neo4jDriver.Exec was just called")
 	}
@@ -254,9 +251,9 @@ func (mock *Neo4jDriverMock) Exec(query string, params map[string]interface{}) (
 		Query:  query,
 		Params: params,
 	}
-	lockNeo4jDriverMockExec.Lock()
+	mock.lockExec.Lock()
 	mock.calls.Exec = append(mock.calls.Exec, callInfo)
-	lockNeo4jDriverMockExec.Unlock()
+	mock.lockExec.Unlock()
 	return mock.ExecFunc(query, params)
 }
 
@@ -271,9 +268,9 @@ func (mock *Neo4jDriverMock) ExecCalls() []struct {
 		Query  string
 		Params map[string]interface{}
 	}
-	lockNeo4jDriverMockExec.RLock()
+	mock.lockExec.RLock()
 	calls = mock.calls.Exec
-	lockNeo4jDriverMockExec.RUnlock()
+	mock.lockExec.RUnlock()
 	return calls
 }
 
@@ -284,9 +281,9 @@ func (mock *Neo4jDriverMock) Healthcheck() (string, error) {
 	}
 	callInfo := struct {
 	}{}
-	lockNeo4jDriverMockHealthcheck.Lock()
+	mock.lockHealthcheck.Lock()
 	mock.calls.Healthcheck = append(mock.calls.Healthcheck, callInfo)
-	lockNeo4jDriverMockHealthcheck.Unlock()
+	mock.lockHealthcheck.Unlock()
 	return mock.HealthcheckFunc()
 }
 
@@ -297,9 +294,9 @@ func (mock *Neo4jDriverMock) HealthcheckCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockNeo4jDriverMockHealthcheck.RLock()
+	mock.lockHealthcheck.RLock()
 	calls = mock.calls.Healthcheck
-	lockNeo4jDriverMockHealthcheck.RUnlock()
+	mock.lockHealthcheck.RUnlock()
 	return calls
 }
 
@@ -317,9 +314,9 @@ func (mock *Neo4jDriverMock) Read(query string, mapp mapper.ResultMapper, single
 		Mapp:   mapp,
 		Single: single,
 	}
-	lockNeo4jDriverMockRead.Lock()
+	mock.lockRead.Lock()
 	mock.calls.Read = append(mock.calls.Read, callInfo)
-	lockNeo4jDriverMockRead.Unlock()
+	mock.lockRead.Unlock()
 	return mock.ReadFunc(query, mapp, single)
 }
 
@@ -336,9 +333,9 @@ func (mock *Neo4jDriverMock) ReadCalls() []struct {
 		Mapp   mapper.ResultMapper
 		Single bool
 	}
-	lockNeo4jDriverMockRead.RLock()
+	mock.lockRead.RLock()
 	calls = mock.calls.Read
-	lockNeo4jDriverMockRead.RUnlock()
+	mock.lockRead.RUnlock()
 	return calls
 }
 
@@ -358,9 +355,9 @@ func (mock *Neo4jDriverMock) ReadWithParams(query string, params map[string]inte
 		Mapp:   mapp,
 		Single: single,
 	}
-	lockNeo4jDriverMockReadWithParams.Lock()
+	mock.lockReadWithParams.Lock()
 	mock.calls.ReadWithParams = append(mock.calls.ReadWithParams, callInfo)
-	lockNeo4jDriverMockReadWithParams.Unlock()
+	mock.lockReadWithParams.Unlock()
 	return mock.ReadWithParamsFunc(query, params, mapp, single)
 }
 
@@ -379,9 +376,9 @@ func (mock *Neo4jDriverMock) ReadWithParamsCalls() []struct {
 		Mapp   mapper.ResultMapper
 		Single bool
 	}
-	lockNeo4jDriverMockReadWithParams.RLock()
+	mock.lockReadWithParams.RLock()
 	calls = mock.calls.ReadWithParams
-	lockNeo4jDriverMockReadWithParams.RUnlock()
+	mock.lockReadWithParams.RUnlock()
 	return calls
 }
 
@@ -395,9 +392,9 @@ func (mock *Neo4jDriverMock) StreamRows(query string) (*neo4jdriver.BoltRowReade
 	}{
 		Query: query,
 	}
-	lockNeo4jDriverMockStreamRows.Lock()
+	mock.lockStreamRows.Lock()
 	mock.calls.StreamRows = append(mock.calls.StreamRows, callInfo)
-	lockNeo4jDriverMockStreamRows.Unlock()
+	mock.lockStreamRows.Unlock()
 	return mock.StreamRowsFunc(query)
 }
 
@@ -410,8 +407,8 @@ func (mock *Neo4jDriverMock) StreamRowsCalls() []struct {
 	var calls []struct {
 		Query string
 	}
-	lockNeo4jDriverMockStreamRows.RLock()
+	mock.lockStreamRows.RLock()
 	calls = mock.calls.StreamRows
-	lockNeo4jDriverMockStreamRows.RUnlock()
+	mock.lockStreamRows.RUnlock()
 	return calls
 }

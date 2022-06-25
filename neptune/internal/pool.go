@@ -7,18 +7,8 @@ import (
 	"context"
 	"github.com/ONSdigital/dp-graph/v2/neptune/driver"
 	"github.com/ONSdigital/graphson"
-	"github.com/ONSdigital/gremgo-neptune"
+	gremgo "github.com/ONSdigital/gremgo-neptune"
 	"sync"
-)
-
-var (
-	lockNeptunePoolMockClose            sync.RWMutex
-	lockNeptunePoolMockExecute          sync.RWMutex
-	lockNeptunePoolMockGet              sync.RWMutex
-	lockNeptunePoolMockGetCount         sync.RWMutex
-	lockNeptunePoolMockGetE             sync.RWMutex
-	lockNeptunePoolMockGetStringList    sync.RWMutex
-	lockNeptunePoolMockOpenStreamCursor sync.RWMutex
 )
 
 // Ensure, that NeptunePoolMock does implement driver.NeptunePool.
@@ -27,37 +17,37 @@ var _ driver.NeptunePool = &NeptunePoolMock{}
 
 // NeptunePoolMock is a mock implementation of driver.NeptunePool.
 //
-//     func TestSomethingThatUsesNeptunePool(t *testing.T) {
+// 	func TestSomethingThatUsesNeptunePool(t *testing.T) {
 //
-//         // make and configure a mocked driver.NeptunePool
-//         mockedNeptunePool := &NeptunePoolMock{
-//             CloseFunc: func()  {
-// 	               panic("mock out the Close method")
-//             },
-//             ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
-// 	               panic("mock out the Execute method")
-//             },
-//             GetFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]graphson.Vertex, error) {
-// 	               panic("mock out the Get method")
-//             },
-//             GetCountFunc: func(q string, bindings map[string]string, rebindings map[string]string) (int64, error) {
-// 	               panic("mock out the GetCount method")
-//             },
-//             GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-// 	               panic("mock out the GetE method")
-//             },
-//             GetStringListFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
-// 	               panic("mock out the GetStringList method")
-//             },
-//             OpenStreamCursorFunc: func(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Stream, error) {
-// 	               panic("mock out the OpenStreamCursor method")
-//             },
-//         }
+// 		// make and configure a mocked driver.NeptunePool
+// 		mockedNeptunePool := &NeptunePoolMock{
+// 			CloseFunc: func()  {
+// 				panic("mock out the Close method")
+// 			},
+// 			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
+// 				panic("mock out the Execute method")
+// 			},
+// 			GetFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]graphson.Vertex, error) {
+// 				panic("mock out the Get method")
+// 			},
+// 			GetCountFunc: func(q string, bindings map[string]string, rebindings map[string]string) (int64, error) {
+// 				panic("mock out the GetCount method")
+// 			},
+// 			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+// 				panic("mock out the GetE method")
+// 			},
+// 			GetStringListFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+// 				panic("mock out the GetStringList method")
+// 			},
+// 			OpenStreamCursorFunc: func(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Stream, error) {
+// 				panic("mock out the OpenStreamCursor method")
+// 			},
+// 		}
 //
-//         // use mockedNeptunePool in code that requires driver.NeptunePool
-//         // and then make assertions.
+// 		// use mockedNeptunePool in code that requires driver.NeptunePool
+// 		// and then make assertions.
 //
-//     }
+// 	}
 type NeptunePoolMock struct {
 	// CloseFunc mocks the Close method.
 	CloseFunc func()
@@ -142,6 +132,13 @@ type NeptunePoolMock struct {
 			Rebindings map[string]string
 		}
 	}
+	lockClose            sync.RWMutex
+	lockExecute          sync.RWMutex
+	lockGet              sync.RWMutex
+	lockGetCount         sync.RWMutex
+	lockGetE             sync.RWMutex
+	lockGetStringList    sync.RWMutex
+	lockOpenStreamCursor sync.RWMutex
 }
 
 // Close calls CloseFunc.
@@ -151,9 +148,9 @@ func (mock *NeptunePoolMock) Close() {
 	}
 	callInfo := struct {
 	}{}
-	lockNeptunePoolMockClose.Lock()
+	mock.lockClose.Lock()
 	mock.calls.Close = append(mock.calls.Close, callInfo)
-	lockNeptunePoolMockClose.Unlock()
+	mock.lockClose.Unlock()
 	mock.CloseFunc()
 }
 
@@ -164,9 +161,9 @@ func (mock *NeptunePoolMock) CloseCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockNeptunePoolMockClose.RLock()
+	mock.lockClose.RLock()
 	calls = mock.calls.Close
-	lockNeptunePoolMockClose.RUnlock()
+	mock.lockClose.RUnlock()
 	return calls
 }
 
@@ -184,9 +181,9 @@ func (mock *NeptunePoolMock) Execute(query string, bindings map[string]string, r
 		Bindings:   bindings,
 		Rebindings: rebindings,
 	}
-	lockNeptunePoolMockExecute.Lock()
+	mock.lockExecute.Lock()
 	mock.calls.Execute = append(mock.calls.Execute, callInfo)
-	lockNeptunePoolMockExecute.Unlock()
+	mock.lockExecute.Unlock()
 	return mock.ExecuteFunc(query, bindings, rebindings)
 }
 
@@ -203,9 +200,9 @@ func (mock *NeptunePoolMock) ExecuteCalls() []struct {
 		Bindings   map[string]string
 		Rebindings map[string]string
 	}
-	lockNeptunePoolMockExecute.RLock()
+	mock.lockExecute.RLock()
 	calls = mock.calls.Execute
-	lockNeptunePoolMockExecute.RUnlock()
+	mock.lockExecute.RUnlock()
 	return calls
 }
 
@@ -223,9 +220,9 @@ func (mock *NeptunePoolMock) Get(query string, bindings map[string]string, rebin
 		Bindings:   bindings,
 		Rebindings: rebindings,
 	}
-	lockNeptunePoolMockGet.Lock()
+	mock.lockGet.Lock()
 	mock.calls.Get = append(mock.calls.Get, callInfo)
-	lockNeptunePoolMockGet.Unlock()
+	mock.lockGet.Unlock()
 	return mock.GetFunc(query, bindings, rebindings)
 }
 
@@ -242,9 +239,9 @@ func (mock *NeptunePoolMock) GetCalls() []struct {
 		Bindings   map[string]string
 		Rebindings map[string]string
 	}
-	lockNeptunePoolMockGet.RLock()
+	mock.lockGet.RLock()
 	calls = mock.calls.Get
-	lockNeptunePoolMockGet.RUnlock()
+	mock.lockGet.RUnlock()
 	return calls
 }
 
@@ -262,9 +259,9 @@ func (mock *NeptunePoolMock) GetCount(q string, bindings map[string]string, rebi
 		Bindings:   bindings,
 		Rebindings: rebindings,
 	}
-	lockNeptunePoolMockGetCount.Lock()
+	mock.lockGetCount.Lock()
 	mock.calls.GetCount = append(mock.calls.GetCount, callInfo)
-	lockNeptunePoolMockGetCount.Unlock()
+	mock.lockGetCount.Unlock()
 	return mock.GetCountFunc(q, bindings, rebindings)
 }
 
@@ -281,9 +278,9 @@ func (mock *NeptunePoolMock) GetCountCalls() []struct {
 		Bindings   map[string]string
 		Rebindings map[string]string
 	}
-	lockNeptunePoolMockGetCount.RLock()
+	mock.lockGetCount.RLock()
 	calls = mock.calls.GetCount
-	lockNeptunePoolMockGetCount.RUnlock()
+	mock.lockGetCount.RUnlock()
 	return calls
 }
 
@@ -301,9 +298,9 @@ func (mock *NeptunePoolMock) GetE(q string, bindings map[string]string, rebindin
 		Bindings:   bindings,
 		Rebindings: rebindings,
 	}
-	lockNeptunePoolMockGetE.Lock()
+	mock.lockGetE.Lock()
 	mock.calls.GetE = append(mock.calls.GetE, callInfo)
-	lockNeptunePoolMockGetE.Unlock()
+	mock.lockGetE.Unlock()
 	return mock.GetEFunc(q, bindings, rebindings)
 }
 
@@ -320,9 +317,9 @@ func (mock *NeptunePoolMock) GetECalls() []struct {
 		Bindings   map[string]string
 		Rebindings map[string]string
 	}
-	lockNeptunePoolMockGetE.RLock()
+	mock.lockGetE.RLock()
 	calls = mock.calls.GetE
-	lockNeptunePoolMockGetE.RUnlock()
+	mock.lockGetE.RUnlock()
 	return calls
 }
 
@@ -340,9 +337,9 @@ func (mock *NeptunePoolMock) GetStringList(query string, bindings map[string]str
 		Bindings:   bindings,
 		Rebindings: rebindings,
 	}
-	lockNeptunePoolMockGetStringList.Lock()
+	mock.lockGetStringList.Lock()
 	mock.calls.GetStringList = append(mock.calls.GetStringList, callInfo)
-	lockNeptunePoolMockGetStringList.Unlock()
+	mock.lockGetStringList.Unlock()
 	return mock.GetStringListFunc(query, bindings, rebindings)
 }
 
@@ -359,9 +356,9 @@ func (mock *NeptunePoolMock) GetStringListCalls() []struct {
 		Bindings   map[string]string
 		Rebindings map[string]string
 	}
-	lockNeptunePoolMockGetStringList.RLock()
+	mock.lockGetStringList.RLock()
 	calls = mock.calls.GetStringList
-	lockNeptunePoolMockGetStringList.RUnlock()
+	mock.lockGetStringList.RUnlock()
 	return calls
 }
 
@@ -381,9 +378,9 @@ func (mock *NeptunePoolMock) OpenStreamCursor(ctx context.Context, query string,
 		Bindings:   bindings,
 		Rebindings: rebindings,
 	}
-	lockNeptunePoolMockOpenStreamCursor.Lock()
+	mock.lockOpenStreamCursor.Lock()
 	mock.calls.OpenStreamCursor = append(mock.calls.OpenStreamCursor, callInfo)
-	lockNeptunePoolMockOpenStreamCursor.Unlock()
+	mock.lockOpenStreamCursor.Unlock()
 	return mock.OpenStreamCursorFunc(ctx, query, bindings, rebindings)
 }
 
@@ -402,8 +399,8 @@ func (mock *NeptunePoolMock) OpenStreamCursorCalls() []struct {
 		Bindings   map[string]string
 		Rebindings map[string]string
 	}
-	lockNeptunePoolMockOpenStreamCursor.RLock()
+	mock.lockOpenStreamCursor.RLock()
 	calls = mock.calls.OpenStreamCursor
-	lockNeptunePoolMockOpenStreamCursor.RUnlock()
+	mock.lockOpenStreamCursor.RUnlock()
 	return calls
 }
