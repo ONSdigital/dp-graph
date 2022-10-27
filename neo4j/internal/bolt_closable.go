@@ -5,13 +5,8 @@ package internal
 
 import (
 	"github.com/ONSdigital/dp-graph/v2/neo4j/neo4jdriver"
-	"github.com/ONSdigital/golang-neo4j-bolt-driver"
+	bolt "github.com/ONSdigital/golang-neo4j-bolt-driver"
 	"sync"
-)
-
-var (
-	lockClosableDriverPoolMockClose    sync.RWMutex
-	lockClosableDriverPoolMockOpenPool sync.RWMutex
 )
 
 // Ensure, that ClosableDriverPoolMock does implement neo4jdriver.ClosableDriverPool.
@@ -20,28 +15,28 @@ var _ neo4jdriver.ClosableDriverPool = &ClosableDriverPoolMock{}
 
 // ClosableDriverPoolMock is a mock implementation of neo4jdriver.ClosableDriverPool.
 //
-//     func TestSomethingThatUsesClosableDriverPool(t *testing.T) {
+// 	func TestSomethingThatUsesClosableDriverPool(t *testing.T) {
 //
-//         // make and configure a mocked neo4jdriver.ClosableDriverPool
-//         mockedClosableDriverPool := &ClosableDriverPoolMock{
-//             CloseFunc: func() error {
-// 	               panic("mock out the Close method")
-//             },
-//             OpenPoolFunc: func() (golangNeo4jBoltDriver.Conn, error) {
-// 	               panic("mock out the OpenPool method")
-//             },
-//         }
+// 		// make and configure a mocked neo4jdriver.ClosableDriverPool
+// 		mockedClosableDriverPool := &ClosableDriverPoolMock{
+// 			CloseFunc: func() error {
+// 				panic("mock out the Close method")
+// 			},
+// 			OpenPoolFunc: func() (bolt.Conn, error) {
+// 				panic("mock out the OpenPool method")
+// 			},
+// 		}
 //
-//         // use mockedClosableDriverPool in code that requires neo4jdriver.ClosableDriverPool
-//         // and then make assertions.
+// 		// use mockedClosableDriverPool in code that requires neo4jdriver.ClosableDriverPool
+// 		// and then make assertions.
 //
-//     }
+// 	}
 type ClosableDriverPoolMock struct {
 	// CloseFunc mocks the Close method.
 	CloseFunc func() error
 
 	// OpenPoolFunc mocks the OpenPool method.
-	OpenPoolFunc func() (golangNeo4jBoltDriver.Conn, error)
+	OpenPoolFunc func() (bolt.Conn, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -52,6 +47,8 @@ type ClosableDriverPoolMock struct {
 		OpenPool []struct {
 		}
 	}
+	lockClose    sync.RWMutex
+	lockOpenPool sync.RWMutex
 }
 
 // Close calls CloseFunc.
@@ -61,9 +58,9 @@ func (mock *ClosableDriverPoolMock) Close() error {
 	}
 	callInfo := struct {
 	}{}
-	lockClosableDriverPoolMockClose.Lock()
+	mock.lockClose.Lock()
 	mock.calls.Close = append(mock.calls.Close, callInfo)
-	lockClosableDriverPoolMockClose.Unlock()
+	mock.lockClose.Unlock()
 	return mock.CloseFunc()
 }
 
@@ -74,22 +71,22 @@ func (mock *ClosableDriverPoolMock) CloseCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockClosableDriverPoolMockClose.RLock()
+	mock.lockClose.RLock()
 	calls = mock.calls.Close
-	lockClosableDriverPoolMockClose.RUnlock()
+	mock.lockClose.RUnlock()
 	return calls
 }
 
 // OpenPool calls OpenPoolFunc.
-func (mock *ClosableDriverPoolMock) OpenPool() (golangNeo4jBoltDriver.Conn, error) {
+func (mock *ClosableDriverPoolMock) OpenPool() (bolt.Conn, error) {
 	if mock.OpenPoolFunc == nil {
 		panic("ClosableDriverPoolMock.OpenPoolFunc: method is nil but ClosableDriverPool.OpenPool was just called")
 	}
 	callInfo := struct {
 	}{}
-	lockClosableDriverPoolMockOpenPool.Lock()
+	mock.lockOpenPool.Lock()
 	mock.calls.OpenPool = append(mock.calls.OpenPool, callInfo)
-	lockClosableDriverPoolMockOpenPool.Unlock()
+	mock.lockOpenPool.Unlock()
 	return mock.OpenPoolFunc()
 }
 
@@ -100,8 +97,8 @@ func (mock *ClosableDriverPoolMock) OpenPoolCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockClosableDriverPoolMockOpenPool.RLock()
+	mock.lockOpenPool.RLock()
 	calls = mock.calls.OpenPool
-	lockClosableDriverPoolMockOpenPool.RUnlock()
+	mock.lockOpenPool.RUnlock()
 	return calls
 }

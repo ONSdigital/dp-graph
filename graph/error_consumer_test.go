@@ -11,7 +11,8 @@ import (
 
 func TestChannelConsumer_Close(t *testing.T) {
 
-	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*200)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*200)
+	defer cancel()
 	errorChan := make(chan error, 1)
 	consume := func(error) {}
 
@@ -37,7 +38,8 @@ func TestChannelConsumer_Close(t *testing.T) {
 
 func TestChannelConsumer_CloseContext(t *testing.T) {
 
-	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*10)
+	defer cancel()
 	errorChan := make(chan error, 1)
 
 	chConsumingTest := make(chan struct{})
@@ -76,7 +78,8 @@ func TestNewChannelConsumer(t *testing.T) {
 		consumeFinished <- nil
 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), time.Millisecond*200)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Millisecond*200)
+	defer cancel()
 
 	Convey("Given a channel consumer", t, func() {
 

@@ -8,45 +8,37 @@ import (
 	"sync"
 )
 
-var (
-	lockBoltRowsMockAll      sync.RWMutex
-	lockBoltRowsMockClose    sync.RWMutex
-	lockBoltRowsMockColumns  sync.RWMutex
-	lockBoltRowsMockMetadata sync.RWMutex
-	lockBoltRowsMockNextNeo  sync.RWMutex
-)
-
 // Ensure, that BoltRowsMock does implement neo4jdriver.BoltRows.
 // If this is not the case, regenerate this file with moq.
 var _ neo4jdriver.BoltRows = &BoltRowsMock{}
 
 // BoltRowsMock is a mock implementation of neo4jdriver.BoltRows.
 //
-//     func TestSomethingThatUsesBoltRows(t *testing.T) {
+// 	func TestSomethingThatUsesBoltRows(t *testing.T) {
 //
-//         // make and configure a mocked neo4jdriver.BoltRows
-//         mockedBoltRows := &BoltRowsMock{
-//             AllFunc: func() ([][]interface{}, map[string]interface{}, error) {
-// 	               panic("mock out the All method")
-//             },
-//             CloseFunc: func() error {
-// 	               panic("mock out the Close method")
-//             },
-//             ColumnsFunc: func() []string {
-// 	               panic("mock out the Columns method")
-//             },
-//             MetadataFunc: func() map[string]interface{} {
-// 	               panic("mock out the Metadata method")
-//             },
-//             NextNeoFunc: func() ([]interface{}, map[string]interface{}, error) {
-// 	               panic("mock out the NextNeo method")
-//             },
-//         }
+// 		// make and configure a mocked neo4jdriver.BoltRows
+// 		mockedBoltRows := &BoltRowsMock{
+// 			AllFunc: func() ([][]interface{}, map[string]interface{}, error) {
+// 				panic("mock out the All method")
+// 			},
+// 			CloseFunc: func() error {
+// 				panic("mock out the Close method")
+// 			},
+// 			ColumnsFunc: func() []string {
+// 				panic("mock out the Columns method")
+// 			},
+// 			MetadataFunc: func() map[string]interface{} {
+// 				panic("mock out the Metadata method")
+// 			},
+// 			NextNeoFunc: func() ([]interface{}, map[string]interface{}, error) {
+// 				panic("mock out the NextNeo method")
+// 			},
+// 		}
 //
-//         // use mockedBoltRows in code that requires neo4jdriver.BoltRows
-//         // and then make assertions.
+// 		// use mockedBoltRows in code that requires neo4jdriver.BoltRows
+// 		// and then make assertions.
 //
-//     }
+// 	}
 type BoltRowsMock struct {
 	// AllFunc mocks the All method.
 	AllFunc func() ([][]interface{}, map[string]interface{}, error)
@@ -81,6 +73,11 @@ type BoltRowsMock struct {
 		NextNeo []struct {
 		}
 	}
+	lockAll      sync.RWMutex
+	lockClose    sync.RWMutex
+	lockColumns  sync.RWMutex
+	lockMetadata sync.RWMutex
+	lockNextNeo  sync.RWMutex
 }
 
 // All calls AllFunc.
@@ -90,9 +87,9 @@ func (mock *BoltRowsMock) All() ([][]interface{}, map[string]interface{}, error)
 	}
 	callInfo := struct {
 	}{}
-	lockBoltRowsMockAll.Lock()
+	mock.lockAll.Lock()
 	mock.calls.All = append(mock.calls.All, callInfo)
-	lockBoltRowsMockAll.Unlock()
+	mock.lockAll.Unlock()
 	return mock.AllFunc()
 }
 
@@ -103,9 +100,9 @@ func (mock *BoltRowsMock) AllCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockBoltRowsMockAll.RLock()
+	mock.lockAll.RLock()
 	calls = mock.calls.All
-	lockBoltRowsMockAll.RUnlock()
+	mock.lockAll.RUnlock()
 	return calls
 }
 
@@ -116,9 +113,9 @@ func (mock *BoltRowsMock) Close() error {
 	}
 	callInfo := struct {
 	}{}
-	lockBoltRowsMockClose.Lock()
+	mock.lockClose.Lock()
 	mock.calls.Close = append(mock.calls.Close, callInfo)
-	lockBoltRowsMockClose.Unlock()
+	mock.lockClose.Unlock()
 	return mock.CloseFunc()
 }
 
@@ -129,9 +126,9 @@ func (mock *BoltRowsMock) CloseCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockBoltRowsMockClose.RLock()
+	mock.lockClose.RLock()
 	calls = mock.calls.Close
-	lockBoltRowsMockClose.RUnlock()
+	mock.lockClose.RUnlock()
 	return calls
 }
 
@@ -142,9 +139,9 @@ func (mock *BoltRowsMock) Columns() []string {
 	}
 	callInfo := struct {
 	}{}
-	lockBoltRowsMockColumns.Lock()
+	mock.lockColumns.Lock()
 	mock.calls.Columns = append(mock.calls.Columns, callInfo)
-	lockBoltRowsMockColumns.Unlock()
+	mock.lockColumns.Unlock()
 	return mock.ColumnsFunc()
 }
 
@@ -155,9 +152,9 @@ func (mock *BoltRowsMock) ColumnsCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockBoltRowsMockColumns.RLock()
+	mock.lockColumns.RLock()
 	calls = mock.calls.Columns
-	lockBoltRowsMockColumns.RUnlock()
+	mock.lockColumns.RUnlock()
 	return calls
 }
 
@@ -168,9 +165,9 @@ func (mock *BoltRowsMock) Metadata() map[string]interface{} {
 	}
 	callInfo := struct {
 	}{}
-	lockBoltRowsMockMetadata.Lock()
+	mock.lockMetadata.Lock()
 	mock.calls.Metadata = append(mock.calls.Metadata, callInfo)
-	lockBoltRowsMockMetadata.Unlock()
+	mock.lockMetadata.Unlock()
 	return mock.MetadataFunc()
 }
 
@@ -181,9 +178,9 @@ func (mock *BoltRowsMock) MetadataCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockBoltRowsMockMetadata.RLock()
+	mock.lockMetadata.RLock()
 	calls = mock.calls.Metadata
-	lockBoltRowsMockMetadata.RUnlock()
+	mock.lockMetadata.RUnlock()
 	return calls
 }
 
@@ -194,9 +191,9 @@ func (mock *BoltRowsMock) NextNeo() ([]interface{}, map[string]interface{}, erro
 	}
 	callInfo := struct {
 	}{}
-	lockBoltRowsMockNextNeo.Lock()
+	mock.lockNextNeo.Lock()
 	mock.calls.NextNeo = append(mock.calls.NextNeo, callInfo)
-	lockBoltRowsMockNextNeo.Unlock()
+	mock.lockNextNeo.Unlock()
 	return mock.NextNeoFunc()
 }
 
@@ -207,8 +204,8 @@ func (mock *BoltRowsMock) NextNeoCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockBoltRowsMockNextNeo.RLock()
+	mock.lockNextNeo.RLock()
 	calls = mock.calls.NextNeo
-	lockBoltRowsMockNextNeo.RUnlock()
+	mock.lockNextNeo.RUnlock()
 	return calls
 }

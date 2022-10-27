@@ -8,37 +8,31 @@ import (
 	"sync"
 )
 
-var (
-	lockResultMockLastInsertId sync.RWMutex
-	lockResultMockMetadata     sync.RWMutex
-	lockResultMockRowsAffected sync.RWMutex
-)
-
 // Ensure, that ResultMock does implement neo4jdriver.Result.
 // If this is not the case, regenerate this file with moq.
 var _ neo4jdriver.Result = &ResultMock{}
 
 // ResultMock is a mock implementation of neo4jdriver.Result.
 //
-//     func TestSomethingThatUsesResult(t *testing.T) {
+// 	func TestSomethingThatUsesResult(t *testing.T) {
 //
-//         // make and configure a mocked neo4jdriver.Result
-//         mockedResult := &ResultMock{
-//             LastInsertIdFunc: func() (int64, error) {
-// 	               panic("mock out the LastInsertId method")
-//             },
-//             MetadataFunc: func() map[string]interface{} {
-// 	               panic("mock out the Metadata method")
-//             },
-//             RowsAffectedFunc: func() (int64, error) {
-// 	               panic("mock out the RowsAffected method")
-//             },
-//         }
+// 		// make and configure a mocked neo4jdriver.Result
+// 		mockedResult := &ResultMock{
+// 			LastInsertIdFunc: func() (int64, error) {
+// 				panic("mock out the LastInsertId method")
+// 			},
+// 			MetadataFunc: func() map[string]interface{} {
+// 				panic("mock out the Metadata method")
+// 			},
+// 			RowsAffectedFunc: func() (int64, error) {
+// 				panic("mock out the RowsAffected method")
+// 			},
+// 		}
 //
-//         // use mockedResult in code that requires neo4jdriver.Result
-//         // and then make assertions.
+// 		// use mockedResult in code that requires neo4jdriver.Result
+// 		// and then make assertions.
 //
-//     }
+// 	}
 type ResultMock struct {
 	// LastInsertIdFunc mocks the LastInsertId method.
 	LastInsertIdFunc func() (int64, error)
@@ -61,6 +55,9 @@ type ResultMock struct {
 		RowsAffected []struct {
 		}
 	}
+	lockLastInsertId sync.RWMutex
+	lockMetadata     sync.RWMutex
+	lockRowsAffected sync.RWMutex
 }
 
 // LastInsertId calls LastInsertIdFunc.
@@ -70,9 +67,9 @@ func (mock *ResultMock) LastInsertId() (int64, error) {
 	}
 	callInfo := struct {
 	}{}
-	lockResultMockLastInsertId.Lock()
+	mock.lockLastInsertId.Lock()
 	mock.calls.LastInsertId = append(mock.calls.LastInsertId, callInfo)
-	lockResultMockLastInsertId.Unlock()
+	mock.lockLastInsertId.Unlock()
 	return mock.LastInsertIdFunc()
 }
 
@@ -83,9 +80,9 @@ func (mock *ResultMock) LastInsertIdCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockResultMockLastInsertId.RLock()
+	mock.lockLastInsertId.RLock()
 	calls = mock.calls.LastInsertId
-	lockResultMockLastInsertId.RUnlock()
+	mock.lockLastInsertId.RUnlock()
 	return calls
 }
 
@@ -96,9 +93,9 @@ func (mock *ResultMock) Metadata() map[string]interface{} {
 	}
 	callInfo := struct {
 	}{}
-	lockResultMockMetadata.Lock()
+	mock.lockMetadata.Lock()
 	mock.calls.Metadata = append(mock.calls.Metadata, callInfo)
-	lockResultMockMetadata.Unlock()
+	mock.lockMetadata.Unlock()
 	return mock.MetadataFunc()
 }
 
@@ -109,9 +106,9 @@ func (mock *ResultMock) MetadataCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockResultMockMetadata.RLock()
+	mock.lockMetadata.RLock()
 	calls = mock.calls.Metadata
-	lockResultMockMetadata.RUnlock()
+	mock.lockMetadata.RUnlock()
 	return calls
 }
 
@@ -122,9 +119,9 @@ func (mock *ResultMock) RowsAffected() (int64, error) {
 	}
 	callInfo := struct {
 	}{}
-	lockResultMockRowsAffected.Lock()
+	mock.lockRowsAffected.Lock()
 	mock.calls.RowsAffected = append(mock.calls.RowsAffected, callInfo)
-	lockResultMockRowsAffected.Unlock()
+	mock.lockRowsAffected.Unlock()
 	return mock.RowsAffectedFunc()
 }
 
@@ -135,8 +132,8 @@ func (mock *ResultMock) RowsAffectedCalls() []struct {
 } {
 	var calls []struct {
 	}
-	lockResultMockRowsAffected.RLock()
+	mock.lockRowsAffected.RLock()
 	calls = mock.calls.RowsAffected
-	lockResultMockRowsAffected.RUnlock()
+	mock.lockRowsAffected.RUnlock()
 	return calls
 }
