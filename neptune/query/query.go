@@ -200,7 +200,7 @@ const (
 	GetInstanceHeaderPart       = `g.V().hasId('_%s_Instance').values('header')`
 	GetAllObservationsPart      = `g.V().hasLabel('_%s_observation')`
 	GetFirstDimensionPart       = `g.V().hasId(%s).in('isValueOf')`
-	GetAdditionalDimensionsPart = `.where(out('isValueOf').hasId(%s).fold().count(local).is_(%d))`
+	GetAdditionalDimensionsPart = `.where(out('isValueOf').hasId(%s).fold().count(local).is(%d))`
 	GetObservationValuesPart    = `.values('value')`
 	LimitPart                   = `.limit(%d)`
 )
