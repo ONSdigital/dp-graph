@@ -27,9 +27,10 @@ type Configuration struct {
 
 // NeptuneConfig defines the neptune-specific configuration
 type NeptuneConfig struct {
-	BatchSizeReader int `envconfig:"NEPTUNE_BATCH_SIZE_READER"`
-	BatchSizeWriter int `envconfig:"NEPTUNE_BATCH_SIZE_WRITER"`
-	MaxWorkers      int `envconfig:"NEPTUNE_MAX_WORKERS"`
+	BatchSizeReader int  `envconfig:"NEPTUNE_BATCH_SIZE_READER"`
+	BatchSizeWriter int  `envconfig:"NEPTUNE_BATCH_SIZE_WRITER"`
+	MaxWorkers      int  `envconfig:"NEPTUNE_MAX_WORKERS"`
+	TLSSkipVerify   bool `envconfig:"NEPTUNE_TLS_SKIP_VERIFY"`
 }
 
 var cfg *Configuration
@@ -46,6 +47,7 @@ func Get(errs chan error) (*Configuration, error) {
 			BatchSizeReader: 25000,
 			BatchSizeWriter: 150,
 			MaxWorkers:      150,
+			TLSSkipVerify:   false,
 		},
 	}
 
@@ -68,6 +70,7 @@ func Get(errs chan error) (*Configuration, error) {
 			cfg.Neptune.BatchSizeReader,
 			cfg.Neptune.BatchSizeWriter,
 			cfg.Neptune.MaxWorkers,
+			cfg.Neptune.TLSSkipVerify,
 			cfg.RetryTime,
 			errs)
 		if err != nil {
