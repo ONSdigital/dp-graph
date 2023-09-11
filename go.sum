@@ -8,6 +8,8 @@ github.com/ONSdigital/golang-neo4j-bolt-driver v0.0.0-20210408132126-c2323ff08bf
 github.com/ONSdigital/golang-neo4j-bolt-driver v0.0.0-20210408132126-c2323ff08bf1/go.mod h1:75Sxr59AMz2RiPskqSymLFxdeaIEhnkNaJE5lonMS3M=
 github.com/ONSdigital/graphson v0.3.0 h1:s59Qx6RgC4IlqIvjXLD1NWpMGQ8tKIUaJGqnjuy8Zxk=
 github.com/ONSdigital/graphson v0.3.0/go.mod h1:CimOliQd5p4nPFoncFl4uXguGczYzjHIfdf8YxFm1BQ=
+github.com/ONSdigital/gremgo-neptune v1.1.0 h1:M//UNGPy+OBatFBGBVWFVzdJD/UkRmNbwR/cV4b9lb0=
+github.com/ONSdigital/gremgo-neptune v1.1.0/go.mod h1:OC8qe/RRo+5Grdmrb3bcjEKntBEKH+SGmp1yG3twn5Y=
 github.com/ONSdigital/log.go/v2 v2.4.1 h1:QAHQqtXgXx43OUTSebNAocVfN21RwrHzagN6zDAzwdo=
 github.com/ONSdigital/log.go/v2 v2.4.1/go.mod h1:hJTjxs9r8k49maNelGpL4SBWv8NG45vCKp15+6ce9bw=
 github.com/fatih/color v1.15.0 h1:kOqh6YHBtK8aywxGerMG2Eq3H6Qgoqeo13Bk2Mv/nBs=

@@ -6,7 +6,7 @@ require (
 	github.com/ONSdigital/dp-healthcheck v1.6.1
 	github.com/ONSdigital/golang-neo4j-bolt-driver v0.0.0-20210408132126-c2323ff08bf1
 	github.com/ONSdigital/graphson v0.3.0
-	github.com/ONSdigital/gremgo-neptune v1.0.3
+	github.com/ONSdigital/gremgo-neptune v1.1.0
 	github.com/ONSdigital/log.go/v2 v2.4.1
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/pkg/errors v0.9.1
