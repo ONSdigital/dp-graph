@@ -26,7 +26,7 @@ type NeptuneDB struct {
 	maxWorkers      int
 }
 
-func New(dbAddr string, size, timeout, retries, batchSizeReader, batchSizeWriter, maxWorkers int, retryTime time.Duration, errs chan error) (n *NeptuneDB, err error) {
+func New(dbAddr string, size, timeout, retries, batchSizeReader, batchSizeWriter, maxWorkers int, tlsSkip bool, retryTime time.Duration, errs chan error) (n *NeptuneDB, err error) {
 	// set defaults if not provided
 	if size == 0 {
 		size = 30
@@ -51,7 +51,7 @@ func New(dbAddr string, size, timeout, retries, batchSizeReader, batchSizeWriter
 	}
 
 	var d *neptune.NeptuneDriver
-	if d, err = neptune.New(context.Background(), dbAddr, errs); err != nil {
+	if d, err = neptune.New(context.Background(), dbAddr, errs, tlsSkip); err != nil {
 		return
 	}
 

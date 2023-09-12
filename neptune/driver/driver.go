@@ -2,6 +2,7 @@ package driver
 
 import (
 	"context"
+	"crypto/tls"
 
 	"github.com/ONSdigital/dp-graph/v2/graph/driver"
 
@@ -15,8 +16,9 @@ type NeptuneDriver struct {
 	Pool NeptunePool // Defined with an interface to support mocking.
 }
 
-func New(ctx context.Context, dbAddr string, errs chan error) (*NeptuneDriver, error) {
-	pool := gremgo.NewPoolWithDialerCtx(ctx, dbAddr, errs)
+func New(ctx context.Context, dbAddr string, errs chan error, tlsSkip bool) (*NeptuneDriver, error) {
+	tConf := &tls.Config{InsecureSkipVerify: tlsSkip}
+	pool := gremgo.NewPoolWithDialerCtx(ctx, dbAddr, errs, gremgo.SetTLSClientConfig(tConf))
 	return &NeptuneDriver{
 		Pool: pool,
 	}, nil
