@@ -11,12 +11,22 @@ A library to abstract graph database logic away from services
 | GRAPH_ADDR           |   ""    |  address of the database matching the chosen driver type
 | GRAPH_POOL_SIZE      |   0     |  desired size of the connection pool
 | MAX_RETRIES          |   0     |  maximum number of attempts for transient query failures
+| RETRY_TIME           |   20ms for Neptune    |  the initial sleep time between requests in the `retry` package
 | GRAPH_QUERY_TIMEOUT  |   0     |  maximum number of seconds to allow a query before timing out
 
 All config other than `GRAPH_DRIVER_TYPE` will be subject to that implementation to make use of
 and set reasonable defaults for use in that context. It's feasible that some implementations
 might not have configurable timeouts for example, so whether this can be set should be
 documented in each driver.
+
+#### Neptune specific configuration
+
+| Environment variable      | Default  | Description
+| --------------------      | -------  | -----------
+| NEPTUNE_BATCH_SIZE_READER |   25000  |  batch size for queries to a reader endpoint
+| NEPTUNE_BATCH_SIZE_WRITER |   150    |  batch size for queries to a writer endpoint
+| NEPTUNE_MAX_WORKERS       |   150    |  maximum number of workers in the Neptune pool
+| NEPTUNE_TLS_SKIP_VERIFY   |   false  |  flag to skip TLS certificate verification, should only be `true` when run locally
 
 ### Design
 
