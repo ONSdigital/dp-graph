@@ -17,11 +17,11 @@ const (
 	CountOrderedEdges      = `g.V().has('_code_list','listID', '%s').has('edition', '%s').inE('usedBy').has('order').count()`
 	GetCodesAlphabetically = `g.V().has('_code_list','listID', '%s').has('edition', '%s')` +
 		`.inE('usedBy').as('usedBy')` +
-		`.outV().order().by('value',incr).as('code')` +
+		`.outV().order().by('value',asc).as('code')` +
 		`.select('usedBy', 'code').by('label').by('value')` +
 		`.unfold().select(values)`
 	GetCodesWithOrder = `g.V().has('_code_list', 'listID', '%s').has('edition', '%s')` +
-		`.inE('usedBy').order().by('order',incr).as('usedBy')` +
+		`.inE('usedBy').order().by('order',asc).as('usedBy')` +
 		`.outV().as('code')` +
 		`.select('usedBy', 'code').by('label').by('value')` +
 		`.unfold().select(values)`
@@ -159,7 +159,7 @@ const (
 	GetHierarchyElement       = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s')`
 	CountChildrenWithOrder    = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s').in('hasParent').has('order').count()`
 	GetChildrenAlphabetically = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s').in('hasParent').order().by('label')`
-	GetChildrenWithOrder      = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s').in('hasParent').order().by('order',incr)`
+	GetChildrenWithOrder      = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code','%s').in('hasParent').order().by('order',asc)`
 	// Note this query is recursive
 	GetAncestry = `g.V().hasLabel('_hierarchy_node_%s_%s').has('code', '%s').repeat(out('hasParent')).emit()`
 

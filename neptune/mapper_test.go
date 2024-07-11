@@ -85,7 +85,7 @@ func Test_buildHierarchyNode(t *testing.T) {
 		// expected gremlin queries
 		var (
 			expectedCountQuery             = "g.V().hasLabel('_hierarchy_node_instance-id_dimension').has('code','code').in('hasParent').has('order').count()"
-			expectedGetWithOrderQuery      = "g.V().hasLabel('_hierarchy_node_instance-id_dimension').has('code','code').in('hasParent').order().by('order',incr)"
+			expectedGetWithOrderQuery      = "g.V().hasLabel('_hierarchy_node_instance-id_dimension').has('code','code').in('hasParent').order().by('order',asc)"
 			expectedGetAlphabeticallyQuery = "g.V().hasLabel('_hierarchy_node_instance-id_dimension').has('code','code').in('hasParent').order().by('label')"
 			expectedGetAncestryQuery       = "g.V().hasLabel('_hierarchy_node_instance-id_dimension').has('code', 'code').repeat(out('hasParent')).emit()"
 		)

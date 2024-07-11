@@ -360,7 +360,7 @@ func TestGetCodes(t *testing.T) {
 		Convey("When GetCodes() is called", func() {
 			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
 			expectedErr := `Gremlin query failed: "g.V().has('_code_list','listID', 'unused-id').has('edition', 'unused-edition').` +
-				`inE('usedBy').as('usedBy').outV().order().by('value',incr).as('code').select('usedBy', 'code').by('label').by('value').` +
+				`inE('usedBy').as('usedBy').outV().order().by('value',asc).as('code').select('usedBy', 'code').by('label').by('value').` +
 				`unfold().select(values)":  MALFORMED REQUEST `
 			Convey("Then the returned error should wrap the underlying one containing the unsorted query", func() {
 				So(err.Error(), ShouldEqual, expectedErr)
@@ -377,7 +377,7 @@ func TestGetCodes(t *testing.T) {
 		Convey("When GetCodes() is called", func() {
 			_, err := db.GetCodes(context.Background(), unusedCodeListID, unusedEdition)
 			expectedErr := `Gremlin query failed: "g.V().has('_code_list', 'listID', 'unused-id').has('edition', 'unused-edition').` +
-				`inE('usedBy').order().by('order',incr).as('usedBy').outV().as('code').select('usedBy', 'code').by('label').by('value').` +
+				`inE('usedBy').order().by('order',asc).as('usedBy').outV().as('code').select('usedBy', 'code').by('label').by('value').` +
 				`unfold().select(values)":  MALFORMED REQUEST `
 			Convey("Then the returned error should wrap the underlying one containing the sorted query", func() {
 				So(err.Error(), ShouldEqual, expectedErr)
@@ -431,7 +431,7 @@ func TestGetCodes(t *testing.T) {
 				Convey("With a well formed query string", func() {
 					expectedQry := `g.V().has('_code_list','listID', 'unused-id').has('edition', 'unused-edition').` +
 						`inE('usedBy').as('usedBy').` +
-						`outV().order().by('value',incr).as('code').` +
+						`outV().order().by('value',asc).as('code').` +
 						`select('usedBy', 'code').by('label').by('value').` +
 						`unfold().select(values)`
 					actualQry := calls[0].Query
@@ -465,7 +465,7 @@ func TestGetCodes(t *testing.T) {
 				So(len(calls), ShouldEqual, 1)
 				Convey("With a well formed query string", func() {
 					expectedQry := `g.V().has('_code_list', 'listID', 'unused-id').has('edition', 'unused-edition').` +
-						`inE('usedBy').order().by('order',incr).as('usedBy').` +
+						`inE('usedBy').order().by('order',asc).as('usedBy').` +
 						`outV().as('code').` +
 						`select('usedBy', 'code').by('label').by('value').` +
 						`unfold().select(values)`
