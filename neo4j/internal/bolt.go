@@ -14,25 +14,25 @@ var _ neo4jdriver.Result = &ResultMock{}
 
 // ResultMock is a mock implementation of neo4jdriver.Result.
 //
-// 	func TestSomethingThatUsesResult(t *testing.T) {
+//	func TestSomethingThatUsesResult(t *testing.T) {
 //
-// 		// make and configure a mocked neo4jdriver.Result
-// 		mockedResult := &ResultMock{
-// 			LastInsertIdFunc: func() (int64, error) {
-// 				panic("mock out the LastInsertId method")
-// 			},
-// 			MetadataFunc: func() map[string]interface{} {
-// 				panic("mock out the Metadata method")
-// 			},
-// 			RowsAffectedFunc: func() (int64, error) {
-// 				panic("mock out the RowsAffected method")
-// 			},
-// 		}
+//		// make and configure a mocked neo4jdriver.Result
+//		mockedResult := &ResultMock{
+//			LastInsertIdFunc: func() (int64, error) {
+//				panic("mock out the LastInsertId method")
+//			},
+//			MetadataFunc: func() map[string]interface{} {
+//				panic("mock out the Metadata method")
+//			},
+//			RowsAffectedFunc: func() (int64, error) {
+//				panic("mock out the RowsAffected method")
+//			},
+//		}
 //
-// 		// use mockedResult in code that requires neo4jdriver.Result
-// 		// and then make assertions.
+//		// use mockedResult in code that requires neo4jdriver.Result
+//		// and then make assertions.
 //
-// 	}
+//	}
 type ResultMock struct {
 	// LastInsertIdFunc mocks the LastInsertId method.
 	LastInsertIdFunc func() (int64, error)
@@ -75,7 +75,8 @@ func (mock *ResultMock) LastInsertId() (int64, error) {
 
 // LastInsertIdCalls gets all the calls that were made to LastInsertId.
 // Check the length with:
-//     len(mockedResult.LastInsertIdCalls())
+//
+//	len(mockedResult.LastInsertIdCalls())
 func (mock *ResultMock) LastInsertIdCalls() []struct {
 } {
 	var calls []struct {
@@ -101,7 +102,8 @@ func (mock *ResultMock) Metadata() map[string]interface{} {
 
 // MetadataCalls gets all the calls that were made to Metadata.
 // Check the length with:
-//     len(mockedResult.MetadataCalls())
+//
+//	len(mockedResult.MetadataCalls())
 func (mock *ResultMock) MetadataCalls() []struct {
 } {
 	var calls []struct {
@@ -127,7 +129,8 @@ func (mock *ResultMock) RowsAffected() (int64, error) {
 
 // RowsAffectedCalls gets all the calls that were made to RowsAffected.
 // Check the length with:
-//     len(mockedResult.RowsAffectedCalls())
+//
+//	len(mockedResult.RowsAffectedCalls())
 func (mock *ResultMock) RowsAffectedCalls() []struct {
 } {
 	var calls []struct {
