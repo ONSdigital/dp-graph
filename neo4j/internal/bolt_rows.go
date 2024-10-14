@@ -14,31 +14,31 @@ var _ neo4jdriver.BoltRows = &BoltRowsMock{}
 
 // BoltRowsMock is a mock implementation of neo4jdriver.BoltRows.
 //
-// 	func TestSomethingThatUsesBoltRows(t *testing.T) {
+//	func TestSomethingThatUsesBoltRows(t *testing.T) {
 //
-// 		// make and configure a mocked neo4jdriver.BoltRows
-// 		mockedBoltRows := &BoltRowsMock{
-// 			AllFunc: func() ([][]interface{}, map[string]interface{}, error) {
-// 				panic("mock out the All method")
-// 			},
-// 			CloseFunc: func() error {
-// 				panic("mock out the Close method")
-// 			},
-// 			ColumnsFunc: func() []string {
-// 				panic("mock out the Columns method")
-// 			},
-// 			MetadataFunc: func() map[string]interface{} {
-// 				panic("mock out the Metadata method")
-// 			},
-// 			NextNeoFunc: func() ([]interface{}, map[string]interface{}, error) {
-// 				panic("mock out the NextNeo method")
-// 			},
-// 		}
+//		// make and configure a mocked neo4jdriver.BoltRows
+//		mockedBoltRows := &BoltRowsMock{
+//			AllFunc: func() ([][]interface{}, map[string]interface{}, error) {
+//				panic("mock out the All method")
+//			},
+//			CloseFunc: func() error {
+//				panic("mock out the Close method")
+//			},
+//			ColumnsFunc: func() []string {
+//				panic("mock out the Columns method")
+//			},
+//			MetadataFunc: func() map[string]interface{} {
+//				panic("mock out the Metadata method")
+//			},
+//			NextNeoFunc: func() ([]interface{}, map[string]interface{}, error) {
+//				panic("mock out the NextNeo method")
+//			},
+//		}
 //
-// 		// use mockedBoltRows in code that requires neo4jdriver.BoltRows
-// 		// and then make assertions.
+//		// use mockedBoltRows in code that requires neo4jdriver.BoltRows
+//		// and then make assertions.
 //
-// 	}
+//	}
 type BoltRowsMock struct {
 	// AllFunc mocks the All method.
 	AllFunc func() ([][]interface{}, map[string]interface{}, error)
@@ -95,7 +95,8 @@ func (mock *BoltRowsMock) All() ([][]interface{}, map[string]interface{}, error)
 
 // AllCalls gets all the calls that were made to All.
 // Check the length with:
-//     len(mockedBoltRows.AllCalls())
+//
+//	len(mockedBoltRows.AllCalls())
 func (mock *BoltRowsMock) AllCalls() []struct {
 } {
 	var calls []struct {
@@ -121,7 +122,8 @@ func (mock *BoltRowsMock) Close() error {
 
 // CloseCalls gets all the calls that were made to Close.
 // Check the length with:
-//     len(mockedBoltRows.CloseCalls())
+//
+//	len(mockedBoltRows.CloseCalls())
 func (mock *BoltRowsMock) CloseCalls() []struct {
 } {
 	var calls []struct {
@@ -147,7 +149,8 @@ func (mock *BoltRowsMock) Columns() []string {
 
 // ColumnsCalls gets all the calls that were made to Columns.
 // Check the length with:
-//     len(mockedBoltRows.ColumnsCalls())
+//
+//	len(mockedBoltRows.ColumnsCalls())
 func (mock *BoltRowsMock) ColumnsCalls() []struct {
 } {
 	var calls []struct {
@@ -173,7 +176,8 @@ func (mock *BoltRowsMock) Metadata() map[string]interface{} {
 
 // MetadataCalls gets all the calls that were made to Metadata.
 // Check the length with:
-//     len(mockedBoltRows.MetadataCalls())
+//
+//	len(mockedBoltRows.MetadataCalls())
 func (mock *BoltRowsMock) MetadataCalls() []struct {
 } {
 	var calls []struct {
@@ -199,7 +203,8 @@ func (mock *BoltRowsMock) NextNeo() ([]interface{}, map[string]interface{}, erro
 
 // NextNeoCalls gets all the calls that were made to NextNeo.
 // Check the length with:
-//     len(mockedBoltRows.NextNeoCalls())
+//
+//	len(mockedBoltRows.NextNeoCalls())
 func (mock *BoltRowsMock) NextNeoCalls() []struct {
 } {
 	var calls []struct {

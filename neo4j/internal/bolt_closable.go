@@ -15,22 +15,22 @@ var _ neo4jdriver.ClosableDriverPool = &ClosableDriverPoolMock{}
 
 // ClosableDriverPoolMock is a mock implementation of neo4jdriver.ClosableDriverPool.
 //
-// 	func TestSomethingThatUsesClosableDriverPool(t *testing.T) {
+//	func TestSomethingThatUsesClosableDriverPool(t *testing.T) {
 //
-// 		// make and configure a mocked neo4jdriver.ClosableDriverPool
-// 		mockedClosableDriverPool := &ClosableDriverPoolMock{
-// 			CloseFunc: func() error {
-// 				panic("mock out the Close method")
-// 			},
-// 			OpenPoolFunc: func() (bolt.Conn, error) {
-// 				panic("mock out the OpenPool method")
-// 			},
-// 		}
+//		// make and configure a mocked neo4jdriver.ClosableDriverPool
+//		mockedClosableDriverPool := &ClosableDriverPoolMock{
+//			CloseFunc: func() error {
+//				panic("mock out the Close method")
+//			},
+//			OpenPoolFunc: func() (bolt.Conn, error) {
+//				panic("mock out the OpenPool method")
+//			},
+//		}
 //
-// 		// use mockedClosableDriverPool in code that requires neo4jdriver.ClosableDriverPool
-// 		// and then make assertions.
+//		// use mockedClosableDriverPool in code that requires neo4jdriver.ClosableDriverPool
+//		// and then make assertions.
 //
-// 	}
+//	}
 type ClosableDriverPoolMock struct {
 	// CloseFunc mocks the Close method.
 	CloseFunc func() error
@@ -66,7 +66,8 @@ func (mock *ClosableDriverPoolMock) Close() error {
 
 // CloseCalls gets all the calls that were made to Close.
 // Check the length with:
-//     len(mockedClosableDriverPool.CloseCalls())
+//
+//	len(mockedClosableDriverPool.CloseCalls())
 func (mock *ClosableDriverPoolMock) CloseCalls() []struct {
 } {
 	var calls []struct {
@@ -92,7 +93,8 @@ func (mock *ClosableDriverPoolMock) OpenPool() (bolt.Conn, error) {
 
 // OpenPoolCalls gets all the calls that were made to OpenPool.
 // Check the length with:
-//     len(mockedClosableDriverPool.OpenPoolCalls())
+//
+//	len(mockedClosableDriverPool.OpenPoolCalls())
 func (mock *ClosableDriverPoolMock) OpenPoolCalls() []struct {
 } {
 	var calls []struct {

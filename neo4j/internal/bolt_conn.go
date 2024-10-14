@@ -17,52 +17,52 @@ var _ neo4jdriver.BoltConn = &BoltConnMock{}
 
 // BoltConnMock is a mock implementation of neo4jdriver.BoltConn.
 //
-// 	func TestSomethingThatUsesBoltConn(t *testing.T) {
+//	func TestSomethingThatUsesBoltConn(t *testing.T) {
 //
-// 		// make and configure a mocked neo4jdriver.BoltConn
-// 		mockedBoltConn := &BoltConnMock{
-// 			BeginFunc: func() (driver.Tx, error) {
-// 				panic("mock out the Begin method")
-// 			},
-// 			CloseFunc: func() error {
-// 				panic("mock out the Close method")
-// 			},
-// 			ExecNeoFunc: func(query string, params map[string]interface{}) (bolt.Result, error) {
-// 				panic("mock out the ExecNeo method")
-// 			},
-// 			ExecPipelineFunc: func(query []string, params ...map[string]interface{}) ([]bolt.Result, error) {
-// 				panic("mock out the ExecPipeline method")
-// 			},
-// 			GetTimeoutFunc: func() time.Duration {
-// 				panic("mock out the GetTimeout method")
-// 			},
-// 			PrepareNeoFunc: func(query string) (bolt.Stmt, error) {
-// 				panic("mock out the PrepareNeo method")
-// 			},
-// 			PreparePipelineFunc: func(query ...string) (bolt.PipelineStmt, error) {
-// 				panic("mock out the PreparePipeline method")
-// 			},
-// 			QueryNeoFunc: func(query string, params map[string]interface{}) (bolt.Rows, error) {
-// 				panic("mock out the QueryNeo method")
-// 			},
-// 			QueryNeoAllFunc: func(query string, params map[string]interface{}) ([][]interface{}, map[string]interface{}, map[string]interface{}, error) {
-// 				panic("mock out the QueryNeoAll method")
-// 			},
-// 			QueryPipelineFunc: func(query []string, params ...map[string]interface{}) (bolt.PipelineRows, error) {
-// 				panic("mock out the QueryPipeline method")
-// 			},
-// 			SetChunkSizeFunc: func(v uint16)  {
-// 				panic("mock out the SetChunkSize method")
-// 			},
-// 			SetTimeoutFunc: func(duration time.Duration)  {
-// 				panic("mock out the SetTimeout method")
-// 			},
-// 		}
+//		// make and configure a mocked neo4jdriver.BoltConn
+//		mockedBoltConn := &BoltConnMock{
+//			BeginFunc: func() (driver.Tx, error) {
+//				panic("mock out the Begin method")
+//			},
+//			CloseFunc: func() error {
+//				panic("mock out the Close method")
+//			},
+//			ExecNeoFunc: func(query string, params map[string]interface{}) (bolt.Result, error) {
+//				panic("mock out the ExecNeo method")
+//			},
+//			ExecPipelineFunc: func(query []string, params ...map[string]interface{}) ([]bolt.Result, error) {
+//				panic("mock out the ExecPipeline method")
+//			},
+//			GetTimeoutFunc: func() time.Duration {
+//				panic("mock out the GetTimeout method")
+//			},
+//			PrepareNeoFunc: func(query string) (bolt.Stmt, error) {
+//				panic("mock out the PrepareNeo method")
+//			},
+//			PreparePipelineFunc: func(query ...string) (bolt.PipelineStmt, error) {
+//				panic("mock out the PreparePipeline method")
+//			},
+//			QueryNeoFunc: func(query string, params map[string]interface{}) (bolt.Rows, error) {
+//				panic("mock out the QueryNeo method")
+//			},
+//			QueryNeoAllFunc: func(query string, params map[string]interface{}) ([][]interface{}, map[string]interface{}, map[string]interface{}, error) {
+//				panic("mock out the QueryNeoAll method")
+//			},
+//			QueryPipelineFunc: func(query []string, params ...map[string]interface{}) (bolt.PipelineRows, error) {
+//				panic("mock out the QueryPipeline method")
+//			},
+//			SetChunkSizeFunc: func(v uint16)  {
+//				panic("mock out the SetChunkSize method")
+//			},
+//			SetTimeoutFunc: func(duration time.Duration)  {
+//				panic("mock out the SetTimeout method")
+//			},
+//		}
 //
-// 		// use mockedBoltConn in code that requires neo4jdriver.BoltConn
-// 		// and then make assertions.
+//		// use mockedBoltConn in code that requires neo4jdriver.BoltConn
+//		// and then make assertions.
 //
-// 	}
+//	}
 type BoltConnMock struct {
 	// BeginFunc mocks the Begin method.
 	BeginFunc func() (driver.Tx, error)
@@ -196,7 +196,8 @@ func (mock *BoltConnMock) Begin() (driver.Tx, error) {
 
 // BeginCalls gets all the calls that were made to Begin.
 // Check the length with:
-//     len(mockedBoltConn.BeginCalls())
+//
+//	len(mockedBoltConn.BeginCalls())
 func (mock *BoltConnMock) BeginCalls() []struct {
 } {
 	var calls []struct {
@@ -222,7 +223,8 @@ func (mock *BoltConnMock) Close() error {
 
 // CloseCalls gets all the calls that were made to Close.
 // Check the length with:
-//     len(mockedBoltConn.CloseCalls())
+//
+//	len(mockedBoltConn.CloseCalls())
 func (mock *BoltConnMock) CloseCalls() []struct {
 } {
 	var calls []struct {
@@ -253,7 +255,8 @@ func (mock *BoltConnMock) ExecNeo(query string, params map[string]interface{}) (
 
 // ExecNeoCalls gets all the calls that were made to ExecNeo.
 // Check the length with:
-//     len(mockedBoltConn.ExecNeoCalls())
+//
+//	len(mockedBoltConn.ExecNeoCalls())
 func (mock *BoltConnMock) ExecNeoCalls() []struct {
 	Query  string
 	Params map[string]interface{}
@@ -288,7 +291,8 @@ func (mock *BoltConnMock) ExecPipeline(query []string, params ...map[string]inte
 
 // ExecPipelineCalls gets all the calls that were made to ExecPipeline.
 // Check the length with:
-//     len(mockedBoltConn.ExecPipelineCalls())
+//
+//	len(mockedBoltConn.ExecPipelineCalls())
 func (mock *BoltConnMock) ExecPipelineCalls() []struct {
 	Query  []string
 	Params []map[string]interface{}
@@ -318,7 +322,8 @@ func (mock *BoltConnMock) GetTimeout() time.Duration {
 
 // GetTimeoutCalls gets all the calls that were made to GetTimeout.
 // Check the length with:
-//     len(mockedBoltConn.GetTimeoutCalls())
+//
+//	len(mockedBoltConn.GetTimeoutCalls())
 func (mock *BoltConnMock) GetTimeoutCalls() []struct {
 } {
 	var calls []struct {
@@ -347,7 +352,8 @@ func (mock *BoltConnMock) PrepareNeo(query string) (bolt.Stmt, error) {
 
 // PrepareNeoCalls gets all the calls that were made to PrepareNeo.
 // Check the length with:
-//     len(mockedBoltConn.PrepareNeoCalls())
+//
+//	len(mockedBoltConn.PrepareNeoCalls())
 func (mock *BoltConnMock) PrepareNeoCalls() []struct {
 	Query string
 } {
@@ -378,7 +384,8 @@ func (mock *BoltConnMock) PreparePipeline(query ...string) (bolt.PipelineStmt, e
 
 // PreparePipelineCalls gets all the calls that were made to PreparePipeline.
 // Check the length with:
-//     len(mockedBoltConn.PreparePipelineCalls())
+//
+//	len(mockedBoltConn.PreparePipelineCalls())
 func (mock *BoltConnMock) PreparePipelineCalls() []struct {
 	Query []string
 } {
@@ -411,7 +418,8 @@ func (mock *BoltConnMock) QueryNeo(query string, params map[string]interface{}) 
 
 // QueryNeoCalls gets all the calls that were made to QueryNeo.
 // Check the length with:
-//     len(mockedBoltConn.QueryNeoCalls())
+//
+//	len(mockedBoltConn.QueryNeoCalls())
 func (mock *BoltConnMock) QueryNeoCalls() []struct {
 	Query  string
 	Params map[string]interface{}
@@ -446,7 +454,8 @@ func (mock *BoltConnMock) QueryNeoAll(query string, params map[string]interface{
 
 // QueryNeoAllCalls gets all the calls that were made to QueryNeoAll.
 // Check the length with:
-//     len(mockedBoltConn.QueryNeoAllCalls())
+//
+//	len(mockedBoltConn.QueryNeoAllCalls())
 func (mock *BoltConnMock) QueryNeoAllCalls() []struct {
 	Query  string
 	Params map[string]interface{}
@@ -481,7 +490,8 @@ func (mock *BoltConnMock) QueryPipeline(query []string, params ...map[string]int
 
 // QueryPipelineCalls gets all the calls that were made to QueryPipeline.
 // Check the length with:
-//     len(mockedBoltConn.QueryPipelineCalls())
+//
+//	len(mockedBoltConn.QueryPipelineCalls())
 func (mock *BoltConnMock) QueryPipelineCalls() []struct {
 	Query  []string
 	Params []map[string]interface{}
@@ -514,7 +524,8 @@ func (mock *BoltConnMock) SetChunkSize(v uint16) {
 
 // SetChunkSizeCalls gets all the calls that were made to SetChunkSize.
 // Check the length with:
-//     len(mockedBoltConn.SetChunkSizeCalls())
+//
+//	len(mockedBoltConn.SetChunkSizeCalls())
 func (mock *BoltConnMock) SetChunkSizeCalls() []struct {
 	V uint16
 } {
@@ -545,7 +556,8 @@ func (mock *BoltConnMock) SetTimeout(duration time.Duration) {
 
 // SetTimeoutCalls gets all the calls that were made to SetTimeout.
 // Check the length with:
-//     len(mockedBoltConn.SetTimeoutCalls())
+//
+//	len(mockedBoltConn.SetTimeoutCalls())
 func (mock *BoltConnMock) SetTimeoutCalls() []struct {
 	Duration time.Duration
 } {
