@@ -142,7 +142,7 @@ func Test_InsertDimension(t *testing.T) {
 
 				expectedQuery := fmt.Sprintf(query.CreateDimensionConstraint, instanceID, "Sex")
 				So(calls[0].Query, ShouldEqual, expectedQuery)
-				So(calls[0].Params, ShouldEqual, nil)
+				So(calls[0].Params, ShouldEqual, map[string]any(nil))
 			})
 
 			Convey("And neo4j.ReadWithParams is called 1 time with the expected parameters", func() {
@@ -177,7 +177,7 @@ func Test_InsertDimension(t *testing.T) {
 			dim, err := db.InsertDimension(context.Background(), constraintsCache, constraintsCacheMutex, instanceID, dimension)
 
 			Convey("Then the expected error is returned with a nil dimension", func() {
-				So(dim, ShouldEqual, nil)
+				So(dim, ShouldEqual, (*models.Dimension)(nil))
 				So(err.Error(), ShouldEqual, errors.Wrap(errorMock, "neoClient.Exec returned an error").Error())
 			})
 
@@ -187,7 +187,7 @@ func Test_InsertDimension(t *testing.T) {
 
 				expectedQuery := fmt.Sprintf(query.CreateDimensionConstraint, instanceID, dimension.DimensionID)
 				So(calls[0].Query, ShouldEqual, expectedQuery)
-				So(calls[0].Params, ShouldEqual, nil)
+				So(calls[0].Params, ShouldEqual, map[string]any(nil))
 			})
 
 			Convey("And there is no other calls to neo4j", func() {
@@ -215,7 +215,7 @@ func Test_InsertDimension(t *testing.T) {
 			dim, err := db.InsertDimension(context.Background(), constraintsCache, constraintsCacheMutex, instanceID, dimension)
 
 			Convey("Then the expected error is returned with a nil dimension", func() {
-				So(dim, ShouldEqual, nil)
+				So(dim, ShouldEqual, (*models.Dimension)(nil))
 				So(err.Error(), ShouldEqual, errors.Wrap(errorMock, "neoClient.ReadWithParams returned an error").Error())
 			})
 

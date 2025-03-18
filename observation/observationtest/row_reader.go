@@ -15,22 +15,22 @@ var _ observation.StreamRowReader = &StreamRowReaderMock{}
 
 // StreamRowReaderMock is a mock implementation of observation.StreamRowReader.
 //
-// 	func TestSomethingThatUsesStreamRowReader(t *testing.T) {
+//	func TestSomethingThatUsesStreamRowReader(t *testing.T) {
 //
-// 		// make and configure a mocked observation.StreamRowReader
-// 		mockedStreamRowReader := &StreamRowReaderMock{
-// 			CloseFunc: func(contextMoqParam context.Context) error {
-// 				panic("mock out the Close method")
-// 			},
-// 			ReadFunc: func() (string, error) {
-// 				panic("mock out the Read method")
-// 			},
-// 		}
+//		// make and configure a mocked observation.StreamRowReader
+//		mockedStreamRowReader := &StreamRowReaderMock{
+//			CloseFunc: func(contextMoqParam context.Context) error {
+//				panic("mock out the Close method")
+//			},
+//			ReadFunc: func() (string, error) {
+//				panic("mock out the Read method")
+//			},
+//		}
 //
-// 		// use mockedStreamRowReader in code that requires observation.StreamRowReader
-// 		// and then make assertions.
+//		// use mockedStreamRowReader in code that requires observation.StreamRowReader
+//		// and then make assertions.
 //
-// 	}
+//	}
 type StreamRowReaderMock struct {
 	// CloseFunc mocks the Close method.
 	CloseFunc func(contextMoqParam context.Context) error
@@ -71,7 +71,8 @@ func (mock *StreamRowReaderMock) Close(contextMoqParam context.Context) error {
 
 // CloseCalls gets all the calls that were made to Close.
 // Check the length with:
-//     len(mockedStreamRowReader.CloseCalls())
+//
+//	len(mockedStreamRowReader.CloseCalls())
 func (mock *StreamRowReaderMock) CloseCalls() []struct {
 	ContextMoqParam context.Context
 } {
@@ -99,7 +100,8 @@ func (mock *StreamRowReaderMock) Read() (string, error) {
 
 // ReadCalls gets all the calls that were made to Read.
 // Check the length with:
-//     len(mockedStreamRowReader.ReadCalls())
+//
+//	len(mockedStreamRowReader.ReadCalls())
 func (mock *StreamRowReaderMock) ReadCalls() []struct {
 } {
 	var calls []struct {

@@ -17,37 +17,37 @@ var _ driver.NeptunePool = &NeptunePoolMock{}
 
 // NeptunePoolMock is a mock implementation of driver.NeptunePool.
 //
-// 	func TestSomethingThatUsesNeptunePool(t *testing.T) {
+//	func TestSomethingThatUsesNeptunePool(t *testing.T) {
 //
-// 		// make and configure a mocked driver.NeptunePool
-// 		mockedNeptunePool := &NeptunePoolMock{
-// 			CloseFunc: func()  {
-// 				panic("mock out the Close method")
-// 			},
-// 			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
-// 				panic("mock out the Execute method")
-// 			},
-// 			GetFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]graphson.Vertex, error) {
-// 				panic("mock out the Get method")
-// 			},
-// 			GetCountFunc: func(q string, bindings map[string]string, rebindings map[string]string) (int64, error) {
-// 				panic("mock out the GetCount method")
-// 			},
-// 			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
-// 				panic("mock out the GetE method")
-// 			},
-// 			GetStringListFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
-// 				panic("mock out the GetStringList method")
-// 			},
-// 			OpenStreamCursorFunc: func(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Stream, error) {
-// 				panic("mock out the OpenStreamCursor method")
-// 			},
-// 		}
+//		// make and configure a mocked driver.NeptunePool
+//		mockedNeptunePool := &NeptunePoolMock{
+//			CloseFunc: func()  {
+//				panic("mock out the Close method")
+//			},
+//			ExecuteFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]gremgo.Response, error) {
+//				panic("mock out the Execute method")
+//			},
+//			GetFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]graphson.Vertex, error) {
+//				panic("mock out the Get method")
+//			},
+//			GetCountFunc: func(q string, bindings map[string]string, rebindings map[string]string) (int64, error) {
+//				panic("mock out the GetCount method")
+//			},
+//			GetEFunc: func(q string, bindings map[string]string, rebindings map[string]string) (interface{}, error) {
+//				panic("mock out the GetE method")
+//			},
+//			GetStringListFunc: func(query string, bindings map[string]string, rebindings map[string]string) ([]string, error) {
+//				panic("mock out the GetStringList method")
+//			},
+//			OpenStreamCursorFunc: func(ctx context.Context, query string, bindings map[string]string, rebindings map[string]string) (*gremgo.Stream, error) {
+//				panic("mock out the OpenStreamCursor method")
+//			},
+//		}
 //
-// 		// use mockedNeptunePool in code that requires driver.NeptunePool
-// 		// and then make assertions.
+//		// use mockedNeptunePool in code that requires driver.NeptunePool
+//		// and then make assertions.
 //
-// 	}
+//	}
 type NeptunePoolMock struct {
 	// CloseFunc mocks the Close method.
 	CloseFunc func()
@@ -156,7 +156,8 @@ func (mock *NeptunePoolMock) Close() {
 
 // CloseCalls gets all the calls that were made to Close.
 // Check the length with:
-//     len(mockedNeptunePool.CloseCalls())
+//
+//	len(mockedNeptunePool.CloseCalls())
 func (mock *NeptunePoolMock) CloseCalls() []struct {
 } {
 	var calls []struct {
@@ -189,7 +190,8 @@ func (mock *NeptunePoolMock) Execute(query string, bindings map[string]string, r
 
 // ExecuteCalls gets all the calls that were made to Execute.
 // Check the length with:
-//     len(mockedNeptunePool.ExecuteCalls())
+//
+//	len(mockedNeptunePool.ExecuteCalls())
 func (mock *NeptunePoolMock) ExecuteCalls() []struct {
 	Query      string
 	Bindings   map[string]string
@@ -228,7 +230,8 @@ func (mock *NeptunePoolMock) Get(query string, bindings map[string]string, rebin
 
 // GetCalls gets all the calls that were made to Get.
 // Check the length with:
-//     len(mockedNeptunePool.GetCalls())
+//
+//	len(mockedNeptunePool.GetCalls())
 func (mock *NeptunePoolMock) GetCalls() []struct {
 	Query      string
 	Bindings   map[string]string
@@ -267,7 +270,8 @@ func (mock *NeptunePoolMock) GetCount(q string, bindings map[string]string, rebi
 
 // GetCountCalls gets all the calls that were made to GetCount.
 // Check the length with:
-//     len(mockedNeptunePool.GetCountCalls())
+//
+//	len(mockedNeptunePool.GetCountCalls())
 func (mock *NeptunePoolMock) GetCountCalls() []struct {
 	Q          string
 	Bindings   map[string]string
@@ -306,7 +310,8 @@ func (mock *NeptunePoolMock) GetE(q string, bindings map[string]string, rebindin
 
 // GetECalls gets all the calls that were made to GetE.
 // Check the length with:
-//     len(mockedNeptunePool.GetECalls())
+//
+//	len(mockedNeptunePool.GetECalls())
 func (mock *NeptunePoolMock) GetECalls() []struct {
 	Q          string
 	Bindings   map[string]string
@@ -345,7 +350,8 @@ func (mock *NeptunePoolMock) GetStringList(query string, bindings map[string]str
 
 // GetStringListCalls gets all the calls that were made to GetStringList.
 // Check the length with:
-//     len(mockedNeptunePool.GetStringListCalls())
+//
+//	len(mockedNeptunePool.GetStringListCalls())
 func (mock *NeptunePoolMock) GetStringListCalls() []struct {
 	Query      string
 	Bindings   map[string]string
@@ -386,7 +392,8 @@ func (mock *NeptunePoolMock) OpenStreamCursor(ctx context.Context, query string,
 
 // OpenStreamCursorCalls gets all the calls that were made to OpenStreamCursor.
 // Check the length with:
-//     len(mockedNeptunePool.OpenStreamCursorCalls())
+//
+//	len(mockedNeptunePool.OpenStreamCursorCalls())
 func (mock *NeptunePoolMock) OpenStreamCursorCalls() []struct {
 	Ctx        context.Context
 	Query      string

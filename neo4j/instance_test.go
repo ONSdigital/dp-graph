@@ -264,7 +264,7 @@ func Test_CreateInstance(t *testing.T) {
 
 				expectedQuery := fmt.Sprintf(query.CreateInstance, instanceID, strings.Join(csvHeaders, ","))
 				So(calls[0].Query, ShouldEqual, expectedQuery)
-				So(calls[0].Params, ShouldEqual, nil)
+				So(calls[0].Params, ShouldEqual, map[string]any(nil))
 			})
 		})
 	})
@@ -293,7 +293,7 @@ func Test_CreateInstance(t *testing.T) {
 
 				expectedQuery := fmt.Sprintf(query.CreateInstance, instanceID, strings.Join(csvHeaders, ","))
 				So(calls[0].Query, ShouldEqual, expectedQuery)
-				So(calls[0].Params, ShouldEqual, nil)
+				So(calls[0].Params, ShouldEqual, map[string]any(nil))
 			})
 		})
 	})
@@ -324,7 +324,7 @@ func Test_CreateInstanceConstraint_StatementError(t *testing.T) {
 
 				expectedQuery := fmt.Sprintf(query.CreateInstanceObservationConstraint, instanceID)
 				So(calls[0].Query, ShouldEqual, expectedQuery)
-				So(calls[0].Params, ShouldEqual, nil)
+				So(calls[0].Params, ShouldEqual, map[string]any(nil))
 			})
 		})
 	})
@@ -355,7 +355,7 @@ func Test_CreateInstanceConstraint(t *testing.T) {
 
 				expectedQuery := fmt.Sprintf(query.CreateInstanceObservationConstraint, instanceID)
 				So(calls[0].Query, ShouldEqual, expectedQuery)
-				So(calls[0].Params, ShouldEqual, nil)
+				So(calls[0].Params, ShouldEqual, map[string]any(nil))
 			})
 		})
 	})

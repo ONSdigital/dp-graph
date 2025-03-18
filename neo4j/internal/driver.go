@@ -18,40 +18,40 @@ var _ neo4jdriver.Neo4jDriver = &Neo4jDriverMock{}
 
 // Neo4jDriverMock is a mock implementation of neo4jdriver.Neo4jDriver.
 //
-// 	func TestSomethingThatUsesNeo4jDriver(t *testing.T) {
+//	func TestSomethingThatUsesNeo4jDriver(t *testing.T) {
 //
-// 		// make and configure a mocked neo4jdriver.Neo4jDriver
-// 		mockedNeo4jDriver := &Neo4jDriverMock{
-// 			CheckerFunc: func(ctx context.Context, state *health.CheckState) error {
-// 				panic("mock out the Checker method")
-// 			},
-// 			CloseFunc: func(ctx context.Context) error {
-// 				panic("mock out the Close method")
-// 			},
-// 			CountFunc: func(query string) (int64, error) {
-// 				panic("mock out the Count method")
-// 			},
-// 			ExecFunc: func(query string, params map[string]interface{}) (bolt.Result, error) {
-// 				panic("mock out the Exec method")
-// 			},
-// 			HealthcheckFunc: func() (string, error) {
-// 				panic("mock out the Healthcheck method")
-// 			},
-// 			ReadFunc: func(query string, mapp mapper.ResultMapper, single bool) error {
-// 				panic("mock out the Read method")
-// 			},
-// 			ReadWithParamsFunc: func(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error {
-// 				panic("mock out the ReadWithParams method")
-// 			},
-// 			StreamRowsFunc: func(query string) (*neo4jdriver.BoltRowReader, error) {
-// 				panic("mock out the StreamRows method")
-// 			},
-// 		}
+//		// make and configure a mocked neo4jdriver.Neo4jDriver
+//		mockedNeo4jDriver := &Neo4jDriverMock{
+//			CheckerFunc: func(ctx context.Context, state *health.CheckState) error {
+//				panic("mock out the Checker method")
+//			},
+//			CloseFunc: func(ctx context.Context) error {
+//				panic("mock out the Close method")
+//			},
+//			CountFunc: func(query string) (int64, error) {
+//				panic("mock out the Count method")
+//			},
+//			ExecFunc: func(query string, params map[string]interface{}) (bolt.Result, error) {
+//				panic("mock out the Exec method")
+//			},
+//			HealthcheckFunc: func() (string, error) {
+//				panic("mock out the Healthcheck method")
+//			},
+//			ReadFunc: func(query string, mapp mapper.ResultMapper, single bool) error {
+//				panic("mock out the Read method")
+//			},
+//			ReadWithParamsFunc: func(query string, params map[string]interface{}, mapp mapper.ResultMapper, single bool) error {
+//				panic("mock out the ReadWithParams method")
+//			},
+//			StreamRowsFunc: func(query string) (*neo4jdriver.BoltRowReader, error) {
+//				panic("mock out the StreamRows method")
+//			},
+//		}
 //
-// 		// use mockedNeo4jDriver in code that requires neo4jdriver.Neo4jDriver
-// 		// and then make assertions.
+//		// use mockedNeo4jDriver in code that requires neo4jdriver.Neo4jDriver
+//		// and then make assertions.
 //
-// 	}
+//	}
 type Neo4jDriverMock struct {
 	// CheckerFunc mocks the Checker method.
 	CheckerFunc func(ctx context.Context, state *health.CheckState) error
@@ -162,7 +162,8 @@ func (mock *Neo4jDriverMock) Checker(ctx context.Context, state *health.CheckSta
 
 // CheckerCalls gets all the calls that were made to Checker.
 // Check the length with:
-//     len(mockedNeo4jDriver.CheckerCalls())
+//
+//	len(mockedNeo4jDriver.CheckerCalls())
 func (mock *Neo4jDriverMock) CheckerCalls() []struct {
 	Ctx   context.Context
 	State *health.CheckState
@@ -195,7 +196,8 @@ func (mock *Neo4jDriverMock) Close(ctx context.Context) error {
 
 // CloseCalls gets all the calls that were made to Close.
 // Check the length with:
-//     len(mockedNeo4jDriver.CloseCalls())
+//
+//	len(mockedNeo4jDriver.CloseCalls())
 func (mock *Neo4jDriverMock) CloseCalls() []struct {
 	Ctx context.Context
 } {
@@ -226,7 +228,8 @@ func (mock *Neo4jDriverMock) Count(query string) (int64, error) {
 
 // CountCalls gets all the calls that were made to Count.
 // Check the length with:
-//     len(mockedNeo4jDriver.CountCalls())
+//
+//	len(mockedNeo4jDriver.CountCalls())
 func (mock *Neo4jDriverMock) CountCalls() []struct {
 	Query string
 } {
@@ -259,7 +262,8 @@ func (mock *Neo4jDriverMock) Exec(query string, params map[string]interface{}) (
 
 // ExecCalls gets all the calls that were made to Exec.
 // Check the length with:
-//     len(mockedNeo4jDriver.ExecCalls())
+//
+//	len(mockedNeo4jDriver.ExecCalls())
 func (mock *Neo4jDriverMock) ExecCalls() []struct {
 	Query  string
 	Params map[string]interface{}
@@ -289,7 +293,8 @@ func (mock *Neo4jDriverMock) Healthcheck() (string, error) {
 
 // HealthcheckCalls gets all the calls that were made to Healthcheck.
 // Check the length with:
-//     len(mockedNeo4jDriver.HealthcheckCalls())
+//
+//	len(mockedNeo4jDriver.HealthcheckCalls())
 func (mock *Neo4jDriverMock) HealthcheckCalls() []struct {
 } {
 	var calls []struct {
@@ -322,7 +327,8 @@ func (mock *Neo4jDriverMock) Read(query string, mapp mapper.ResultMapper, single
 
 // ReadCalls gets all the calls that were made to Read.
 // Check the length with:
-//     len(mockedNeo4jDriver.ReadCalls())
+//
+//	len(mockedNeo4jDriver.ReadCalls())
 func (mock *Neo4jDriverMock) ReadCalls() []struct {
 	Query  string
 	Mapp   mapper.ResultMapper
@@ -363,7 +369,8 @@ func (mock *Neo4jDriverMock) ReadWithParams(query string, params map[string]inte
 
 // ReadWithParamsCalls gets all the calls that were made to ReadWithParams.
 // Check the length with:
-//     len(mockedNeo4jDriver.ReadWithParamsCalls())
+//
+//	len(mockedNeo4jDriver.ReadWithParamsCalls())
 func (mock *Neo4jDriverMock) ReadWithParamsCalls() []struct {
 	Query  string
 	Params map[string]interface{}
@@ -400,7 +407,8 @@ func (mock *Neo4jDriverMock) StreamRows(query string) (*neo4jdriver.BoltRowReade
 
 // StreamRowsCalls gets all the calls that were made to StreamRows.
 // Check the length with:
-//     len(mockedNeo4jDriver.StreamRowsCalls())
+//
+//	len(mockedNeo4jDriver.StreamRowsCalls())
 func (mock *Neo4jDriverMock) StreamRowsCalls() []struct {
 	Query string
 } {
